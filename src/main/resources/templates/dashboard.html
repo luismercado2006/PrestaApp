@@ -599,8 +599,6 @@
         document.getElementById('d-remaining').textContent     = fmt(remaining);
         document.getElementById('d-progress-fill').style.width = pct + '%';
         document.getElementById('d-progress-label').textContent = Math.round(pct) + '%';
-        document.getElementById('d-cuota').textContent         = fmt(cuota);
-        document.getElementById('d-cuota-sub').textContent     = freqName + ' · ' + numCuotas + ' pagos de ' + fmt(cuota);
         document.getElementById('d-start').textContent         = fmtDate(l.createdAt);
         document.getElementById('d-due').textContent           = fmtDate(l.dueDate);
         document.getElementById('d-interest').textContent      = (l.interest || 0) + '%';
