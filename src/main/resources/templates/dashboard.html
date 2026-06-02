@@ -297,6 +297,10 @@
         </div>
         <div class="progress-bar"><div class="progress-fill" id="d-progress-fill"></div></div>
     </div>
+    <div class="cuota-banner">
+        <div class="cb-label">Cuota a pagar</div>
+        <div class="cb-value" id="d-cuota">–</div>
+        <div class="cb-sub" id="d-cuota-sub">–</div>
     </div>
     <div class="info-card">
         <div class="info-row"><span class="ikey">Inicio</span><span class="ival" id="d-start">–</span></div>
@@ -567,6 +571,8 @@
         document.getElementById('d-remaining').textContent    = fmt(remaining);
         document.getElementById('d-progress-fill').style.width = pct + '%';
         document.getElementById('d-progress-label').textContent = paidCuotas + '/' + numCuotas + ' cuotas (' + Math.round(pct) + '%)';
+        document.getElementById('d-cuota').textContent        = fmt(cuota);
+        document.getElementById('d-cuota-sub').textContent    = 'Pago ' + freqName.toLowerCase() + ' · ' + numCuotas + ' cuotas en total';
         document.getElementById('d-start').textContent        = fmtDate(l.createdAt);
         document.getElementById('d-due').textContent          = fmtDate(l.dueDate);
         document.getElementById('d-interest').textContent     = (l.interest || 0) + '% ' + freqName.toLowerCase();
