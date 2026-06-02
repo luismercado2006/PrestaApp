@@ -1,4 +1,3 @@
-cat > /mnt/user-data/outputs/Loan.java << 'EOF'
 package com.diariopay.model;
 
 import lombok.Data;
@@ -19,7 +18,6 @@ public class Loan {
     private String frequency;   // daily | weekly | monthly
     private String status;      // active | paid | overdue
     private String notes;
-    private int days;           // plazo en días
     private LocalDateTime createdAt = LocalDateTime.now();
     private LocalDateTime dueDate;
 }
