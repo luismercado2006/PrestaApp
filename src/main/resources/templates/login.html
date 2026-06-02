@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+    <title>PrestaApp – Ingresar</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+        :root{
+          --green:#16a34a;--green-l:#dcfce7;--blue:#1d4ed8;--red:#dc2626;
+          --gray-50:#f9fafb;--gray-100:#f3f4f6;--gray-200:#e5e7eb;
+          --gray-400:#9ca3af;--gray-600:#4b5563;--gray-800:#1f2937;--white:#ffffff;
+        }
+        body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--gray-50);
+          min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px 16px;}
+        .card{background:var(--white);border-radius:24px;padding:40px 28px 36px;
+          width:100%;max-width:400px;box-shadow:0 4px 24px rgba(0,0,0,0.08);}
+        .logo{text-align:center;margin-bottom:32px}
+        .logo-icon{width:56px;height:56px;background:var(--green);border-radius:16px;
+          display:flex;align-items:center;justify-content:center;margin:0 auto 12px;font-size:26px;}
+        .logo h1{font-size:22px;font-weight:800;color:var(--gray-800);letter-spacing:-0.5px}
+        .logo p{font-size:13px;color:var(--gray-400);margin-top:4px}
+        .tabs{display:flex;background:var(--gray-100);border-radius:12px;padding:4px;margin-bottom:28px}
+        .tab{flex:1;padding:9px;text-align:center;font-size:14px;font-weight:600;
+          color:var(--gray-600);border-radius:9px;cursor:pointer;border:none;
+          background:transparent;transition:all .2s;font-family:inherit}
+        .tab.active{background:var(--white);color:var(--gray-800);box-shadow:0 1px 4px rgba(0,0,0,0.1)}
+        .form-section{display:none}.form-section.visible{display:block}
+        .form-group{margin-bottom:16px}
+        label{display:block;font-size:13px;font-weight:600;color:var(--gray-600);margin-bottom:6px}
+        input{width:100%;padding:13px 16px;border:1.5px solid var(--gray-200);border-radius:12px;
+          font-family:inherit;font-size:15px;color:var(--gray-800);background:var(--white);
+          outline:none;transition:border-color .2s;-webkit-appearance:none}
+        input:focus{border-color:var(--green)}
+        .btn-primary{width:100%;padding:14px;background:var(--green);color:var(--white);
+          border:none;border-radius:12px;font-family:inherit;font-size:16px;font-weight:700;
+          cursor:pointer;margin-top:8px;transition:background .2s;-webkit-tap-highlight-color:transparent}
+        .btn-primary:active{background:#15803d}
+        .msg-box{border-radius:10px;padding:10px 14px;font-size:13px;font-weight:500;
+          margin-bottom:16px;display:none}
+        .msg-box.show{display:block}
+        .msg-box.error{background:#fef2f2;border:1px solid #fecaca;color:var(--red)}
+        .msg-box.success{background:#f0fdf4;border:1px solid #bbf7d0;color:#15803d}
+        .demo-hint{text-align:center;margin-top:20px;font-size:12px;color:var(--gray-400)}
+        .demo-hint span{color:var(--green);font-weight:600;cursor:pointer}
+    </style>
+</head>
+<body>
+<div class="card">
+    <div class="logo">
+        <div class="logo-icon">💵</div>
+        <h1>PrestaApp</h1>
+        <p>Gestión de préstamos diarios</p>
+    </div>
+
+    <div class="tabs">
+        <button class="tab active" id="tab-login"  onclick="switchTab('login')">Ingresar</button>
+        <button class="tab"        id="tab-reg"    onclick="switchTab('register')">Registrarse</button>
+    </div>
+
+    <div id="msg-box" class="msg-box"></div>
+
+    <!-- LOGIN -->
+    <div id="login-form" class="form-section visible">
+        <div class="form-group">
+            <label>Usuario</label>
+            <input type="text" id="login-user" placeholder="tu usuario" autocomplete="username">
+        </div>
+        <div class="form-group">
+            <label>Contraseña</label>
+            <input type="password" id="login-pass" placeholder="••••••••" autocomplete="current-password">
+        </div>
+        <button class="btn-primary" onclick="doLogin()">Entrar</button>
+    </div>
+
+    <!-- REGISTRO -->
+    <div id="register-form" class="form-section">
+        <div class="form-group">
+            <label>Nombre completo</label>
+            <input type="text" id="reg-name" placeholder="Ej: Carlos López">
+        </div>
+        <div class="form-group">
+            <label>Usuario</label>
+            <input type="text" id="reg-user" placeholder="elige un nombre de usuario">
+        </div>
+        <div class="form-group">
+            <label>Contraseña</label>
+            <input type="password" id="reg-pass" placeholder="mínimo 4 caracteres">
+        </div>
+        <button class="btn-primary" onclick="doRegister()">Crear cuenta</button>
+    </div>
+
+    <p class="demo-hint">Demo: <span onclick="fillDemo()"></span></p>
+</div>
+<script>
+    function switchTab(tab){
+      const isLogin=tab==='login';
+      document.getElementById('login-form').classList.toggle('visible',isLogin);
+      document.getElementById('register-form').classList.toggle('visible',!isLogin);
+      document.getElementById('tab-login').classList.toggle('active',isLogin);
+      document.getElementById('tab-reg').classList.toggle('active',!isLogin);
+      hideMsg();
+    }
+    function showMsg(text,type){const el=document.getElementById('msg-box');el.textContent=text;el.className='msg-box show '+type;}
+    function hideMsg(){document.getElementById('msg-box').className='msg-box';}
+    function fillDemo(){switchTab('login');document.getElementById('login-user').value='carlos';document.getElementById('login-pass').value='1234';}
+
+    async function doLogin(){
+      hideMsg();
+      const username=document.getElementById('login-user').value.trim();
+      const password=document.getElementById('login-pass').value;
+      if(!username||!password)return showMsg('Completa todos los campos','error');
+      try{
+        const res=await fetch('/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({username,password})});
+        const data=await res.json();
+        if(data.ok){window.location.href='/dashboard';}else{showMsg(data.msg||'Usuario o contraseña incorrectos','error');}
+      }catch(e){showMsg('Error de conexión con el servidor','error');}
+    }
+
+    async function doRegister(){
+      hideMsg();
+      const name=document.getElementById('reg-name').value.trim();
+      const username=document.getElementById('reg-user').value.trim();
+      const password=document.getElementById('reg-pass').value;
+      if(!name)return showMsg('Escribe tu nombre completo','error');
+      if(!username)return showMsg('Elige un nombre de usuario','error');
+      if(!password||password.length<4)return showMsg('La contraseña debe tener al menos 4 caracteres','error');
+      try{
+        const res=await fetch('/register',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name,username,password})});
+        const data=await res.json();
+        if(data.ok){switchTab('login');document.getElementById('login-user').value=username;showMsg('✅ Cuenta creada. Ahora ingresa.','success');}
+        else{showMsg(data.msg||'Error al registrar','error');}
+      }catch(e){showMsg('Error de conexión con el servidor','error');}
+    }
+
+    document.addEventListener('keydown',e=>{
+      if(e.key!=='Enter')return;
+      document.getElementById('login-form').classList.contains('visible')?doLogin():doRegister();
+    });
+</script>
+</body>
+</html>

@@ -1,0 +1,658 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+    <title>PrestaApp</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+        :root{
+          --green:#16a34a;--green-l:#dcfce7;--blue:#1d4ed8;--blue-l:#eff6ff;--red:#dc2626;
+          --gray-50:#f9fafb;--gray-100:#f3f4f6;--gray-200:#e5e7eb;
+          --gray-400:#9ca3af;--gray-600:#4b5563;--gray-700:#374151;
+          --gray-800:#1f2937;--white:#ffffff;
+        }
+        body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--gray-50);
+          min-height:100vh;max-width:480px;margin:0 auto;-webkit-tap-highlight-color:transparent;overflow-x:hidden}
+
+        .topnav{background:var(--white);padding:14px 20px;display:flex;align-items:center;
+          justify-content:space-between;border-bottom:1px solid var(--gray-100);
+          position:sticky;top:0;z-index:100}
+        .topnav h1{font-size:17px;font-weight:800;color:var(--gray-800);letter-spacing:-0.3px}
+        .menu-btn{font-size:22px;color:var(--gray-700);cursor:pointer;padding:4px;line-height:1;background:none;border:none}
+        .back-btn{display:none;align-items:center;gap:4px;font-size:13px;font-weight:700;
+          color:var(--gray-600);cursor:pointer;background:none;border:none;padding:4px 6px;border-radius:8px}
+        .back-btn svg{width:18px;height:18px}
+        .back-btn.visible{display:flex}
+        .topnav-right{min-width:60px;display:flex;justify-content:flex-end}
+
+        /* DRAWER */
+        .drawer-overlay{position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:300;opacity:0;pointer-events:none;transition:opacity .25s}
+        .drawer-overlay.open{opacity:1;pointer-events:auto}
+        .drawer{position:fixed;top:0;left:0;height:100%;width:72%;max-width:280px;
+          background:var(--white);z-index:301;transform:translateX(-100%);
+          transition:transform .28s cubic-bezier(.4,0,.2,1);display:flex;flex-direction:column}
+        .drawer.open{transform:translateX(0)}
+        .drawer-header{padding:32px 20px 20px;border-bottom:1px solid var(--gray-100)}
+        .drawer-header .app-name{font-size:20px;font-weight:800;color:var(--gray-800)}
+        .drawer-header .user-name{font-size:13px;color:var(--gray-400);margin-top:3px}
+        .drawer-menu{padding:12px 0;flex:1}
+        .drawer-item{display:flex;align-items:center;gap:13px;padding:13px 20px;
+          font-size:15px;font-weight:600;color:var(--gray-700);cursor:pointer;
+          border-left:3px solid transparent;transition:all .15s}
+        .drawer-item:hover{background:var(--gray-50)}
+        .drawer-item.active{color:var(--green);border-left-color:var(--green);background:var(--green-l)}
+        .drawer-item svg{width:20px;height:20px;flex-shrink:0}
+        .drawer-footer{padding:16px 20px;border-top:1px solid var(--gray-100)}
+        .drawer-logout{display:flex;align-items:center;gap:10px;font-size:14px;font-weight:600;color:var(--red);text-decoration:none}
+        .drawer-logout svg{width:18px;height:18px}
+
+        /* PÁGINAS */
+        .page{display:none;padding:20px 16px 100px;animation:fadeIn .2s ease}
+        .page.active{display:block}
+        @keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+
+        /* INICIO */
+        .greeting h2{font-size:22px;font-weight:800;color:var(--gray-800);margin-bottom:2px}
+        .greeting p{font-size:14px;color:var(--gray-400)}
+        .stats-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:20px 0}
+        .stat-card{background:var(--white);border-radius:16px;padding:16px;border:1px solid var(--gray-100)}
+        .stat-card .label{font-size:12px;color:var(--gray-400);font-weight:500;margin-bottom:6px}
+        .stat-card .value{font-size:22px;font-weight:800;letter-spacing:-0.5px}
+        .value.blue{color:var(--blue)}.value.green{color:var(--green)}.value.red{color:var(--red)}.value.dark{color:var(--gray-800)}
+        .chart-card{background:var(--white);border-radius:16px;padding:18px;border:1px solid var(--gray-100);margin-bottom:12px}
+        .chart-card h3{font-size:14px;font-weight:700;color:var(--gray-800);margin-bottom:16px}
+        .chart-wrap{display:flex;align-items:flex-end;gap:8px;height:80px}
+        .bar-col{flex:1;display:flex;flex-direction:column;align-items:center;gap:4px}
+        .bar-col .bar-val{font-size:9px;color:var(--gray-400);font-weight:600}
+        .bar-col .bar{width:100%;border-radius:4px 4px 0 0;min-height:3px;background:var(--green)}
+        .bar-col .bar.empty{background:var(--blue);opacity:.25}
+        .bar-col .bar-label{font-size:10px;color:var(--gray-400);font-weight:500;white-space:nowrap}
+        .section-title{font-size:15px;font-weight:700;color:var(--gray-800);margin:20px 0 12px}
+
+        /* LISTA PRÉSTAMOS */
+        .filter-tabs{display:flex;gap:8px;margin-bottom:16px;overflow-x:auto;padding-bottom:4px}
+        .filter-tab{flex-shrink:0;padding:6px 14px;border-radius:20px;font-size:13px;
+          font-weight:600;border:1.5px solid var(--gray-200);background:var(--white);
+          color:var(--gray-600);cursor:pointer;transition:all .15s}
+        .filter-tab.active{background:var(--green);border-color:var(--green);color:var(--white)}
+        .loan-item{background:var(--white);border-radius:14px;padding:14px 16px;margin-bottom:10px;
+          border:1px solid var(--gray-100);display:flex;align-items:center;justify-content:space-between;cursor:pointer}
+        .loan-info .borrower{font-size:15px;font-weight:700;color:var(--gray-800)}
+        .loan-info .meta{font-size:12px;color:var(--gray-400);margin-top:2px}
+        .loan-right{text-align:right}
+        .loan-right .amount{font-size:16px;font-weight:800;color:var(--blue)}
+        .badge{display:inline-block;font-size:11px;font-weight:600;padding:2px 8px;border-radius:20px;margin-top:4px}
+        .badge.active{background:var(--green-l);color:var(--green)}
+        .badge.paid{background:var(--gray-100);color:var(--gray-400)}
+        .badge.overdue{background:#fef2f2;color:var(--red)}
+        .empty-loans{text-align:center;padding:32px 0;color:var(--gray-400);font-size:14px}
+
+        /* PÁGINA DETALLE */
+        .detail-header-card{background:var(--white);border-radius:16px;padding:18px;
+          border:1px solid var(--gray-100);margin-bottom:14px;display:flex;justify-content:space-between;align-items:flex-start}
+        .detail-header-card .d-name{font-size:20px;font-weight:800;color:var(--gray-800)}
+        .detail-header-card .d-phone{font-size:13px;color:var(--gray-400);margin-top:3px}
+        .amounts-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px}
+        .amt-card{background:var(--white);border-radius:14px;padding:14px;border:1px solid var(--gray-100)}
+        .amt-card .alabel{font-size:12px;color:var(--gray-400);font-weight:500;margin-bottom:5px}
+        .amt-card .avalue{font-size:20px;font-weight:800;letter-spacing:-0.3px}
+        .progress-card{background:var(--white);border-radius:14px;padding:16px;
+          border:1px solid var(--gray-100);margin-bottom:14px}
+        .progress-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
+        .progress-header span:first-child{font-size:14px;font-weight:700;color:var(--gray-800)}
+        .progress-header span:last-child{font-size:12px;font-weight:600;color:var(--gray-400)}
+        .progress-bar{background:var(--gray-100);border-radius:8px;height:10px;overflow:hidden}
+        .progress-fill{height:100%;background:var(--green);border-radius:8px;transition:width .5s}
+        .info-card{background:var(--white);border-radius:14px;border:1px solid var(--gray-100);margin-bottom:14px;overflow:hidden}
+        .info-row{display:flex;justify-content:space-between;align-items:center;
+          padding:13px 16px;border-bottom:1px solid var(--gray-100)}
+        .info-row:last-child{border-bottom:none}
+        .info-row .ikey{font-size:14px;color:var(--gray-400);font-weight:500}
+        .info-row .ival{font-size:14px;font-weight:700;color:var(--gray-800)}
+        .ival.green{color:var(--green)}
+        .cuota-banner{background:linear-gradient(135deg,#16a34a,#15803d);border-radius:14px;
+          padding:16px 18px;margin-bottom:14px;color:white}
+        .cuota-banner .cb-label{font-size:12px;opacity:.8;margin-bottom:4px}
+        .cuota-banner .cb-value{font-size:28px;font-weight:800;letter-spacing:-0.5px}
+        .cuota-banner .cb-sub{font-size:12px;opacity:.75;margin-top:4px}
+        .action-btns{display:flex;flex-direction:column;gap:10px;margin-bottom:14px}
+        .btn-register{background:var(--green);color:white;border:none;border-radius:14px;
+          padding:16px;font-family:inherit;font-size:16px;font-weight:700;cursor:pointer;
+          display:flex;align-items:center;justify-content:center;gap:8px}
+        .btn-delete{background:#fef2f2;color:var(--red);border:none;border-radius:14px;
+          padding:14px;font-family:inherit;font-size:14px;font-weight:700;cursor:pointer}
+        .pay-section-title{font-size:14px;font-weight:700;color:var(--gray-800);margin-bottom:10px}
+        .pay-item{display:flex;justify-content:space-between;align-items:center;
+          padding:12px 16px;background:var(--white);border-radius:12px;margin-bottom:8px;border:1px solid var(--gray-100)}
+        .pay-item .pay-date{font-size:13px;color:var(--gray-400)}
+        .pay-item .pay-amt{font-size:14px;font-weight:700;color:var(--green)}
+
+        /* FAB */
+        .fab{position:fixed;bottom:80px;right:20px;width:56px;height:56px;
+          background:var(--green);color:var(--white);border-radius:50%;border:none;
+          font-size:26px;display:flex;align-items:center;justify-content:center;
+          cursor:pointer;box-shadow:0 4px 16px rgba(22,163,74,.45);z-index:90}
+
+        /* BOTTOM NAV */
+        .bottom-nav{position:fixed;bottom:0;left:50%;transform:translateX(-50%);
+          width:100%;max-width:480px;background:var(--white);border-top:1px solid var(--gray-200);
+          display:flex;padding:8px 0;z-index:80}
+        .nav-item{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;
+          padding:6px 0;cursor:pointer;font-size:10px;font-weight:600;color:var(--gray-400)}
+        .nav-item.active{color:var(--green)}
+        .nav-item svg{width:22px;height:22px}
+
+        /* MODALES */
+        .modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:200;display:none;align-items:flex-end;justify-content:center}
+        .modal-bg.open{display:flex}
+        .modal{background:var(--white);border-radius:24px 24px 0 0;width:100%;max-width:480px;
+          padding:20px 20px 30px;max-height:90vh;overflow-y:auto}
+        .modal-handle{width:36px;height:4px;background:var(--gray-200);border-radius:2px;margin:0 auto 16px}
+        .modal h2{font-size:18px;font-weight:800;color:var(--gray-800);margin-bottom:18px}
+        .form-group{margin-bottom:14px}
+        .form-group label{display:block;font-size:13px;font-weight:600;color:var(--gray-600);margin-bottom:5px}
+        .form-group input,.form-group select,.form-group textarea{width:100%;padding:12px 14px;
+          border:1.5px solid var(--gray-200);border-radius:12px;font-family:inherit;font-size:15px;
+          color:var(--gray-800);background:var(--white);outline:none;-webkit-appearance:none}
+        .form-group input:focus,.form-group select:focus{border-color:var(--green)}
+        .form-group textarea{resize:vertical;min-height:72px}
+        .modal-actions{display:flex;gap:10px;margin-top:8px}
+        .btn{flex:1;padding:13px;border-radius:12px;font-family:inherit;font-size:15px;font-weight:700;cursor:pointer;border:none}
+        .btn-cancel{background:var(--gray-100);color:var(--gray-600)}
+        .btn-save{background:var(--green);color:var(--white)}
+    </style>
+</head>
+<body>
+
+<!-- DRAWER -->
+<div class="drawer-overlay" id="drawer-overlay" onclick="closeDrawer()"></div>
+<div class="drawer" id="drawer">
+    <div class="drawer-header">
+        <div class="app-name">PrestaApp</div>
+        <div class="user-name" th:text="${user.name}">Usuario</div>
+    </div>
+    <div class="drawer-menu">
+        <div class="drawer-item active" id="menu-inicio" onclick="navTo('inicio')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+                <polyline points="9 22 9 12 15 12 15 22"/>
+            </svg>Inicio
+        </div>
+        <div class="drawer-item" id="menu-prestamos" onclick="navTo('prestamos')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/>
+                <line x1="8" y1="18" x2="21" y2="18"/>
+                <line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/>
+                <line x1="3" y1="18" x2="3.01" y2="18"/>
+            </svg>Mis Préstamos
+        </div>
+    </div>
+    <div class="drawer-footer">
+        <a href="/logout" class="drawer-logout">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+                <polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/>
+            </svg>Cerrar sesión
+        </a>
+    </div>
+</div>
+
+<!-- TOP NAV -->
+<nav class="topnav">
+    <button class="menu-btn" id="menu-toggle" onclick="openDrawer()">☰</button>
+    <h1 id="page-title">PrestaApp</h1>
+    <div class="topnav-right">
+        <button class="back-btn" id="back-btn" onclick="goBack()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                <polyline points="15 18 9 12 15 6"/>
+            </svg>Atrás
+        </button>
+    </div>
+</nav>
+
+<!-- PÁGINA: INICIO -->
+<div class="page active" id="page-inicio">
+    <div class="greeting">
+        <h2>Hola, <span th:text="${user.name}">Usuario</span> 👋</h2>
+        <p>Aquí está el resumen de hoy</p>
+    </div>
+    <div class="stats-grid">
+        <div class="stat-card"><div class="label">Total prestado activo</div><div class="value blue" id="s-loaned">–</div></div>
+        <div class="stat-card"><div class="label">Total cobrado</div><div class="value green" id="s-collected">–</div></div>
+        <div class="stat-card"><div class="label">Por cobrar</div><div class="value red" id="s-pending">–</div></div>
+        <div class="stat-card"><div class="label">Préstamos activos</div><div class="value dark" id="s-active">–</div></div>
+    </div>
+    <div class="chart-card">
+        <h3>Cobros últimos 7 días</h3>
+        <div class="chart-wrap" id="chart-wrap"></div>
+    </div>
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="label">Completados</div>
+            <div class="value green" id="s-completed">–</div>
+            <div style="font-size:11px;color:var(--gray-400);margin-top:3px">préstamos pagados</div>
+        </div>
+        <div class="stat-card">
+            <div class="label">En mora</div>
+            <div class="value red" id="s-overdue">–</div>
+            <div style="font-size:11px;color:var(--gray-400);margin-top:3px">en incumplimiento</div>
+        </div>
+    </div>
+    <div class="section-title">Resumen de hoy</div>
+    <div class="stats-grid">
+        <div class="stat-card"><div class="label">Cobrado hoy</div><div class="value green" id="s-today">–</div></div>
+        <div class="stat-card">
+            <div class="label">Pagos recibidos</div>
+            <div class="value dark" id="s-today-count">–</div>
+            <div style="font-size:11px;color:var(--gray-400);margin-top:3px">cobros con monto</div>
+        </div>
+    </div>
+</div>
+
+<!-- PÁGINA: MIS PRÉSTAMOS -->
+<div class="page" id="page-prestamos">
+    <div class="filter-tabs">
+        <div class="filter-tab active" onclick="filterLoans('active',this)">Activos</div>
+        <div class="filter-tab" onclick="filterLoans('paid',this)">Pagados</div>
+        <div class="filter-tab" onclick="filterLoans('overdue',this)">En mora</div>
+        <div class="filter-tab" onclick="filterLoans('all',this)">Todos</div>
+    </div>
+    <div id="loans-list"><div class="empty-loans">Cargando...</div></div>
+</div>
+
+<!-- PÁGINA: DETALLE PRÉSTAMO -->
+<div class="page" id="page-detalle">
+    <div class="detail-header-card">
+        <div>
+            <div class="d-name" id="d-name">–</div>
+            <div class="d-phone" id="d-notes-display">–</div>
+        </div>
+        <span class="badge" id="d-badge">–</span>
+    </div>
+    <div class="amounts-grid">
+        <div class="amt-card">
+            <div class="alabel">Prestado</div>
+            <div class="avalue blue" id="d-principal">–</div>
+        </div>
+        <div class="amt-card">
+            <div class="alabel">Total con interés</div>
+            <div class="avalue dark" id="d-total">–</div>
+        </div>
+        <div class="amt-card">
+            <div class="alabel">Cobrado</div>
+            <div class="avalue green" id="d-paid">–</div>
+        </div>
+        <div class="amt-card">
+            <div class="alabel">Por cobrar</div>
+            <div class="avalue red" id="d-remaining">–</div>
+        </div>
+    </div>
+    <div class="progress-card">
+        <div class="progress-header">
+            <span>Progreso de pago</span>
+            <span id="d-progress-label">0 cuotas (0%)</span>
+        </div>
+        <div class="progress-bar"><div class="progress-fill" id="d-progress-fill"></div></div>
+    </div>
+    <div class="cuota-banner">
+        <div class="cb-label">Cuota a pagar</div>
+        <div class="cb-value" id="d-cuota">–</div>
+        <div class="cb-sub" id="d-cuota-sub">–</div>
+    </div>
+    <div class="info-card">
+        <div class="info-row"><span class="ikey">Inicio</span><span class="ival" id="d-start">–</span></div>
+        <div class="info-row"><span class="ikey">Vence</span><span class="ival" id="d-due">–</span></div>
+        <div class="info-row"><span class="ikey">Interés</span><span class="ival" id="d-interest">–</span></div>
+        <div class="info-row"><span class="ikey">Tipo de cobro</span><span class="ival" id="d-freq">–</span></div>
+        <div class="info-row"><span class="ikey">Cuota</span><span class="ival green" id="d-cuota-row">–</span></div>
+        <div class="info-row"><span class="ikey">Plazo</span><span class="ival" id="d-plazo">–</span></div>
+        <div class="info-row"><span class="ikey">Nº cuotas</span><span class="ival" id="d-num-cuotas">–</span></div>
+    </div>
+    <div class="action-btns">
+        <button class="btn-register" onclick="openPayModal()">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+            </svg>
+            Registrar pago
+        </button>
+        <button class="btn-delete" onclick="deleteLoan()">🗑 Eliminar préstamo</button>
+    </div>
+    <div class="pay-section-title">Historial de pagos</div>
+    <div id="d-payments-list"></div>
+</div>
+
+<button class="fab" id="fab-btn" onclick="openNewLoan()">+</button>
+
+<nav class="bottom-nav">
+    <div class="nav-item active" id="nav-inicio" onclick="navTo('inicio')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+            <polyline points="9 22 9 12 15 12 15 22"/>
+        </svg>Inicio
+    </div>
+    <div class="nav-item" onclick="openNewLoan()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/>
+        </svg>Nuevo
+    </div>
+    <div class="nav-item" id="nav-prestamos" onclick="navTo('prestamos')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/>
+            <line x1="8" y1="18" x2="21" y2="18"/>
+            <line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/>
+            <line x1="3" y1="18" x2="3.01" y2="18"/>
+        </svg>Préstamos
+    </div>
+</nav>
+
+<!-- MODAL: NUEVO PRÉSTAMO -->
+<div class="modal-bg" id="modal-new">
+    <div class="modal">
+        <div class="modal-handle"></div>
+        <h2>Nuevo préstamo</h2>
+        <div class="form-group"><label>Nombre del deudor</label><input type="text" id="f-borrower" placeholder="Ej: Juan Pérez"></div>
+        <div class="form-group"><label>Teléfono (opcional)</label><input type="tel" id="f-phone" placeholder="+57 300..."></div>
+        <div class="form-group"><label>Monto prestado ($)</label><input type="number" id="f-amount" placeholder="0" inputmode="numeric"></div>
+        <div class="form-group"><label>Interés (%)</label><input type="number" id="f-interest" placeholder="0" inputmode="numeric"></div>
+        <div class="form-group"><label>Plazo (días)</label><input type="number" id="f-days" placeholder="30" value="30" inputmode="numeric"></div>
+        <div class="form-group">
+            <label>Frecuencia de cobro</label>
+            <select id="f-frequency">
+                <option value="daily">Diario</option>
+                <option value="weekly">Semanal</option>
+                <option value="monthly">Mensual</option>
+            </select>
+        </div>
+        <div class="form-group"><label>Notas (opcional)</label><textarea id="f-notes" placeholder="Ej: Teléfono como garantía"></textarea></div>
+        <div class="modal-actions">
+            <button class="btn btn-cancel" onclick="closeModal('modal-new')">Cancelar</button>
+            <button class="btn btn-save" onclick="saveLoan()">Guardar</button>
+        </div>
+    </div>
+</div>
+
+<!-- MODAL: REGISTRAR PAGO -->
+<div class="modal-bg" id="modal-pay">
+    <div class="modal">
+        <div class="modal-handle"></div>
+        <h2>Registrar pago</h2>
+        <div style="background:var(--green-l);border-radius:12px;padding:12px 16px;margin-bottom:16px">
+            <div style="font-size:12px;color:var(--green);font-weight:600">Cuota sugerida</div>
+            <div style="font-size:22px;font-weight:800;color:var(--green)" id="pay-suggested">–</div>
+        </div>
+        <div class="form-group">
+            <label>Monto recibido ($)</label>
+            <input type="number" id="pay-amount" placeholder="0" inputmode="numeric">
+        </div>
+        <div class="form-group">
+            <label>Nota (opcional)</label>
+            <input type="text" id="pay-note" placeholder="Ej: Pago parcial">
+        </div>
+        <div class="modal-actions">
+            <button class="btn btn-cancel" onclick="closeModal('modal-pay')">Cancelar</button>
+            <button class="btn btn-save" onclick="savePayment()">✓ Confirmar</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    const fmt = n => '$ ' + Math.round(n).toLocaleString('es-CO');
+    const fmtDate = s => s ? new Date(s).toLocaleDateString('es-CO') : '–';
+    let currentLoanId = null;
+    let currentCuota = 0;
+    let allLoans = [];
+    let currentFilter = 'active';
+    let prevPage = 'prestamos';
+
+    // ── NAVEGACIÓN ────────────────────────────────────────────────────
+    function navTo(page, from) {
+        closeDrawer();
+        if (from) prevPage = from;
+        document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+        document.getElementById('page-' + page).classList.add('active');
+
+        document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+        const navEl = document.getElementById('nav-' + page);
+        if (navEl) navEl.classList.add('active');
+
+        document.querySelectorAll('.drawer-item').forEach(d => d.classList.remove('active'));
+        const menuEl = document.getElementById('menu-' + page);
+        if (menuEl) menuEl.classList.add('active');
+
+        const titles = { inicio:'DiarioPay', prestamos:'Mis Préstamos', detalle:'Detalle' };
+        document.getElementById('page-title').textContent = titles[page] || 'DiarioPay';
+
+        const backBtn = document.getElementById('back-btn');
+        const menuBtn = document.getElementById('menu-toggle');
+        const fab = document.getElementById('fab-btn');
+
+        if (page === 'inicio') {
+            backBtn.classList.remove('visible');
+            menuBtn.style.visibility = 'visible';
+            fab.style.display = 'flex';
+        } else if (page === 'detalle') {
+            backBtn.classList.add('visible');
+            menuBtn.style.visibility = 'hidden';
+            fab.style.display = 'none';
+        } else {
+            backBtn.classList.add('visible');
+            menuBtn.style.visibility = 'visible';
+            fab.style.display = 'flex';
+        }
+
+        if (page === 'prestamos') loadLoans();
+    }
+
+    function goBack() {
+        if (document.getElementById('page-detalle').classList.contains('active')) {
+            navTo(prevPage);
+        } else {
+            navTo('inicio');
+        }
+    }
+
+    function openDrawer() {
+        document.getElementById('drawer').classList.add('open');
+        document.getElementById('drawer-overlay').classList.add('open');
+        document.body.style.overflow = 'hidden';
+    }
+    function closeDrawer() {
+        document.getElementById('drawer').classList.remove('open');
+        document.getElementById('drawer-overlay').classList.remove('open');
+        document.body.style.overflow = '';
+    }
+
+    // ── STATS ─────────────────────────────────────────────────────────
+    async function loadStats() {
+        const d = await (await fetch('/api/stats')).json();
+        document.getElementById('s-loaned').textContent      = fmt(d.totalLoaned);
+        document.getElementById('s-collected').textContent   = fmt(d.totalCollected);
+        document.getElementById('s-pending').textContent     = fmt(d.pending);
+        document.getElementById('s-active').textContent      = d.activeLoans;
+        document.getElementById('s-completed').textContent   = d.completed;
+        document.getElementById('s-overdue').textContent     = d.overdue;
+        document.getElementById('s-today').textContent       = fmt(d.todayCollected);
+        document.getElementById('s-today-count').textContent = d.todayPayments;
+        renderChart(d.chart);
+    }
+
+    function renderChart(data) {
+        const max = Math.max(...data.map(d => d.value), 1);
+        document.getElementById('chart-wrap').innerHTML = data.map(d => {
+            const h = Math.max((d.value / max) * 68, 3);
+            const lbl = d.value > 0 ? (d.value >= 1000 ? Math.round(d.value/1000)+'k' : d.value) : '';
+            return `<div class="bar-col">
+              <span class="bar-val">${lbl}</span>
+              <div class="bar ${d.value===0?'empty':''}" style="height:${h}px"></div>
+              <span class="bar-label">${d.label}</span>
+            </div>`;
+        }).join('');
+    }
+
+    // ── PRÉSTAMOS ─────────────────────────────────────────────────────
+    async function loadLoans() {
+        allLoans = await (await fetch('/api/loans')).json();
+        renderLoans(currentFilter);
+    }
+
+    function filterLoans(status, el) {
+        currentFilter = status;
+        document.querySelectorAll('.filter-tab').forEach(t => t.classList.remove('active'));
+        el.classList.add('active');
+        renderLoans(status);
+    }
+
+    function renderLoans(status) {
+        const el = document.getElementById('loans-list');
+        const filtered = status === 'all' ? allLoans : allLoans.filter(l => l.status === status);
+        if (!filtered.length) {
+            const msgs = {active:'Sin préstamos activos',paid:'Sin préstamos pagados',overdue:'Sin préstamos en mora',all:'Sin préstamos registrados'};
+            el.innerHTML = `<div class="empty-loans">${msgs[status]||'Sin resultados'}<br><small>Toca + para agregar uno</small></div>`;
+            return;
+        }
+        const freqLabel = f => f==='daily'?'Cobro diario':f==='weekly'?'Cobro semanal':'Cobro mensual';
+        el.innerHTML = filtered.map(l => `
+            <div class="loan-item" onclick="openDetail('${l.id}')">
+              <div class="loan-info">
+                <div class="borrower">${l.borrower}</div>
+                <div class="meta">${freqLabel(l.frequency)}</div>
+              </div>
+              <div class="loan-right">
+                <div class="amount">${fmt(l.amount)}</div>
+                <span class="badge ${l.status}">${l.status==='active'?'Activo':l.status==='paid'?'Pagado':'En mora'}</span>
+              </div>
+            </div>`).join('');
+    }
+
+    // ── DETALLE ───────────────────────────────────────────────────────
+    async function openDetail(id) {
+        currentLoanId = id;
+        const l = await (await fetch('/api/loans/' + id)).json();
+
+        const principal = l.amount;
+        const total     = principal + (principal * (l.interest || 0) / 100);
+        const paid      = l.paidTotal || 0;
+        const remaining = Math.max(total - paid, 0);
+        const days      = l.days || 30;
+
+        let numCuotas, freqName, plazoLabel;
+        if (l.frequency === 'daily') {
+            numCuotas = days;
+            freqName  = 'Diario';
+            plazoLabel = days + ' días';
+        } else if (l.frequency === 'weekly') {
+            numCuotas = Math.ceil(days / 7);
+            freqName  = 'Semanal';
+            plazoLabel = days + ' días (' + numCuotas + ' sem.)';
+        } else {
+            numCuotas = Math.ceil(days / 30);
+            freqName  = 'Mensual';
+            plazoLabel = days + ' días (' + numCuotas + ' mes.)';
+        }
+        const cuota = numCuotas > 0 ? total / numCuotas : total;
+        currentCuota = cuota;
+
+        const paidCuotas = Math.floor(paid / cuota);
+        const pct = Math.min(paid / total * 100, 100);
+
+        const badgeMap = {active:'Activo',paid:'Pagado',overdue:'En mora'};
+        const badge = document.getElementById('d-badge');
+        badge.textContent = badgeMap[l.status] || l.status;
+        badge.className = 'badge ' + (l.status || 'active');
+
+        document.getElementById('d-name').textContent         = l.borrower;
+        document.getElementById('d-notes-display').textContent = l.notes || '';
+        document.getElementById('d-principal').textContent    = fmt(principal);
+        document.getElementById('d-total').textContent        = fmt(total);
+        document.getElementById('d-paid').textContent         = fmt(paid);
+        document.getElementById('d-remaining').textContent    = fmt(remaining);
+        document.getElementById('d-progress-fill').style.width = pct + '%';
+        document.getElementById('d-progress-label').textContent = paidCuotas + '/' + numCuotas + ' cuotas (' + Math.round(pct) + '%)';
+        document.getElementById('d-cuota').textContent        = fmt(cuota);
+        document.getElementById('d-cuota-sub').textContent    = 'Pago ' + freqName.toLowerCase() + ' · ' + numCuotas + ' cuotas en total';
+        document.getElementById('d-start').textContent        = fmtDate(l.createdAt);
+        document.getElementById('d-due').textContent          = fmtDate(l.dueDate);
+        document.getElementById('d-interest').textContent     = (l.interest || 0) + '% ' + freqName.toLowerCase();
+        document.getElementById('d-freq').textContent         = freqName;
+        document.getElementById('d-cuota-row').textContent    = fmt(cuota);
+        document.getElementById('d-plazo').textContent        = plazoLabel;
+        document.getElementById('d-num-cuotas').textContent   = numCuotas + ' cuotas';
+
+        const payList = document.getElementById('d-payments-list');
+        payList.innerHTML = !l.payments?.length
+            ? '<div style="color:var(--gray-400);font-size:13px;padding:10px 0;text-align:center">Sin pagos registrados</div>'
+            : l.payments.slice().reverse().map(p =>
+                `<div class="pay-item">
+                  <div><div class="pay-date">${fmtDate(p.date)}</div><div style="font-size:11px;color:var(--gray-400)">${p.note||''}</div></div>
+                  <span class="pay-amt">${fmt(p.amount)}</span>
+                </div>`).join('');
+
+        document.getElementById('page-title').textContent = l.borrower;
+
+        const from = document.getElementById('page-prestamos').classList.contains('active') ? 'prestamos' : 'inicio';
+        navTo('detalle', from);
+    }
+
+    function openPayModal() {
+        document.getElementById('pay-amount').value = '';
+        document.getElementById('pay-note').value = '';
+        document.getElementById('pay-suggested').textContent = fmt(currentCuota);
+        openModal('modal-pay');
+    }
+
+    async function savePayment() {
+        const amt = parseFloat(document.getElementById('pay-amount').value);
+        if (!amt || amt <= 0) return alert('Ingresa un monto válido');
+        const note = document.getElementById('pay-note').value;
+        await fetch('/api/payments', {method:'POST', headers:{'Content-Type':'application/json'},
+            body: JSON.stringify({loanId: currentLoanId, amount: amt, note})});
+        closeModal('modal-pay');
+        openDetail(currentLoanId);
+        loadStats();
+    }
+
+    async function deleteLoan() {
+        if (!confirm('¿Eliminar este préstamo y todos sus pagos?')) return;
+        await fetch('/api/loans/' + currentLoanId, {method:'DELETE'});
+        navTo('prestamos');
+        loadStats();
+    }
+
+    // ── NUEVO PRÉSTAMO ────────────────────────────────────────────────
+    function openNewLoan() {
+        ['f-borrower','f-phone','f-amount','f-interest','f-notes'].forEach(id => document.getElementById(id).value='');
+        document.getElementById('f-days').value = '30';
+        openModal('modal-new');
+    }
+
+    async function saveLoan() {
+        const borrower = document.getElementById('f-borrower').value.trim();
+        const amount   = parseFloat(document.getElementById('f-amount').value);
+        if (!borrower || !amount) return alert('Completa nombre y monto');
+        const phone = document.getElementById('f-phone').value.trim();
+        const notes = document.getElementById('f-notes').value.trim();
+        const combinedNotes = [phone, notes].filter(Boolean).join(' · ');
+        await fetch('/api/loans', {method:'POST', headers:{'Content-Type':'application/json'},
+            body: JSON.stringify({
+                borrower, amount,
+                interest:  parseFloat(document.getElementById('f-interest').value) || 0,
+                days:      parseInt(document.getElementById('f-days').value) || 30,
+                frequency: document.getElementById('f-frequency').value,
+                notes:     combinedNotes
+            })});
+        closeModal('modal-new');
+        loadStats();
+        if (document.getElementById('page-prestamos').classList.contains('active')) loadLoans();
+    }
+
+    function openModal(id) { document.getElementById(id).classList.add('open'); document.body.style.overflow='hidden'; }
+    function closeModal(id) { document.getElementById(id).classList.remove('open'); document.body.style.overflow=''; }
+    document.querySelectorAll('.modal-bg').forEach(bg => bg.addEventListener('click', e => { if(e.target===bg) closeModal(bg.id); }));
+
+    loadStats();
+</script>
+</body>
+</html>
