@@ -9,6 +9,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import java.time.LocalDateTime;
+import java.time.LocalDate;
+import java.time.temporal.ChronoUnit;
 import java.util.*;
 
 @RestController
@@ -38,10 +40,33 @@ public class LoanController {
         loan.setFrequency((String) body.getOrDefault("frequency", "daily"));
         loan.setNotes((String) body.getOrDefault("notes", ""));
         loan.setStatus("active");
-        int days = toInt(body.getOrDefault("days", 30));
-        loan.setDueDate(LocalDateTime.now().plusDays(days));
+        LocalDate startDate = LocalDate.parse((String) body.getOrDefault("startDate", LocalDate.now().toString()));
+        LocalDate endDate   = LocalDate.parse((String) body.getOrDefault("endDate",   LocalDate.now().plusDays(30).toString()));
+        loan.setStartDate(startDate);
+        loan.setEndDate(endDate);
+        loan.setDueDate(endDate.atStartOfDay());
+
+        long daysBetween = ChronoUnit.DAYS.between(startDate.plusDays(1), endDate);
+        String freq = loan.getFrequency();
+        int totalInstallments = switch (freq) {
+            case "weekly"  -> (int) Math.ceil(daysBetween / 7.0);
+            case "monthly" -> (int) Math.ceil(daysBetween / 30.0);
+            default        -> (int) daysBetween; // daily
+        };
+        if (totalInstallments < 1) totalInstallments = 1;
+
+        double totalConInteres = loan.getAmount() + (loan.getAmount() * loan.getInterest() / 100);
+        double installmentAmount = totalConInteres / totalInstallments;
+        loan.setTotalInstallments(totalInstallments);
+        loan.setInstallmentAmount(installmentAmount);
+
         loanRepo.save(loan);
-        return ResponseEntity.ok(Map.of("ok", true, "id", loan.getId()));
+        return ResponseEntity.ok(Map.of(
+                "ok", true,
+                "id", loan.getId(),
+                "totalInstallments", totalInstallments,
+                "installmentAmount", installmentAmount
+        ));
     }
 
     @GetMapping("/{id}")
