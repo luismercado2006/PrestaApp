@@ -4,6 +4,7 @@ import lombok.Data;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 import java.time.LocalDateTime;
+import java.time.LocalDate;
 
 @Data
 @Document(collection = "loans")
@@ -20,4 +21,8 @@ public class Loan {
     private String notes;
     private LocalDateTime createdAt = LocalDateTime.now();
     private LocalDateTime dueDate;
+    private LocalDate startDate;
+    private LocalDate endDate;
+    private int totalInstallments;
+    private double installmentAmount;
 }
