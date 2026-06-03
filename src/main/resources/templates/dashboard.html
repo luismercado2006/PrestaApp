@@ -124,6 +124,8 @@
           display:flex;align-items:center;justify-content:center;gap:8px}
         .btn-delete{background:#fef2f2;color:var(--red);border:none;border-radius:14px;
           padding:14px;font-family:inherit;font-size:14px;font-weight:700;cursor:pointer}
+        .btn-refund{background:#fef3c7;color:#92400e;border:none;border-radius:14px;
+          padding:14px;font-family:inherit;font-size:14px;font-weight:700;cursor:pointer}
         .pay-section-title{font-size:14px;font-weight:700;color:var(--gray-800);margin-bottom:10px}
         .pay-item{display:flex;justify-content:space-between;align-items:center;
           padding:12px 16px;background:var(--white);border-radius:12px;margin-bottom:8px;border:1px solid var(--gray-100)}
@@ -318,6 +320,7 @@
             </svg>
             Registrar pago
         </button>
+        <button class="btn-refund" onclick="openRefundModal()" id="btn-refund">↩ Devolución</button>
         <button class="btn-delete" onclick="deleteLoan()">🗑 Eliminar préstamo</button>
     </div>
     <div class="pay-section-title">Historial de pagos</div>
@@ -357,7 +360,11 @@
         <div class="form-group"><label>Teléfono (opcional)</label><input type="tel" id="f-phone" placeholder="+57 300..."></div>
         <div class="form-group"><label>Monto prestado ($)</label><input type="number" id="f-amount" placeholder="0" inputmode="numeric"></div>
         <div class="form-group"><label>Interés (%)</label><input type="number" id="f-interest" placeholder="0" inputmode="numeric"></div>
-        <div class="form-group"><label>Plazo (días)</label><input type="number" id="f-days" placeholder="30" value="30" inputmode="numeric"></div>
+        <div class="form-group"><label>Fecha de inicio</label><input type="date" id="f-startDate"></div>
+        <div class="form-group"><label>Fecha de fin</label><input type="date" id="f-endDate"></div>
+        <div id="f-preview" style="display:none;background:#f0f4ff;border-radius:10px;padding:10px 14px;font-size:13px;margin-top:4px;color:#1a56db">
+            <span id="prev-cuotas">–</span> cuotas de <strong id="prev-monto">–</strong>
+        </div>
         <div class="form-group">
             <label>Frecuencia de cobro</label>
             <select id="f-frequency">
@@ -370,6 +377,29 @@
         <div class="modal-actions">
             <button class="btn btn-cancel" onclick="closeModal('modal-new')">Cancelar</button>
             <button class="btn btn-save" onclick="saveLoan()">Guardar</button>
+        </div>
+    </div>
+</div>
+<!-- MODAL: DEVOLUCIÓN -->
+<div class="modal-bg" id="modal-refund">
+    <div class="modal">
+        <div class="modal-handle"></div>
+        <h2>Devolver cobro de más</h2>
+        <div style="background:#fff3f3;border-radius:12px;padding:12px 16px;margin-bottom:16px">
+            <div style="font-size:12px;color:#e53e3e;font-weight:600">Cobrado de más</div>
+            <div style="font-size:22px;font-weight:800;color:#e53e3e" id="refund-excess">–</div>
+        </div>
+        <div class="form-group">
+            <label>Monto a devolver ($)</label>
+            <input type="number" id="refund-amount" placeholder="0" inputmode="numeric">
+        </div>
+        <div class="form-group">
+            <label>Nota (opcional)</label>
+            <input type="text" id="refund-note" placeholder="Ej: Devolución cobro de más">
+        </div>
+        <div class="modal-actions">
+            <button class="btn btn-cancel" onclick="closeModal('modal-refund')">Cancelar</button>
+            <button class="btn btn-save" style="background:#e53e3e" onclick="saveRefund()">✓ Confirmar devolución</button>
         </div>
     </div>
 </div>
@@ -423,7 +453,7 @@
         if (menuEl) menuEl.classList.add('active');
 
         const titles = { inicio:'PrestaApp', prestamos:'Mis Préstamos', detalle:'Detalle' };
-        document.getElementById('page-title').textContent = titles[page] || 'DiarioPay';
+        document.getElementById('page-title').textContent = titles[page] || 'PrestaApp';
 
         const backBtn = document.getElementById('back-btn');
         const menuBtn = document.getElementById('menu-toggle');
@@ -535,8 +565,9 @@
         const principal = l.amount;
         const total     = principal + (principal * (l.interest || 0) / 100);
         const paid      = l.paidTotal || 0;
-        const remaining = Math.max(total - paid, 0);
-        const days      = l.days || 30;
+       const remaining = Math.max(total - paid, 0);
+        const excess    = Math.max(paid - total, 0);
+       const days      = l.days || 30;
 
         let numCuotas, freqName, plazoLabel;
         if (l.frequency === 'daily') {
@@ -587,7 +618,7 @@
             : l.payments.slice().reverse().map(p =>
                 `<div class="pay-item">
                   <div><div class="pay-date">${fmtDate(p.date)}</div><div style="font-size:11px;color:var(--gray-400)">${p.note||''}</div></div>
-                  <span class="pay-amt">${fmt(p.amount)}</span>
+                  <span class="pay-amt" style="${p.amount < 0 ? 'color:#e53e3e' : ''}">${p.amount < 0 ? '− ' + fmt(Math.abs(p.amount)) : fmt(p.amount)}</span>
                 </div>`).join('');
 
         document.getElementById('page-title').textContent = l.borrower;
@@ -614,6 +645,36 @@
         loadStats();
     }
 
+    function openRefundModal() {
+        const total  = parseFloat(document.getElementById('d-total').textContent.replace(/[^0-9]/g,''));
+        const paid   = parseFloat(document.getElementById('d-paid').textContent.replace(/[^0-9]/g,''));
+        const excess = Math.max(paid - total, 0);
+        document.getElementById('refund-excess').textContent = fmt(excess);
+        document.getElementById('refund-amount').value = excess;
+        document.getElementById('refund-note').value   = 'Devolución cobro de más';
+        openModal('modal-refund');
+    }
+
+    async function saveRefund() {
+        const amt = parseFloat(document.getElementById('refund-amount').value);
+        if (!amt || amt <= 0) return alert('Ingresa un monto válido');
+        const note = document.getElementById('refund-note').value || 'Devolución';
+        // Guarda como pago negativo
+        await fetch('/api/payments', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({loanId: currentLoanId, amount: -amt, note})
+        });
+        // Si después de devolver queda saldo, reactivar el préstamo
+        await fetch('/api/loans/' + currentLoanId, {
+            method: 'PUT',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({status: 'active'})
+        });
+        closeModal('modal-refund');
+        openDetail(currentLoanId);
+    }
+
     async function deleteLoan() {
         if (!confirm('¿Eliminar este préstamo y todos sus pagos?')) return;
         await fetch('/api/loans/' + currentLoanId, {method:'DELETE'});
@@ -623,23 +684,47 @@
 
     // ── NUEVO PRÉSTAMO ────────────────────────────────────────────────
     function openNewLoan() {
-        ['f-borrower','f-phone','f-amount','f-interest','f-notes'].forEach(id => document.getElementById(id).value='');
-        document.getElementById('f-days').value = '30';
+         ['f-borrower','f-phone','f-amount','f-interest','f-notes'].forEach(id => document.getElementById(id).value='');
+        document.getElementById('f-startDate').value = new Date().toISOString().split('T')[0];
+        document.getElementById('f-endDate').value   = '';
+        document.getElementById('f-preview').style.display = 'none';
         openModal('modal-new');
     }
 
+    function calcPreview() {
+        const amount    = parseFloat(document.getElementById('f-amount').value) || 0;
+        const interest  = parseFloat(document.getElementById('f-interest').value) || 0;
+        const startDate = document.getElementById('f-startDate').value;
+        const endDate   = document.getElementById('f-endDate').value;
+        const frequency = document.getElementById('f-frequency').value;
+        const preview   = document.getElementById('f-preview');
+        if (!amount || !startDate || !endDate || endDate <= startDate) { preview.style.display='none'; return; }
+        const days = Math.round((new Date(endDate) - new Date(startDate)) / 86400000) - 1;
+        const cuotas = frequency === 'daily' ? days : frequency === 'weekly' ? Math.ceil(days/7) : Math.ceil(days/30);
+        const total  = amount + (amount * interest / 100);
+        const cuota  = total / Math.max(cuotas, 1);
+        document.getElementById('prev-cuotas').textContent = Math.max(cuotas, 1);
+        document.getElementById('prev-monto').textContent  = fmt(cuota);
+        preview.style.display = 'block';
+    }
+    ['f-amount','f-interest','f-startDate','f-endDate','f-frequency'].forEach(id =>
+        document.getElementById(id).addEventListener('input', calcPreview));
+
     async function saveLoan() {
-        const borrower = document.getElementById('f-borrower').value.trim();
-        const amount   = parseFloat(document.getElementById('f-amount').value);
-        if (!borrower || !amount) return alert('Completa nombre y monto');
+        const borrower  = document.getElementById('f-borrower').value.trim();
+        const amount    = parseFloat(document.getElementById('f-amount').value);
+        const startDate = document.getElementById('f-startDate').value;
+        const endDate   = document.getElementById('f-endDate').value;
+        if (!borrower || !amount)   return alert('Completa nombre y monto');
+        if (!startDate || !endDate) return alert('Selecciona fecha de inicio y fecha de fin');
+        if (endDate <= startDate)   return alert('La fecha de fin debe ser mayor a la de inicio');
         const phone = document.getElementById('f-phone').value.trim();
         const notes = document.getElementById('f-notes').value.trim();
         const combinedNotes = [phone, notes].filter(Boolean).join(' · ');
         await fetch('/api/loans', {method:'POST', headers:{'Content-Type':'application/json'},
             body: JSON.stringify({
-                borrower, amount,
+                borrower, amount, startDate, endDate,
                 interest:  parseFloat(document.getElementById('f-interest').value) || 0,
-                days:      parseInt(document.getElementById('f-days').value) || 30,
                 frequency: document.getElementById('f-frequency').value,
                 notes:     combinedNotes
             })});
