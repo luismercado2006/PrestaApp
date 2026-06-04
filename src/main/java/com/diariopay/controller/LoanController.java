@@ -45,8 +45,9 @@ public class LoanController {
         loan.setStartDate(startDate);
         loan.setEndDate(endDate);
         loan.setDueDate(endDate.atStartOfDay());
+        loan.setCreatedAt(startDate.atStartOfDay());
 
-        long daysBetween = ChronoUnit.DAYS.between(startDate.plusDays(1), endDate);
+        long daysBetween = ChronoUnit.DAYS.between(startDate, endDate);
         String freq = loan.getFrequency();
         int totalInstallments = switch (freq) {
             case "weekly"  -> (int) Math.ceil(daysBetween / 7.0);
@@ -93,7 +94,11 @@ public class LoanController {
         resp.put("createdAt", loan.getCreatedAt());
         resp.put("dueDate",   loan.getDueDate());
         resp.put("payments",  payments);
-        resp.put("paidTotal", paidTotal);
+        resp.put("paidTotal",         paidTotal);
+        resp.put("totalInstallments", loan.getTotalInstallments());
+        resp.put("installmentAmount", loan.getInstallmentAmount());
+        resp.put("startDate",         loan.getStartDate());
+        resp.put("endDate",           loan.getEndDate());
         return ResponseEntity.ok(resp);
     }
 
