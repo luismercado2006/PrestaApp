@@ -19,7 +19,7 @@ public class Loan {
     private String frequency;   // daily | weekly | monthly
     private String status;      // active | paid | overdue
     private String notes;
-    private LocalDateTime createdAt = LocalDateTime.now();
+    private LocalDateTime createdAt;
     private LocalDateTime dueDate;
     private LocalDate startDate;
     private LocalDate endDate;
