@@ -35,12 +35,16 @@ class PaymentController {
         p.setLoanId(loan.getId());
         p.setAmount(toDouble(body.get("amount")));
         p.setNote((String) body.getOrDefault("note", ""));
+        p.setPaymentType((String) body.getOrDefault("paymentType", "normal"));
         paymentRepo.save(p);
 
+        // Solo los pagos de capital/normal cuentan para marcar como pagado
         List<Payment> payments = paymentRepo.findByLoanId(loanId);
-        double paid  = payments.stream().mapToDouble(Payment::getAmount).sum();
+        double paidCapital = payments.stream()
+                .filter(pay -> !"interest".equals(pay.getPaymentType()))
+                .mapToDouble(Payment::getAmount).sum();
         double total = loan.getAmount() + (loan.getAmount() * loan.getInterest() / 100);
-        if (paid >= total) {
+        if (paidCapital >= total) {
             loan.setStatus("paid");
             loanRepo.save(loan);
         }
