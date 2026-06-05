@@ -17,6 +17,7 @@ public class Loan {
     private double amount;
     private double interest;
     private String frequency;   // daily | weekly | monthly
+    private String loanType;     // normal | grande
     private String status;      // active | paid | overdue
     private String notes;
     private LocalDateTime createdAt;
