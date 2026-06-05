@@ -9,6 +9,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import java.time.LocalDateTime;
+import java.time.LocalDate;
+import java.time.temporal.ChronoUnit;
 import java.util.*;
 
 @RestController
@@ -36,12 +38,37 @@ public class LoanController {
         loan.setAmount(toDouble(body.get("amount")));
         loan.setInterest(toDouble(body.get("interest")));
         loan.setFrequency((String) body.getOrDefault("frequency", "daily"));
+        loan.setLoanType((String) body.getOrDefault("loanType", "normal"));
         loan.setNotes((String) body.getOrDefault("notes", ""));
         loan.setStatus("active");
-        int days = toInt(body.getOrDefault("days", 30));
-        loan.setDueDate(LocalDateTime.now().plusDays(days));
+        LocalDate startDate = LocalDate.parse((String) body.getOrDefault("startDate", LocalDate.now().toString()));
+        LocalDate endDate   = LocalDate.parse((String) body.getOrDefault("endDate",   LocalDate.now().plusDays(30).toString()));
+        loan.setStartDate(startDate);
+        loan.setEndDate(endDate);
+        loan.setDueDate(endDate.atStartOfDay());
+        loan.setCreatedAt(startDate.atStartOfDay());
+
+        long daysBetween = ChronoUnit.DAYS.between(startDate, endDate);
+        String freq = loan.getFrequency();
+        int totalInstallments = switch (freq) {
+            case "weekly"  -> (int) Math.ceil(daysBetween / 7.0);
+            case "monthly" -> (int) Math.ceil(daysBetween / 30.0);
+            default        -> (int) daysBetween; // daily
+        };
+        if (totalInstallments < 1) totalInstallments = 1;
+
+        double totalConInteres = loan.getAmount() + (loan.getAmount() * loan.getInterest() / 100);
+        double installmentAmount = totalConInteres / totalInstallments;
+        loan.setTotalInstallments(totalInstallments);
+        loan.setInstallmentAmount(installmentAmount);
+
         loanRepo.save(loan);
-        return ResponseEntity.ok(Map.of("ok", true, "id", loan.getId()));
+        return ResponseEntity.ok(Map.of(
+                "ok", true,
+                "id", loan.getId(),
+                "totalInstallments", totalInstallments,
+                "installmentAmount", installmentAmount
+        ));
     }
 
     @GetMapping("/{id}")
@@ -55,7 +82,13 @@ public class LoanController {
 
         Loan loan = opt.get();
         List<Payment> payments = paymentRepo.findByLoanId(id);
-        double paidTotal = payments.stream().mapToDouble(Payment::getAmount).sum();
+        double paidTotal    = payments.stream().mapToDouble(Payment::getAmount).sum();
+        double paidInterest = payments.stream()
+                .filter(p -> "interest".equals(p.getPaymentType()))
+                .mapToDouble(Payment::getAmount).sum();
+        double paidCapital  = payments.stream()
+                .filter(p -> !"interest".equals(p.getPaymentType()))
+                .mapToDouble(Payment::getAmount).sum();
 
         Map<String, Object> resp = new LinkedHashMap<>();
         resp.put("id",        loan.getId());
@@ -68,7 +101,14 @@ public class LoanController {
         resp.put("createdAt", loan.getCreatedAt());
         resp.put("dueDate",   loan.getDueDate());
         resp.put("payments",  payments);
-        resp.put("paidTotal", paidTotal);
+        resp.put("paidTotal",         paidTotal);
+        resp.put("paidInterest",      paidInterest);
+        resp.put("paidCapital",       paidCapital);
+        resp.put("totalInstallments", loan.getTotalInstallments());
+        resp.put("installmentAmount", loan.getInstallmentAmount());
+        resp.put("startDate",         loan.getStartDate());
+        resp.put("endDate",           loan.getEndDate());
+        resp.put("loanType",          loan.getLoanType() != null ? loan.getLoanType() : "normal");
         return ResponseEntity.ok(resp);
     }
 
@@ -84,8 +124,14 @@ public class LoanController {
             return ResponseEntity.status(404).body("Not found");
 
         Loan loan = opt.get();
-        if (body.containsKey("status")) loan.setStatus((String) body.get("status"));
-        if (body.containsKey("notes"))  loan.setNotes((String) body.get("notes"));
+        if (body.containsKey("status"))  loan.setStatus((String) body.get("status"));
+        if (body.containsKey("notes"))   loan.setNotes((String) body.get("notes"));
+        if (body.containsKey("amount"))  loan.setAmount(toDouble(body.get("amount")));
+        if (body.containsKey("endDate")) {
+            LocalDate newEnd = LocalDate.parse((String) body.get("endDate"));
+            loan.setEndDate(newEnd);
+            loan.setDueDate(newEnd.atStartOfDay());
+        }
         loanRepo.save(loan);
         return ResponseEntity.ok(Map.of("ok", true));
     }

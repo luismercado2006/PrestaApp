@@ -15,5 +15,6 @@ public class Payment {
     private String loanId;
     private double amount;
     private String note;
+    private String paymentType; // capital | interest | normal
     private LocalDateTime date = LocalDateTime.now();
 }
