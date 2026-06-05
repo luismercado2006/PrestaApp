@@ -79,7 +79,7 @@
           color:var(--gray-600);cursor:pointer;transition:all .15s}
         .filter-tab.active{background:var(--green);border-color:var(--green);color:var(--white)}
         .loan-item{background:var(--white);border-radius:14px;padding:14px 16px;margin-bottom:10px;
-          border:1px solid var(--gray-100);display:flex;align-items:center;justify-content:space-between;cursor:pointer}
+          border:1px solid var(--gray-100);border-left:4px solid var(--blue) !important;display:flex;align-items:center;justify-content:space-between;cursor:pointer;gap:10px;}
         .loan-info .borrower{font-size:15px;font-weight:700;color:var(--gray-800)}
         .loan-info .meta{font-size:12px;color:var(--gray-400);margin-top:2px}
         .loan-right{text-align:right}
@@ -89,6 +89,27 @@
         .badge.paid{background:var(--gray-100);color:var(--gray-400)}
         .badge.overdue{background:#fef2f2;color:var(--red)}
         .empty-loans{text-align:center;padding:32px 0;color:var(--gray-400);font-size:14px}
+        .loan-item.grande{
+          background:#fff;
+          border:1px solid var(--gray-100) !important;
+          border-left:4px solid #f59e0b !important;
+          padding-left:12px;
+          gap:10px;
+        }
+        .loan-item.grande .amount{color:#b45309 !important;}
+        .grande-star-icon{
+          font-size:10px; font-weight:800; color:#92400e;
+          background:#fef3c7; border-radius:5px; padding:2px 8px;
+          flex-shrink:0; display:flex; align-items:center;
+          text-transform:uppercase; letter-spacing:.4px; white-space:nowrap;
+        }
+        .normal-star-icon{
+          font-size:10px; font-weight:800; color:#1e40af;
+          background:#dbeafe; border-radius:5px; padding:2px 8px;
+          flex-shrink:0; display:flex; align-items:center;
+          text-transform:uppercase; letter-spacing:.4px; white-space:nowrap;
+        }
+        .badge-grande{display:none;}
 
         /* PÁGINA DETALLE */
         .detail-header-card{background:var(--white);border-radius:16px;padding:18px;
@@ -123,6 +144,8 @@
           padding:16px;font-family:inherit;font-size:16px;font-weight:700;cursor:pointer;
           display:flex;align-items:center;justify-content:center;gap:8px}
         .btn-delete{background:#fef2f2;color:var(--red);border:none;border-radius:14px;
+          padding:14px;font-family:inherit;font-size:14px;font-weight:700;cursor:pointer}
+        .btn-refund{background:#fef3c7;color:#92400e;border:none;border-radius:14px;
           padding:14px;font-family:inherit;font-size:14px;font-weight:700;cursor:pointer}
         .pay-section-title{font-size:14px;font-weight:700;color:var(--gray-800);margin-bottom:10px}
         .pay-item{display:flex;justify-content:space-between;align-items:center;
@@ -289,6 +312,14 @@
             <div class="alabel">Por cobrar</div>
             <div class="avalue red" id="d-remaining">–</div>
         </div>
+        <div class="amt-card" id="d-interest-card" style="display:none">
+            <div class="alabel">Intereses del mes</div>
+            <div class="avalue" style="color:#b45309" id="d-interest-month">–</div>
+        </div>
+        <div class="amt-card" id="d-paid-interest-card" style="display:none">
+            <div class="alabel">Intereses abonados</div>
+            <div class="avalue" style="color:#7c3aed" id="d-paid-interest">–</div>
+        </div>
     </div>
     <div class="progress-card">
         <div class="progress-header">
@@ -310,6 +341,8 @@
         <div class="info-row"><span class="ikey">Cuota</span><span class="ival green" id="d-cuota-row">–</span></div>
         <div class="info-row"><span class="ikey">Plazo</span><span class="ival" id="d-plazo">–</span></div>
         <div class="info-row"><span class="ikey">Nº cuotas</span><span class="ival" id="d-num-cuotas">–</span></div>
+        <div class="info-row"><span class="ikey">Fecha a pagar cuota</span><span class="ival" id="d-next-due" style="font-weight:700;color:var(--green)">–</span></div>
+
     </div>
     <div class="action-btns">
         <button class="btn-register" onclick="openPayModal()">
@@ -318,6 +351,7 @@
             </svg>
             Registrar pago
         </button>
+        <button class="btn-refund" onclick="openRefundModal()" id="btn-refund">↩ Devolución</button>
         <button class="btn-delete" onclick="deleteLoan()">🗑 Eliminar préstamo</button>
     </div>
     <div class="pay-section-title">Historial de pagos</div>
@@ -353,16 +387,33 @@
     <div class="modal">
         <div class="modal-handle"></div>
         <h2>Nuevo préstamo</h2>
+        <div class="form-group">
+            <label>Tipo de préstamo</label>
+            <div style="display:flex;gap:10px;margin-top:4px">
+                <button type="button" id="btn-tipo-normal" onclick="setTipoPrestamo('normal')"
+                        style="flex:1;padding:10px 0;border-radius:10px;border:2px solid var(--blue);background:var(--blue);color:#fff;font-weight:700;font-size:14px;cursor:pointer;transition:all .2s">
+                    Préstamo Normal
+                </button>
+                <button type="button" id="btn-tipo-grande" onclick="setTipoPrestamo('grande')"
+                        style="flex:1;padding:10px 0;border-radius:10px;border:2px solid var(--blue);background:#fff;color:var(--blue);font-weight:700;font-size:14px;cursor:pointer;transition:all .2s">
+                    Préstamo Grande
+                </button>
+            </div>
+        </div>
         <div class="form-group"><label>Nombre del deudor</label><input type="text" id="f-borrower" placeholder="Ej: Juan Pérez"></div>
         <div class="form-group"><label>Teléfono (opcional)</label><input type="tel" id="f-phone" placeholder="+57 300..."></div>
         <div class="form-group"><label>Monto prestado ($)</label><input type="number" id="f-amount" placeholder="0" inputmode="numeric"></div>
         <div class="form-group"><label>Interés (%)</label><input type="number" id="f-interest" placeholder="0" inputmode="numeric"></div>
-        <div class="form-group"><label>Plazo (días)</label><input type="number" id="f-days" placeholder="30" value="30" inputmode="numeric"></div>
+        <div class="form-group"><label>Fecha de inicio</label><input type="date" id="f-startDate"></div>
+        <div class="form-group"><label>Fecha de fin</label><input type="date" id="f-endDate"></div>
+        <div id="f-preview" style="display:none;background:#f0f4ff;border-radius:10px;padding:10px 14px;font-size:13px;margin-top:4px;color:#1a56db">
+            <span id="prev-cuotas">–</span> cuotas de <strong id="prev-monto">–</strong>
+        </div>
         <div class="form-group">
             <label>Frecuencia de cobro</label>
             <select id="f-frequency">
-                <option value="daily">Diario</option>
-                <option value="weekly">Semanal</option>
+                <option value="daily" class="opt-normal">Diario</option>
+                <option value="weekly" class="opt-normal">Semanal</option>
                 <option value="monthly">Mensual</option>
             </select>
         </div>
@@ -370,6 +421,29 @@
         <div class="modal-actions">
             <button class="btn btn-cancel" onclick="closeModal('modal-new')">Cancelar</button>
             <button class="btn btn-save" onclick="saveLoan()">Guardar</button>
+        </div>
+    </div>
+</div>
+<!-- MODAL: DEVOLUCIÓN -->
+<div class="modal-bg" id="modal-refund">
+    <div class="modal">
+        <div class="modal-handle"></div>
+        <h2>Devolver cobro de más</h2>
+        <div style="background:#fff3f3;border-radius:12px;padding:12px 16px;margin-bottom:16px">
+            <div style="font-size:12px;color:#e53e3e;font-weight:600">Cobrado de más</div>
+            <div style="font-size:22px;font-weight:800;color:#e53e3e" id="refund-excess">–</div>
+        </div>
+        <div class="form-group">
+            <label>Monto a devolver ($)</label>
+            <input type="number" id="refund-amount" placeholder="0" inputmode="numeric">
+        </div>
+        <div class="form-group">
+            <label>Nota (opcional)</label>
+            <input type="text" id="refund-note" placeholder="Ej: Devolución cobro de más">
+        </div>
+        <div class="modal-actions">
+            <button class="btn btn-cancel" onclick="closeModal('modal-refund')">Cancelar</button>
+            <button class="btn btn-save" style="background:#e53e3e" onclick="saveRefund()">✓ Confirmar devolución</button>
         </div>
     </div>
 </div>
@@ -383,14 +457,46 @@
             <div style="font-size:12px;color:var(--green);font-weight:600">Cuota sugerida</div>
             <div style="font-size:22px;font-weight:800;color:var(--green)" id="pay-suggested">–</div>
         </div>
-        <div class="form-group">
-            <label>Monto recibido ($)</label>
-            <input type="number" id="pay-amount" placeholder="0" inputmode="numeric">
+        <div id="pay-excess-banner" style="display:none;background:#fef2f2;border-radius:12px;padding:12px 16px;margin-bottom:16px;border:1.5px solid #fca5a5">
+            <div style="font-size:12px;color:#e53e3e;font-weight:700">⚠ Monto a devolver</div>
+            <div style="font-size:20px;font-weight:800;color:#e53e3e" id="pay-excess-label">–</div>
+            <div style="font-size:11px;color:#e53e3e;margin-top:2px">Se cobró más de lo debido — usar botón Devolución</div>
         </div>
-        <div class="form-group">
-            <label>Nota (opcional)</label>
-            <input type="text" id="pay-note" placeholder="Ej: Pago parcial">
+
+        <!-- Pago normal -->
+        <div id="pay-normal-section">
+            <div class="form-group">
+                <label>Monto recibido ($)</label>
+                <input type="number" id="pay-amount" placeholder="0" inputmode="numeric">
+            </div>
+            <div class="form-group">
+                <label>Nota (opcional)</label>
+                <input type="text" id="pay-note" placeholder="Ej: Pago parcial">
+            </div>
         </div>
+
+        <!-- Pago grande -->
+        <div id="pay-grande-section" style="display:none">
+            <div style="background:#fef3c7;border-radius:10px;padding:10px 14px;margin-bottom:14px;font-size:13px;color:#92400e">
+                <strong>Intereses del mes:</strong> <span id="pay-g-interest-label">–</span>
+            </div>
+            <div class="form-group">
+                <label>Abono a intereses ($)</label>
+                <input type="number" id="pay-g-interest" placeholder="0" inputmode="numeric" oninput="calcGrandePago()">
+            </div>
+            <div class="form-group">
+                <label>Abono al capital ($)</label>
+                <input type="number" id="pay-g-capital" placeholder="0" inputmode="numeric" oninput="calcGrandePago()">
+            </div>
+            <div id="pay-g-preview" style="display:none;background:#f0fdf4;border-radius:10px;padding:10px 14px;font-size:13px;color:#166534;margin-top:4px">
+                <span id="pay-g-preview-text"></span>
+            </div>
+            <div class="form-group">
+                <label>Nota (opcional)</label>
+                <input type="text" id="pay-g-note" placeholder="Ej: Pago parcial">
+            </div>
+        </div>
+
         <div class="modal-actions">
             <button class="btn btn-cancel" onclick="closeModal('modal-pay')">Cancelar</button>
             <button class="btn btn-save" onclick="savePayment()">✓ Confirmar</button>
@@ -422,8 +528,8 @@
         const menuEl = document.getElementById('menu-' + page);
         if (menuEl) menuEl.classList.add('active');
 
-        const titles = { inicio:'DiarioPay', prestamos:'Mis Préstamos', detalle:'Detalle' };
-        document.getElementById('page-title').textContent = titles[page] || 'DiarioPay';
+        const titles = { inicio:'PrestaApp', prestamos:'Mis Préstamos', detalle:'Detalle' };
+        document.getElementById('page-title').textContent = titles[page] || 'PrestaApp';
 
         const backBtn = document.getElementById('back-btn');
         const menuBtn = document.getElementById('menu-toggle');
@@ -515,7 +621,8 @@
         }
         const freqLabel = f => f==='daily'?'Cobro diario':f==='weekly'?'Cobro semanal':'Cobro mensual';
         el.innerHTML = filtered.map(l => `
-            <div class="loan-item" onclick="openDetail('${l.id}')">
+            <div class="loan-item ${l.loanType==='grande'?'grande':''}" onclick="openDetail('${l.id}')">
+              <div class="${l.loanType==='grande'?'grande-star-icon':'normal-star-icon'}">${l.loanType==='grande'?'Préstamo Grande':'Préstamo Normal'}</div>
               <div class="loan-info">
                 <div class="borrower">${l.borrower}</div>
                 <div class="meta">${freqLabel(l.frequency)}</div>
@@ -532,42 +639,55 @@
         currentLoanId = id;
         const l = await (await fetch('/api/loans/' + id)).json();
 
-        const principal = l.amount;
-        const total     = principal + (principal * (l.interest || 0) / 100);
-        const paid      = l.paidTotal || 0;
-        const remaining = Math.max(total - paid, 0);
-        const days      = l.days || 30;
+        const isGrandeDetail = l.loanType === 'grande';
 
-        let numCuotas, freqName, plazoLabel;
-        if (l.frequency === 'daily') {
-            numCuotas = days;
-            freqName  = 'Diario';
-            plazoLabel = days + ' días';
-        } else if (l.frequency === 'weekly') {
-            numCuotas = Math.ceil(days / 7);
-            freqName  = 'Semanal';
-            plazoLabel = days + ' días (' + numCuotas + ' sem.)';
-        } else {
-            numCuotas = Math.ceil(days / 30);
-            freqName  = 'Mensual';
-            plazoLabel = days + ' días (' + numCuotas + ' mes.)';
-        }
-        const cuota = numCuotas > 0 ? total / numCuotas : total;
+        const principal = l.amount; // Para grande: capital actual (ya reducido)
+        const interestRate = l.interest || 0;
+
+        // Para grande: total = capital actual + intereses del mes actual
+        // Para normal: total = capital + todos los intereses del plazo
+        const interestMes = principal * interestRate / 100;
+        const total     = isGrandeDetail
+            ? principal + interestMes          // lo que debe pagar este mes
+            : principal + (principal * interestRate / 100);
+
+        const paid      = l.paidTotal || 0;
+        const paidCap   = l.paidCapital || 0;
+        const paidInt   = l.paidInterest || 0;
+
+        // Para grande: "por cobrar" = capital actual (ya reducido en cada abono)
+        //              El capital en MongoDB ya descuenta lo abonado, es lo que falta pagar
+        // Para normal: por cobrar = total - todo lo pagado
+        const remaining = isGrandeDetail
+            ? principal   // capital pendiente actual
+            : Math.max(total - paid, 0);
+        const excess    = isGrandeDetail ? 0 : Math.max(paid - total, 0);
+
+        const numCuotas  = l.totalInstallments || 1;
+        // Para grande: cuota = intereses del mes + cualquier abono a capital pendiente
+        const cuota = isGrandeDetail ? interestMes : (l.installmentAmount || (total / numCuotas));
+        const freqName   = l.frequency === 'weekly' ? 'Semanal' : l.frequency === 'monthly' ? 'Mensual' : 'Diario';
+        const freqDias   = l.frequency === 'weekly' ? 7 : l.frequency === 'monthly' ? 30 : 1;
+        const plazoLabel = (numCuotas * freqDias) + ' días';
         currentCuota = cuota;
 
-        const paidCuotas = Math.floor(paid / cuota);
-        const pct = Math.min(paid / total * 100, 100);
+        // Progreso: para grande = capital abonado vs capital original prestado
+        const paidForProgress = isGrandeDetail ? paidCap : paid;
+        const totalForProgress = isGrandeDetail ? principal : total;
+        const paidCuotas = isGrandeDetail ? 0 : Math.floor(paidForProgress / cuota);
+        const pct = Math.min(paidForProgress / Math.max(totalForProgress, 1) * 100, 100);
 
         const badgeMap = {active:'Activo',paid:'Pagado',overdue:'En mora'};
         const badge = document.getElementById('d-badge');
         badge.textContent = badgeMap[l.status] || l.status;
         badge.className = 'badge ' + (l.status || 'active');
 
+        currentLoanData = l;
         document.getElementById('d-name').textContent         = l.borrower;
         document.getElementById('d-notes-display').textContent = l.notes || '';
         document.getElementById('d-principal').textContent    = fmt(principal);
         document.getElementById('d-total').textContent        = fmt(total);
-        document.getElementById('d-paid').textContent         = fmt(paid);
+        document.getElementById('d-paid').textContent         = fmt(l.loanType === 'grande' ? (l.paidCapital || 0) : paid);
         document.getElementById('d-remaining').textContent    = fmt(remaining);
         document.getElementById('d-progress-fill').style.width = pct + '%';
         document.getElementById('d-progress-label').textContent = paidCuotas + '/' + numCuotas + ' cuotas (' + Math.round(pct) + '%)';
@@ -576,18 +696,86 @@
         document.getElementById('d-start').textContent        = fmtDate(l.createdAt);
         document.getElementById('d-due').textContent          = fmtDate(l.dueDate);
         document.getElementById('d-interest').textContent     = (l.interest || 0) + '% ' + freqName.toLowerCase();
+        // Mostrar casilla intereses del mes solo para préstamo grande
+        const interestCard = document.getElementById('d-interest-card');
+        const paidIntCard  = document.getElementById('d-paid-interest-card');
+        if (l.loanType === 'grande') {
+            const intMes = (principal * (l.interest || 0)) / 100;
+            document.getElementById('d-interest-month').textContent = fmt(intMes);
+            interestCard.style.display = 'block';
+            document.getElementById('d-paid-interest').textContent = fmt(l.paidInterest || 0);
+            paidIntCard.style.display = 'block';
+        } else {
+            interestCard.style.display = 'none';
+            paidIntCard.style.display = 'none';
+        }
         document.getElementById('d-freq').textContent         = freqName;
         document.getElementById('d-cuota-row').textContent    = fmt(cuota);
         document.getElementById('d-plazo').textContent        = plazoLabel;
-        document.getElementById('d-num-cuotas').textContent   = numCuotas + ' cuotas';
+        document.getElementById('d-num-cuotas').textContent = numCuotas + ' cuotas';
 
+        // Fecha próxima cuota
+        const nextDueEl = document.getElementById('d-next-due');
+        const today     = new Date(); today.setHours(0,0,0,0);
+
+        if (l.loanType === 'grande') {
+            // Para préstamo grande: la fecha de pago es siempre el endDate actual
+            // (se amplía 1 mes cada vez que se pagan los intereses)
+            const endDate = new Date(l.endDate || l.dueDate);
+            endDate.setUTCHours(0,0,0,0);
+            nextDueEl.textContent = 'Próximo pago · ' + fmtDate(endDate.toISOString());
+            if (endDate < today && l.status === 'active') {
+                nextDueEl.style.color = 'var(--red)';
+                await fetch('/api/loans/' + currentLoanId, {
+                    method: 'PUT', headers: {'Content-Type':'application/json'},
+                    body: JSON.stringify({status: 'overdue'})
+                });
+                badge.textContent = 'En mora';
+                badge.className   = 'badge overdue';
+            } else {
+                nextDueEl.style.color = 'var(--green)';
+            }
+        } else {
+            const paidCount = Math.floor(Math.max(paid, 0) / cuota);
+            const startD    = new Date(l.startDate || l.createdAt);
+            startD.setUTCHours(0,0,0,0);
+
+            if (paidCount >= numCuotas) {
+                nextDueEl.textContent = 'Todas pagadas ✓';
+                nextDueEl.style.color = 'var(--green)';
+            } else {
+                const nextDate = new Date(startD);
+                nextDate.setUTCHours(0,0,0,0);
+                const endD = new Date(l.endDate || l.dueDate);
+                if (l.frequency === 'monthly') {
+                    nextDate.setMonth(nextDate.getMonth() + (paidCount + 1));
+                } else if (l.frequency === 'weekly') {
+                    const msTotal = endD - nextDate;
+                    nextDate.setTime(nextDate.getTime() + (msTotal / numCuotas) * (paidCount + 1));
+                } else {
+                    nextDate.setDate(nextDate.getDate() + (paidCount + 1));
+                }
+                nextDueEl.textContent = 'Cuota ' + (paidCount + 1) + ' · ' + fmtDate(nextDate.toISOString());
+                if (nextDate < today && l.status === 'active') {
+                    nextDueEl.style.color = 'var(--red)';
+                    await fetch('/api/loans/' + currentLoanId, {
+                        method: 'PUT', headers: {'Content-Type':'application/json'},
+                        body: JSON.stringify({status: 'overdue'})
+                    });
+                    badge.textContent = 'En mora';
+                    badge.className   = 'badge overdue';
+                } else {
+                    nextDueEl.style.color = 'var(--green)';
+                }
+            }
+        }
         const payList = document.getElementById('d-payments-list');
         payList.innerHTML = !l.payments?.length
             ? '<div style="color:var(--gray-400);font-size:13px;padding:10px 0;text-align:center">Sin pagos registrados</div>'
             : l.payments.slice().reverse().map(p =>
                 `<div class="pay-item">
                   <div><div class="pay-date">${fmtDate(p.date)}</div><div style="font-size:11px;color:var(--gray-400)">${p.note||''}</div></div>
-                  <span class="pay-amt">${fmt(p.amount)}</span>
+                  <span class="pay-amt" style="${p.amount < 0 ? 'color:#e53e3e' : ''}">${p.amount < 0 ? '− ' + fmt(Math.abs(p.amount)) : fmt(p.amount)}</span>
                 </div>`).join('');
 
         document.getElementById('page-title').textContent = l.borrower;
@@ -596,20 +784,191 @@
         navTo('detalle', from);
     }
 
+    let currentLoanData = null;
+
     function openPayModal() {
         document.getElementById('pay-amount').value = '';
         document.getElementById('pay-note').value = '';
+        document.getElementById('pay-g-interest').value = '';
+        document.getElementById('pay-g-capital').value = '';
+        document.getElementById('pay-g-preview').style.display = 'none';
         document.getElementById('pay-suggested').textContent = fmt(currentCuota);
+
+        // Calcular si hay cobro de más y mostrarlo
+        const l = currentLoanData;
+        let excess = 0;
+        if (l) {
+            if (l.loanType === 'grande') {
+                const intMes = l.amount * (l.interest || 0) / 100;
+                excess = Math.max((l.paidInterest || 0) - intMes, 0);
+            } else {
+                const tot = l.amount + (l.amount * (l.interest || 0) / 100);
+                excess = Math.max((l.paidTotal || 0) - tot, 0);
+            }
+        }
+        const excessBanner = document.getElementById('pay-excess-banner');
+        const excessLabel  = document.getElementById('pay-excess-label');
+        if (excess > 0) {
+            excessLabel.textContent = fmt(excess);
+            excessBanner.style.display = 'block';
+        } else {
+            excessBanner.style.display = 'none';
+        }
+
+        const isGrande = currentLoanData && currentLoanData.loanType === 'grande';
+        document.getElementById('pay-normal-section').style.display = isGrande ? 'none' : 'block';
+        document.getElementById('pay-grande-section').style.display = isGrande ? 'block' : 'none';
+
+        if (isGrande) {
+            const interestMonth = (currentLoanData.amount * (currentLoanData.interest || 0)) / 100;
+            document.getElementById('pay-g-interest-label').textContent = fmt(interestMonth);
+            document.getElementById('pay-g-interest').placeholder = fmt(interestMonth);
+        }
         openModal('modal-pay');
     }
 
+    function calcGrandePago() {
+        if (!currentLoanData) return;
+        const interestMonth = (currentLoanData.amount * (currentLoanData.interest || 0)) / 100;
+        const abonoInt = parseFloat(document.getElementById('pay-g-interest').value) || 0;
+        const abonoCap = parseFloat(document.getElementById('pay-g-capital').value) || 0;
+        const preview  = document.getElementById('pay-g-preview');
+        const previewTxt = document.getElementById('pay-g-preview-text');
+
+        if (abonoInt <= 0 && abonoCap <= 0) { preview.style.display='none'; return; }
+
+        let msg = '';
+        if (abonoInt >= interestMonth && abonoCap > 0) {
+            const newCapital = Math.max(currentLoanData.amount - abonoCap, 0);
+            const newInterest = (newCapital * (currentLoanData.interest || 0)) / 100;
+            msg = `✓ Capital queda en ${fmt(newCapital)} · Nuevo interés mensual: ${fmt(newInterest)} · Se amplía 1 mes`;
+        } else if (abonoInt >= interestMonth && abonoCap <= 0) {
+            msg = `✓ Intereses pagados · Se amplía 1 mes`;
+        } else {
+            msg = `Faltan ${fmt(interestMonth - abonoInt)} para cubrir intereses del mes`;
+        }
+        previewTxt.textContent = msg;
+        preview.style.display = 'block';
+    }
+
     async function savePayment() {
-        const amt = parseFloat(document.getElementById('pay-amount').value);
-        if (!amt || amt <= 0) return alert('Ingresa un monto válido');
-        const note = document.getElementById('pay-note').value;
-        await fetch('/api/payments', {method:'POST', headers:{'Content-Type':'application/json'},
-            body: JSON.stringify({loanId: currentLoanId, amount: amt, note})});
+        const isGrande = currentLoanData && currentLoanData.loanType === 'grande';
+
+        if (isGrande) {
+            const interestMonth = (currentLoanData.amount * (currentLoanData.interest || 0)) / 100;
+            const abonoInt = parseFloat(document.getElementById('pay-g-interest').value) || 0;
+            const abonoCap = parseFloat(document.getElementById('pay-g-capital').value) || 0;
+            const note     = document.getElementById('pay-g-note').value;
+
+            if (abonoInt <= 0 && abonoCap <= 0) return alert('Ingresa al menos un abono');
+
+            const totalPago = abonoInt + abonoCap;
+            // Registrar pago total
+            // Guardar abono intereses con type='interest'
+            if (abonoInt > 0) {
+                await fetch('/api/payments', {method:'POST', headers:{'Content-Type':'application/json'},
+                    body: JSON.stringify({loanId: currentLoanId, amount: abonoInt, note: 'Intereses', paymentType: 'interest'})});
+            }
+            // Guardar abono capital con type='capital'
+            if (abonoCap > 0) {
+                await fetch('/api/payments', {method:'POST', headers:{'Content-Type':'application/json'},
+                    body: JSON.stringify({loanId: currentLoanId, amount: abonoCap, note: note || 'Abono capital', paymentType: 'capital'})});
+            }
+
+            const interesesCubiertos = abonoInt >= interestMonth;
+
+            if (interesesCubiertos) {
+                // Ampliar 1 mes la fecha de vencimiento
+                const l2 = await (await fetch('/api/loans/' + currentLoanId)).json();
+                const newEndDate = new Date(l2.endDate || l2.dueDate);
+                newEndDate.setMonth(newEndDate.getMonth() + 1);
+                const newEndStr = newEndDate.toISOString().split('T')[0];
+
+                let updateBody = { endDate: newEndStr, status: 'active' };
+                if (abonoCap > 0) {
+                    // Descontar capital y recalcular interés
+                    const newCapital = Math.max(currentLoanData.amount - abonoCap, 0);
+                    updateBody.amount = newCapital;
+                }
+                await fetch('/api/loans/' + currentLoanId, {
+                    method: 'PUT', headers: {'Content-Type':'application/json'},
+                    body: JSON.stringify(updateBody)
+                });
+            }
+
+        } else {
+            const amt = parseFloat(document.getElementById('pay-amount').value);
+            if (!amt || amt <= 0) return alert('Ingresa un monto válido');
+            const note = document.getElementById('pay-note').value;
+            await fetch('/api/payments', {method:'POST', headers:{'Content-Type':'application/json'},
+                body: JSON.stringify({loanId: currentLoanId, amount: amt, note})});
+
+            // Recalcular estado después del pago normal
+            const l        = await (await fetch('/api/loans/' + currentLoanId)).json();
+            const total2   = l.totalInstallments || 1;
+            const cuota2   = l.installmentAmount || 1;
+            const pagados  = Math.floor((l.paidTotal || 0) / cuota2);
+            const startD   = new Date(l.startDate || l.createdAt);
+            const today    = new Date(); today.setHours(0,0,0,0);
+
+            let nuevoStatus;
+            if (pagados >= total2) {
+                nuevoStatus = 'paid';
+            } else {
+                const nextDate = new Date(startD);
+                if (l.frequency === 'monthly') nextDate.setMonth(nextDate.getMonth() + (pagados + 1));
+                else if (l.frequency === 'weekly') nextDate.setDate(nextDate.getDate() + 7 * (pagados + 1));
+                else nextDate.setDate(nextDate.getDate() + (pagados + 1));
+                nextDate.setHours(0,0,0,0);
+                nuevoStatus = nextDate < today ? 'overdue' : 'active';
+            }
+
+            await fetch('/api/loans/' + currentLoanId, {
+                method: 'PUT', headers: {'Content-Type':'application/json'},
+                body: JSON.stringify({status: nuevoStatus})
+            });
+        }
+
         closeModal('modal-pay');
+        openDetail(currentLoanId);
+        loadStats();
+    }
+
+    function openRefundModal() {
+        const l = currentLoanData;
+        let excess = 0;
+        if (l.loanType === 'grande') {
+            // Para grande: exceso = intereses pagados de más este mes
+            const interestMes = l.amount * (l.interest || 0) / 100;
+            const paidInt = l.paidInterest || 0;
+            excess = Math.max(paidInt - interestMes, 0);
+        } else {
+            const total = l.amount + (l.amount * (l.interest || 0) / 100);
+            excess = Math.max((l.paidTotal || 0) - total, 0);
+        }
+        document.getElementById('refund-excess').textContent = fmt(excess);
+        document.getElementById('refund-amount').value = excess > 0 ? excess : '';
+        document.getElementById('refund-note').value   = 'Devolución cobro de más';
+        openModal('modal-refund');
+    }
+
+    async function saveRefund() {
+        const amt = parseFloat(document.getElementById('refund-amount').value);
+        if (!amt || amt <= 0) return alert('Ingresa un monto válido');
+        const note = document.getElementById('refund-note').value || 'Devolución';
+        // Guarda como pago negativo
+        await fetch('/api/payments', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({loanId: currentLoanId, amount: -amt, note, paymentType: 'normal'})
+        });
+        // Después de devolver plata queda saldo pendiente → mora
+        await fetch('/api/loans/' + currentLoanId, {
+            method: 'PUT',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({status: 'overdue'})
+        });
+        closeModal('modal-refund');
         openDetail(currentLoanId);
         loadStats();
     }
@@ -622,25 +981,79 @@
     }
 
     // ── NUEVO PRÉSTAMO ────────────────────────────────────────────────
+    let tipoPrestamo = 'normal';
+
+    function setTipoPrestamo(tipo) {
+        tipoPrestamo = tipo;
+        const btnNormal = document.getElementById('btn-tipo-normal');
+        const btnGrande = document.getElementById('btn-tipo-grande');
+        const sel = document.getElementById('f-frequency');
+        const optsNormal = sel.querySelectorAll('.opt-normal');
+
+        if (tipo === 'normal') {
+            btnNormal.style.background = 'var(--blue)';
+            btnNormal.style.color = '#fff';
+            btnGrande.style.background = '#fff';
+            btnGrande.style.color = 'var(--blue)';
+            optsNormal.forEach(o => o.style.display = '');
+            sel.value = 'daily';
+        } else {
+            btnGrande.style.background = 'var(--blue)';
+            btnGrande.style.color = '#fff';
+            btnNormal.style.background = '#fff';
+            btnNormal.style.color = 'var(--blue)';
+            optsNormal.forEach(o => o.style.display = 'none');
+            sel.value = 'monthly';
+        }
+        calcPreview();
+    }
+
     function openNewLoan() {
+        tipoPrestamo = 'normal';
         ['f-borrower','f-phone','f-amount','f-interest','f-notes'].forEach(id => document.getElementById(id).value='');
-        document.getElementById('f-days').value = '30';
+        document.getElementById('f-startDate').value = new Date().toISOString().split('T')[0];
+        document.getElementById('f-endDate').value   = '';
+        document.getElementById('f-preview').style.display = 'none';
+        setTipoPrestamo('normal');
         openModal('modal-new');
     }
 
+    function calcPreview() {
+        const amount    = parseFloat(document.getElementById('f-amount').value) || 0;
+        const interest  = parseFloat(document.getElementById('f-interest').value) || 0;
+        const startDate = document.getElementById('f-startDate').value;
+        const endDate   = document.getElementById('f-endDate').value;
+        const frequency = document.getElementById('f-frequency').value;
+        const preview   = document.getElementById('f-preview');
+        if (!amount || !startDate || !endDate || endDate <= startDate) { preview.style.display='none'; return; }
+        const days = Math.round((new Date(endDate) - new Date(startDate)) / 86400000) ;
+        const cuotas = frequency === 'daily' ? days : frequency === 'weekly' ? Math.ceil(days/7) : Math.ceil(days/30);
+        const total  = amount + (amount * interest / 100);
+        const cuota  = total / Math.max(cuotas, 1);
+        document.getElementById('prev-cuotas').textContent = Math.max(cuotas, 1);
+        document.getElementById('prev-monto').textContent  = fmt(cuota);
+        preview.style.display = 'block';
+    }
+    ['f-amount','f-interest','f-startDate','f-endDate','f-frequency'].forEach(id =>
+        document.getElementById(id).addEventListener('input', calcPreview));
+
     async function saveLoan() {
-        const borrower = document.getElementById('f-borrower').value.trim();
-        const amount   = parseFloat(document.getElementById('f-amount').value);
-        if (!borrower || !amount) return alert('Completa nombre y monto');
+        const borrower  = document.getElementById('f-borrower').value.trim();
+        const amount    = parseFloat(document.getElementById('f-amount').value);
+        const startDate = document.getElementById('f-startDate').value;
+        const endDate   = document.getElementById('f-endDate').value;
+        if (!borrower || !amount)   return alert('Completa nombre y monto');
+        if (!startDate || !endDate) return alert('Selecciona fecha de inicio y fecha de fin');
+        if (endDate <= startDate)   return alert('La fecha de fin debe ser mayor a la de inicio');
         const phone = document.getElementById('f-phone').value.trim();
         const notes = document.getElementById('f-notes').value.trim();
         const combinedNotes = [phone, notes].filter(Boolean).join(' · ');
         await fetch('/api/loans', {method:'POST', headers:{'Content-Type':'application/json'},
             body: JSON.stringify({
-                borrower, amount,
+                borrower, amount, startDate, endDate,
                 interest:  parseFloat(document.getElementById('f-interest').value) || 0,
-                days:      parseInt(document.getElementById('f-days').value) || 30,
                 frequency: document.getElementById('f-frequency').value,
+                loanType:  tipoPrestamo,
                 notes:     combinedNotes
             })});
         closeModal('modal-new');
