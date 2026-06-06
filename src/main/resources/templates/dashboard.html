@@ -457,11 +457,7 @@
             <div style="font-size:12px;color:var(--green);font-weight:600">Cuota sugerida</div>
             <div style="font-size:22px;font-weight:800;color:var(--green)" id="pay-suggested">–</div>
         </div>
-        <div id="pay-excess-banner" style="display:none;background:#fef2f2;border-radius:12px;padding:12px 16px;margin-bottom:16px;border:1.5px solid #fca5a5">
-            <div style="font-size:12px;color:#e53e3e;font-weight:700">⚠ Monto a devolver</div>
-            <div style="font-size:20px;font-weight:800;color:#e53e3e" id="pay-excess-label">–</div>
-            <div style="font-size:11px;color:#e53e3e;margin-top:2px">Se cobró más de lo debido — usar botón Devolución</div>
-        </div>
+
 
         <!-- Pago normal -->
         <div id="pay-normal-section">
@@ -806,14 +802,7 @@
                 excess = Math.max((l.paidTotal || 0) - tot, 0);
             }
         }
-        const excessBanner = document.getElementById('pay-excess-banner');
-        const excessLabel  = document.getElementById('pay-excess-label');
-        if (excess > 0) {
-            excessLabel.textContent = fmt(excess);
-            excessBanner.style.display = 'block';
-        } else {
-            excessBanner.style.display = 'none';
-        }
+
 
         const isGrande = currentLoanData && currentLoanData.loanType === 'grande';
         document.getElementById('pay-normal-section').style.display = isGrande ? 'none' : 'block';
