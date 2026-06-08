@@ -50,15 +50,29 @@ public class LoanController {
 
         long daysBetween = ChronoUnit.DAYS.between(startDate, endDate);
         String freq = loan.getFrequency();
-        int totalInstallments = switch (freq) {
-            case "weekly"  -> (int) Math.ceil(daysBetween / 7.0);
-            case "monthly" -> (int) Math.ceil(daysBetween / 30.0);
-            default        -> (int) daysBetween; // daily
-        };
+        String loanType = loan.getLoanType();
+
+        int totalInstallments;
+        // Para Préstamo Método: usar numMonths directamente si viene, evitar error de redondeo
+        if ("metodo".equals(loanType) && body.containsKey("numMonths")) {
+            totalInstallments = toInt(body.get("numMonths"));
+        } else {
+            totalInstallments = switch (freq) {
+                case "weekly"  -> (int) Math.ceil(daysBetween / 7.0);
+                case "monthly" -> (int) Math.round(daysBetween / 30.4375); // mes promedio real
+                default        -> (int) daysBetween; // daily
+            };
+        }
         if (totalInstallments < 1) totalInstallments = 1;
 
-        double totalConInteres = loan.getAmount() + (loan.getAmount() * loan.getInterest() / 100);
-        double installmentAmount = totalConInteres / totalInstallments;
+        double installmentAmount;
+        if ("metodo".equals(loanType)) {
+            // Para método: cuota = solo capital ÷ meses (interés se calcula dinámicamente cada mes)
+            installmentAmount = loan.getAmount() / totalInstallments;
+        } else {
+            double totalConInteres = loan.getAmount() + (loan.getAmount() * loan.getInterest() / 100);
+            installmentAmount = totalConInteres / totalInstallments;
+        }
         loan.setTotalInstallments(totalInstallments);
         loan.setInstallmentAmount(installmentAmount);
 

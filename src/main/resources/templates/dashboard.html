@@ -14,6 +14,102 @@
           --gray-400:#9ca3af;--gray-600:#4b5563;--gray-700:#374151;
           --gray-800:#1f2937;--white:#ffffff;
         }
+
+        /* ── MODO OSCURO ── */
+        body.dark-mode {
+          --green:#39ff14;--green-l:#003300;--blue:#00cfff;--blue-l:#001a2e;--red:#ff3c3c;
+          --gray-50:#0d0d0d;--gray-100:#1a1a1a;--gray-200:#2a2a2a;
+          --gray-400:#888888;--gray-600:#bbbbbb;--gray-700:#dddddd;
+          --gray-800:#f0f0f0;--white:#111111;
+          background:#0d0d0d;
+        }
+        body.dark-mode .topnav{background:#111111;border-color:#2a2a2a}
+        body.dark-mode .drawer{background:#111111;border-color:#2a2a2a}
+        body.dark-mode .drawer-header{border-color:#2a2a2a}
+        body.dark-mode .drawer-footer{border-color:#2a2a2a}
+        body.dark-mode .drawer-item:hover{background:#1a1a1a}
+        body.dark-mode .drawer-item.active{background:#003300;color:#39ff14;border-left-color:#39ff14}
+        body.dark-mode .modal{background:#111111}
+        body.dark-mode .bottom-nav{background:#111111;border-color:#2a2a2a}
+        body.dark-mode .stat-card,
+        body.dark-mode .chart-card,
+        body.dark-mode .amt-card,
+        body.dark-mode .progress-card,
+        body.dark-mode .info-card,
+        body.dark-mode .loan-item,
+        body.dark-mode .pay-item,
+        body.dark-mode .amort-card{background:#1a1a1a;border-color:#2a2a2a}
+        body.dark-mode .info-row{border-color:#2a2a2a}
+        body.dark-mode .amort-header{border-color:#2a2a2a}
+        body.dark-mode .amort-table thead tr{background:#0d0d0d}
+        body.dark-mode .amort-table td{border-color:#2a2a2a}
+        body.dark-mode .form-group input,
+        body.dark-mode .form-group select,
+        body.dark-mode .form-group textarea{background:#1a1a1a;border-color:#2a2a2a;color:#f0f0f0}
+        body.dark-mode .progress-bar{background:#2a2a2a}
+        body.dark-mode .badge.active{background:#003300;color:#39ff14}
+        body.dark-mode .badge.paid{background:#1a1a1a;color:#888888}
+        body.dark-mode .badge.overdue{background:#2a0000;color:#ff3c3c}
+        body.dark-mode .filter-tab{background:#1a1a1a;border-color:#2a2a2a;color:#bbbbbb}
+        body.dark-mode .filter-tab.active{background:#39ff14;border-color:#39ff14;color:#000}
+        body.dark-mode .loan-item.grande{background:#1a1a1a !important;border-color:#2a2a2a !important;border-left-color:#ff9f00 !important}
+        body.dark-mode .loan-item.grande .amount{color:#ff9f00 !important}
+        body.dark-mode .loan-item.metodo{background:#1a1a1a !important;border-color:#2a2a2a !important;border-left-color:#00ff9f !important}
+        body.dark-mode .loan-item.metodo .amount{color:#00ff9f !important}
+        body.dark-mode .grande-star-icon{background:#3a2a00;color:#ff9f00}
+        body.dark-mode .normal-star-icon{background:#001a3a;color:#00cfff}
+        body.dark-mode .metodo-star-icon{background:#003a2a;color:#00ff9f}
+        body.dark-mode .btn-cancel{background:#2a2a2a;color:#dddddd}
+        body.dark-mode .btn-register{background:#39ff14;color:#000}
+        body.dark-mode .btn-delete{background:#2a0000;color:#ff3c3c}
+        body.dark-mode .btn-refund{background:#2a2000;color:#ff9f00}
+        body.dark-mode .amort-table tr.row-current{background:#1a1500}
+        body.dark-mode .cuota-banner{background:linear-gradient(135deg,#1a5c00,#39ff1433)}
+        body.dark-mode .cuota-banner-metodo{background:linear-gradient(135deg,#003a38,#00ff9f33)}
+        body.dark-mode .drawer-overlay{background:rgba(0,0,0,0.7)}
+        body.dark-mode .modal-bg{background:rgba(0,0,0,0.7)}
+        body.dark-mode .modal-handle{background:#2a2a2a}
+        body.dark-mode .fab{background:#39ff14;color:#000;box-shadow:0 4px 20px rgba(57,255,20,.5)}
+        body.dark-mode .value.blue{color:#00cfff}
+        body.dark-mode .value.green{color:#39ff14}
+        body.dark-mode .value.red{color:#ff3c3c}
+        body.dark-mode .avalue.blue{color:#00cfff}
+        body.dark-mode .avalue.green{color:#39ff14}
+        body.dark-mode .avalue.red{color:#ff3c3c}
+        body.dark-mode .ival.green{color:#39ff14}
+        body.dark-mode .pay-item .pay-amt{color:#39ff14}
+        body.dark-mode .progress-fill{background:#39ff14}
+        body.dark-mode .bar-col .bar{background:#39ff14}
+        body.dark-mode .amort-table .td-cap{color:#39ff14}
+        body.dark-mode .amort-table .td-int{color:#ff9f00}
+        body.dark-mode .cuota-num-badge.paid{background:#003300;color:#39ff14}
+        body.dark-mode .cuota-num-badge.current{background:#2a2000;color:#ff9f00}
+        body.dark-mode .cuota-num-badge.future{background:#1a1a1a;color:#888888}
+        body.dark-mode #d-next-due{color:#39ff14 !important}
+
+        /* ── PÁGINA CONFIGURACIÓN ── */
+        .config-section{margin-bottom:24px}
+        .config-section-title{font-size:13px;font-weight:700;color:var(--gray-400);text-transform:uppercase;letter-spacing:.5px;margin-bottom:12px}
+        .config-item{background:var(--white);border-radius:14px;border:1px solid var(--gray-100);overflow:hidden}
+        .config-row{display:flex;align-items:center;justify-content:space-between;padding:16px;border-bottom:1px solid var(--gray-100)}
+        .config-row:last-child{border-bottom:none}
+        .config-row-left{display:flex;align-items:center;gap:12px}
+        .config-row-icon{width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px}
+        .config-row-icon.dark{background:#1f2937;color:#f9fafb}
+        .config-row-text .crt{font-size:15px;font-weight:600;color:var(--gray-800)}
+        .config-row-text .crs{font-size:12px;color:var(--gray-400);margin-top:2px}
+
+        /* Toggle switch */
+        .toggle-wrap{position:relative;width:50px;height:28px}
+        .toggle-wrap input{opacity:0;width:0;height:0;position:absolute}
+        .toggle-slider{position:absolute;inset:0;background:var(--gray-200);border-radius:28px;cursor:pointer;transition:background .25s}
+        .toggle-slider:before{content:'';position:absolute;width:22px;height:22px;left:3px;top:3px;background:var(--white);border-radius:50%;transition:transform .25s;box-shadow:0 1px 4px rgba(0,0,0,.2)}
+        .toggle-wrap input:checked + .toggle-slider{background:var(--green)}
+        .toggle-wrap input:checked + .toggle-slider:before{transform:translateX(22px)}
+        body.dark-mode .toggle-slider{background:#2a2a2a}
+        body.dark-mode .toggle-slider:before{background:#888888}
+        body.dark-mode input:checked + .toggle-slider{background:#39ff14}
+        body.dark-mode input:checked + .toggle-slider:before{background:#000}
         body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--gray-50);
           min-height:100vh;max-width:480px;margin:0 auto;-webkit-tap-highlight-color:transparent;overflow-x:hidden}
 
@@ -28,7 +124,6 @@
         .back-btn.visible{display:flex}
         .topnav-right{min-width:60px;display:flex;justify-content:flex-end}
 
-        /* DRAWER */
         .drawer-overlay{position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:300;opacity:0;pointer-events:none;transition:opacity .25s}
         .drawer-overlay.open{opacity:1;pointer-events:auto}
         .drawer{position:fixed;top:0;left:0;height:100%;width:72%;max-width:280px;
@@ -49,12 +144,10 @@
         .drawer-logout{display:flex;align-items:center;gap:10px;font-size:14px;font-weight:600;color:var(--red);text-decoration:none}
         .drawer-logout svg{width:18px;height:18px}
 
-        /* PÁGINAS */
         .page{display:none;padding:20px 16px 100px;animation:fadeIn .2s ease}
         .page.active{display:block}
         @keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
 
-        /* INICIO */
         .greeting h2{font-size:22px;font-weight:800;color:var(--gray-800);margin-bottom:2px}
         .greeting p{font-size:14px;color:var(--gray-400)}
         .stats-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:20px 0}
@@ -72,7 +165,6 @@
         .bar-col .bar-label{font-size:10px;color:var(--gray-400);font-weight:500;white-space:nowrap}
         .section-title{font-size:15px;font-weight:700;color:var(--gray-800);margin:20px 0 12px}
 
-        /* LISTA PRÉSTAMOS */
         .filter-tabs{display:flex;gap:8px;margin-bottom:16px;overflow-x:auto;padding-bottom:4px}
         .filter-tab{flex-shrink:0;padding:6px 14px;border-radius:20px;font-size:13px;
           font-weight:600;border:1.5px solid var(--gray-200);background:var(--white);
@@ -89,97 +181,105 @@
         .badge.paid{background:var(--gray-100);color:var(--gray-400)}
         .badge.overdue{background:#fef2f2;color:var(--red)}
         .empty-loans{text-align:center;padding:32px 0;color:var(--gray-400);font-size:14px}
-        .loan-item.grande{
-          background:#fff;
-          border:1px solid var(--gray-100) !important;
-          border-left:4px solid #f59e0b !important;
-          padding-left:12px;
-          gap:10px;
-        }
+        .loan-item.grande{background:#fff;border:1px solid var(--gray-100) !important;border-left:4px solid #f59e0b !important;padding-left:12px;gap:10px;}
         .loan-item.grande .amount{color:#b45309 !important;}
-        .grande-star-icon{
-          font-size:10px; font-weight:800; color:#92400e;
-          background:#fef3c7; border-radius:5px; padding:2px 8px;
-          flex-shrink:0; display:flex; align-items:center;
-          text-transform:uppercase; letter-spacing:.4px; white-space:nowrap;
-        }
-        .normal-star-icon{
-          font-size:10px; font-weight:800; color:#1e40af;
-          background:#dbeafe; border-radius:5px; padding:2px 8px;
-          flex-shrink:0; display:flex; align-items:center;
-          text-transform:uppercase; letter-spacing:.4px; white-space:nowrap;
-        }
-        .badge-grande{display:none;}
+        .loan-item.metodo{background:#fff;border:1px solid var(--gray-100) !important;border-left:4px solid #10b981 !important;padding-left:12px;gap:10px;}
+        .loan-item.metodo .amount{color:#065f46 !important;}
+        .grande-star-icon{font-size:10px;font-weight:800;color:#92400e;background:#fef3c7;border-radius:5px;padding:2px 8px;flex-shrink:0;display:flex;align-items:center;text-transform:uppercase;letter-spacing:.4px;white-space:nowrap;}
+        .normal-star-icon{font-size:10px;font-weight:800;color:#1e40af;background:#dbeafe;border-radius:5px;padding:2px 8px;flex-shrink:0;display:flex;align-items:center;text-transform:uppercase;letter-spacing:.4px;white-space:nowrap;}
+        .metodo-star-icon{font-size:10px;font-weight:800;color:#065f46;background:#d1fae5;border-radius:5px;padding:2px 8px;flex-shrink:0;display:flex;align-items:center;text-transform:uppercase;letter-spacing:.4px;white-space:nowrap;}
 
-        /* PÁGINA DETALLE */
-        .detail-header-card{background:var(--white);border-radius:16px;padding:18px;
-          border:1px solid var(--gray-100);margin-bottom:14px;display:flex;justify-content:space-between;align-items:flex-start}
+        .detail-header-card{background:var(--white);border-radius:16px;padding:18px;border:1px solid var(--gray-100);margin-bottom:14px;display:flex;justify-content:space-between;align-items:flex-start}
         .detail-header-card .d-name{font-size:20px;font-weight:800;color:var(--gray-800)}
         .detail-header-card .d-phone{font-size:13px;color:var(--gray-400);margin-top:3px}
         .amounts-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px}
         .amt-card{background:var(--white);border-radius:14px;padding:14px;border:1px solid var(--gray-100)}
         .amt-card .alabel{font-size:12px;color:var(--gray-400);font-weight:500;margin-bottom:5px}
         .amt-card .avalue{font-size:20px;font-weight:800;letter-spacing:-0.3px}
-        .progress-card{background:var(--white);border-radius:14px;padding:16px;
-          border:1px solid var(--gray-100);margin-bottom:14px}
+        .progress-card{background:var(--white);border-radius:14px;padding:16px;border:1px solid var(--gray-100);margin-bottom:14px}
         .progress-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
         .progress-header span:first-child{font-size:14px;font-weight:700;color:var(--gray-800)}
         .progress-header span:last-child{font-size:12px;font-weight:600;color:var(--gray-400)}
         .progress-bar{background:var(--gray-100);border-radius:8px;height:10px;overflow:hidden}
         .progress-fill{height:100%;background:var(--green);border-radius:8px;transition:width .5s}
         .info-card{background:var(--white);border-radius:14px;border:1px solid var(--gray-100);margin-bottom:14px;overflow:hidden}
-        .info-row{display:flex;justify-content:space-between;align-items:center;
-          padding:13px 16px;border-bottom:1px solid var(--gray-100)}
+        .info-row{display:flex;justify-content:space-between;align-items:center;padding:13px 16px;border-bottom:1px solid var(--gray-100)}
         .info-row:last-child{border-bottom:none}
         .info-row .ikey{font-size:14px;color:var(--gray-400);font-weight:500}
         .info-row .ival{font-size:14px;font-weight:700;color:var(--gray-800)}
         .ival.green{color:var(--green)}
-        .cuota-banner{background:linear-gradient(135deg,#16a34a,#15803d);border-radius:14px;
-          padding:16px 18px;margin-bottom:14px;color:white}
+
+        /* Banner cuota método — amortización francesa */
+        .cuota-banner{background:linear-gradient(135deg,#16a34a,#15803d);border-radius:14px;padding:16px 18px;margin-bottom:14px;color:white}
         .cuota-banner .cb-label{font-size:12px;opacity:.8;margin-bottom:4px}
         .cuota-banner .cb-value{font-size:28px;font-weight:800;letter-spacing:-0.5px}
         .cuota-banner .cb-sub{font-size:12px;opacity:.75;margin-top:4px}
+        .cuota-banner-metodo{background:linear-gradient(135deg,#0f766e,#0d9488);border-radius:14px;padding:16px 18px;margin-bottom:14px;color:white}
+        .cuota-banner-metodo .cb-label{font-size:12px;opacity:.8;margin-bottom:4px}
+        .cuota-banner-metodo .cb-value{font-size:28px;font-weight:800;letter-spacing:-0.5px}
+        .cuota-banner-metodo .cb-sub{font-size:12px;opacity:.75;margin-top:6px}
+        .metodo-split-row{display:flex;justify-content:space-between;margin-top:10px;padding-top:10px;border-top:1px solid rgba(255,255,255,0.25)}
+        .metodo-split-col{text-align:left}
+        .metodo-split-col.right{text-align:right}
+        .metodo-split-label{font-size:11px;opacity:.75;margin-bottom:2px}
+        .metodo-split-value{font-size:15px;font-weight:800}
+
+        /* ── TABLA DE AMORTIZACIÓN ── */
+        .amort-card{background:var(--white);border-radius:14px;border:1px solid var(--gray-100);margin-bottom:14px;overflow:hidden}
+        .amort-header{display:flex;align-items:center;justify-content:space-between;padding:14px 16px;border-bottom:1px solid var(--gray-100);cursor:pointer;user-select:none}
+        .amort-header-left{display:flex;align-items:center;gap:8px}
+        .amort-header-left span:first-child{font-size:15px}
+        .amort-title{font-size:14px;font-weight:700;color:var(--gray-800)}
+        .amort-toggle{font-size:12px;color:var(--gray-400);font-weight:600;transition:transform .2s}
+        .amort-toggle.open{transform:rotate(180deg)}
+        .amort-body{display:none;overflow-x:auto}
+        .amort-body.open{display:block}
+        .amort-table{width:100%;border-collapse:collapse;font-size:12px}
+        .amort-table thead tr{background:var(--gray-50)}
+        .amort-table th{padding:9px 10px;text-align:right;font-weight:700;color:var(--gray-400);font-size:11px;text-transform:uppercase;letter-spacing:.4px;white-space:nowrap}
+        .amort-table th:first-child{text-align:center}
+        .amort-table td{padding:10px 10px;text-align:right;border-top:1px solid var(--gray-100);color:var(--gray-700);font-weight:500;white-space:nowrap}
+        .amort-table td:first-child{text-align:center;font-weight:700;color:var(--gray-400)}
+        .amort-table tr.row-current{background:#fefce8}
+        .amort-table tr.row-current td:first-child{color:#b45309;font-weight:800}
+        .amort-table tr.row-current .td-cuota{color:var(--gray-800);font-weight:800}
+        .amort-table tr.row-current .td-int{color:#b45309;font-weight:700}
+        .amort-table tr.row-current .td-cap{color:var(--green);font-weight:700}
+        .amort-table tr.row-current .td-saldo{color:var(--gray-800);font-weight:800}
+        .amort-table tr.row-paid td{color:var(--gray-400)}
+        .amort-table tr.row-paid td:first-child{color:var(--gray-400)}
+        .amort-table .td-int{color:#b45309}
+        .amort-table .td-cap{color:var(--green)}
+        .amort-table .td-saldo{color:var(--gray-800);font-weight:700}
+        .cuota-num-badge{display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;border-radius:50%;font-size:11px;font-weight:800}
+        .cuota-num-badge.paid{background:var(--green-l);color:var(--green)}
+        .cuota-num-badge.current{background:#fef3c7;color:#b45309}
+        .cuota-num-badge.future{background:var(--gray-100);color:var(--gray-400)}
+        /* ── fin tabla ── */
+
         .action-btns{display:flex;flex-direction:column;gap:10px;margin-bottom:14px}
-        .btn-register{background:var(--green);color:white;border:none;border-radius:14px;
-          padding:16px;font-family:inherit;font-size:16px;font-weight:700;cursor:pointer;
-          display:flex;align-items:center;justify-content:center;gap:8px}
-        .btn-delete{background:#fef2f2;color:var(--red);border:none;border-radius:14px;
-          padding:14px;font-family:inherit;font-size:14px;font-weight:700;cursor:pointer}
-        .btn-refund{background:#fef3c7;color:#92400e;border:none;border-radius:14px;
-          padding:14px;font-family:inherit;font-size:14px;font-weight:700;cursor:pointer}
+        .btn-register{background:var(--green);color:white;border:none;border-radius:14px;padding:16px;font-family:inherit;font-size:16px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px}
+        .btn-delete{background:#fef2f2;color:var(--red);border:none;border-radius:14px;padding:14px;font-family:inherit;font-size:14px;font-weight:700;cursor:pointer}
+        .btn-refund{background:#fef3c7;color:#92400e;border:none;border-radius:14px;padding:14px;font-family:inherit;font-size:14px;font-weight:700;cursor:pointer}
         .pay-section-title{font-size:14px;font-weight:700;color:var(--gray-800);margin-bottom:10px}
-        .pay-item{display:flex;justify-content:space-between;align-items:center;
-          padding:12px 16px;background:var(--white);border-radius:12px;margin-bottom:8px;border:1px solid var(--gray-100)}
+        .pay-item{display:flex;justify-content:space-between;align-items:center;padding:12px 16px;background:var(--white);border-radius:12px;margin-bottom:8px;border:1px solid var(--gray-100)}
         .pay-item .pay-date{font-size:13px;color:var(--gray-400)}
         .pay-item .pay-amt{font-size:14px;font-weight:700;color:var(--green)}
 
-        /* FAB */
-        .fab{position:fixed;bottom:80px;right:20px;width:56px;height:56px;
-          background:var(--green);color:var(--white);border-radius:50%;border:none;
-          font-size:26px;display:flex;align-items:center;justify-content:center;
-          cursor:pointer;box-shadow:0 4px 16px rgba(22,163,74,.45);z-index:90}
-
-        /* BOTTOM NAV */
-        .bottom-nav{position:fixed;bottom:0;left:50%;transform:translateX(-50%);
-          width:100%;max-width:480px;background:var(--white);border-top:1px solid var(--gray-200);
-          display:flex;padding:8px 0;z-index:80}
-        .nav-item{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;
-          padding:6px 0;cursor:pointer;font-size:10px;font-weight:600;color:var(--gray-400)}
+        .fab{position:fixed;bottom:80px;right:20px;width:56px;height:56px;background:var(--green);color:var(--white);border-radius:50%;border:none;font-size:26px;display:flex;align-items:center;justify-content:center;cursor:pointer;box-shadow:0 4px 16px rgba(22,163,74,.45);z-index:90}
+        .bottom-nav{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:480px;background:var(--white);border-top:1px solid var(--gray-200);display:flex;padding:8px 0;z-index:80}
+        .nav-item{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;padding:6px 0;cursor:pointer;font-size:10px;font-weight:600;color:var(--gray-400)}
         .nav-item.active{color:var(--green)}
         .nav-item svg{width:22px;height:22px}
 
-        /* MODALES */
         .modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:200;display:none;align-items:flex-end;justify-content:center}
         .modal-bg.open{display:flex}
-        .modal{background:var(--white);border-radius:24px 24px 0 0;width:100%;max-width:480px;
-          padding:20px 20px 30px;max-height:90vh;overflow-y:auto}
+        .modal{background:var(--white);border-radius:24px 24px 0 0;width:100%;max-width:480px;padding:20px 20px 30px;max-height:90vh;overflow-y:auto}
         .modal-handle{width:36px;height:4px;background:var(--gray-200);border-radius:2px;margin:0 auto 16px}
         .modal h2{font-size:18px;font-weight:800;color:var(--gray-800);margin-bottom:18px}
         .form-group{margin-bottom:14px}
         .form-group label{display:block;font-size:13px;font-weight:600;color:var(--gray-600);margin-bottom:5px}
-        .form-group input,.form-group select,.form-group textarea{width:100%;padding:12px 14px;
-          border:1.5px solid var(--gray-200);border-radius:12px;font-family:inherit;font-size:15px;
-          color:var(--gray-800);background:var(--white);outline:none;-webkit-appearance:none}
+        .form-group input,.form-group select,.form-group textarea{width:100%;padding:12px 14px;border:1.5px solid var(--gray-200);border-radius:12px;font-family:inherit;font-size:15px;color:var(--gray-800);background:var(--white);outline:none;-webkit-appearance:none}
         .form-group input:focus,.form-group select:focus{border-color:var(--green)}
         .form-group textarea{resize:vertical;min-height:72px}
         .modal-actions{display:flex;gap:10px;margin-top:8px}
@@ -190,7 +290,6 @@
 </head>
 <body>
 
-<!-- DRAWER -->
 <div class="drawer-overlay" id="drawer-overlay" onclick="closeDrawer()"></div>
 <div class="drawer" id="drawer">
     <div class="drawer-header">
@@ -199,44 +298,33 @@
     </div>
     <div class="drawer-menu">
         <div class="drawer-item active" id="menu-inicio" onclick="navTo('inicio')">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
-                <polyline points="9 22 9 12 15 12 15 22"/>
-            </svg>Inicio
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>Inicio
         </div>
         <div class="drawer-item" id="menu-prestamos" onclick="navTo('prestamos')">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/>
-                <line x1="8" y1="18" x2="21" y2="18"/>
-                <line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/>
-                <line x1="3" y1="18" x2="3.01" y2="18"/>
-            </svg>Mis Préstamos
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>Mis Préstamos
+        </div>
+        <div class="drawer-item" id="menu-configuracion" onclick="navTo('configuracion')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>Configuración
         </div>
     </div>
     <div class="drawer-footer">
         <a href="/logout" class="drawer-logout">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
-                <polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/>
-            </svg>Cerrar sesión
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>Cerrar sesión
         </a>
     </div>
 </div>
 
-<!-- TOP NAV -->
 <nav class="topnav">
     <button class="menu-btn" id="menu-toggle" onclick="openDrawer()">☰</button>
     <h1 id="page-title">PrestaApp</h1>
     <div class="topnav-right">
         <button class="back-btn" id="back-btn" onclick="goBack()">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-                <polyline points="15 18 9 12 15 6"/>
-            </svg>Atrás
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg>Atrás
         </button>
     </div>
 </nav>
 
-<!-- PÁGINA: INICIO -->
+<!-- INICIO -->
 <div class="page active" id="page-inicio">
     <div class="greeting">
         <h2>Hola, <span th:text="${user.name}">Usuario</span> 👋</h2>
@@ -275,7 +363,7 @@
     </div>
 </div>
 
-<!-- PÁGINA: MIS PRÉSTAMOS -->
+<!-- MIS PRÉSTAMOS -->
 <div class="page" id="page-prestamos">
     <div class="filter-tabs">
         <div class="filter-tab active" onclick="filterLoans('active',this)">Activos</div>
@@ -286,7 +374,7 @@
     <div id="loans-list"><div class="empty-loans">Cargando...</div></div>
 </div>
 
-<!-- PÁGINA: DETALLE PRÉSTAMO -->
+<!-- DETALLE -->
 <div class="page" id="page-detalle">
     <div class="detail-header-card">
         <div>
@@ -296,43 +384,70 @@
         <span class="badge" id="d-badge">–</span>
     </div>
     <div class="amounts-grid">
-        <div class="amt-card">
-            <div class="alabel">Prestado</div>
-            <div class="avalue blue" id="d-principal">–</div>
-        </div>
-        <div class="amt-card">
-            <div class="alabel">Total con interés</div>
-            <div class="avalue dark" id="d-total">–</div>
-        </div>
-        <div class="amt-card">
-            <div class="alabel">Cobrado</div>
-            <div class="avalue green" id="d-paid">–</div>
-        </div>
-        <div class="amt-card">
-            <div class="alabel">Por cobrar</div>
-            <div class="avalue red" id="d-remaining">–</div>
-        </div>
-        <div class="amt-card" id="d-interest-card" style="display:none">
-            <div class="alabel">Intereses del mes</div>
-            <div class="avalue" style="color:#b45309" id="d-interest-month">–</div>
-        </div>
-        <div class="amt-card" id="d-paid-interest-card" style="display:none">
-            <div class="alabel">Intereses abonados</div>
-            <div class="avalue" style="color:#7c3aed" id="d-paid-interest">–</div>
-        </div>
+        <div class="amt-card"><div class="alabel">Prestado</div><div class="avalue blue" id="d-principal">–</div></div>
+        <div class="amt-card"><div class="alabel">Total con interés</div><div class="avalue dark" id="d-total">–</div></div>
+        <div class="amt-card"><div class="alabel">Cobrado</div><div class="avalue green" id="d-paid">–</div></div>
+        <div class="amt-card"><div class="alabel">Por cobrar</div><div class="avalue red" id="d-remaining">–</div></div>
     </div>
     <div class="progress-card">
         <div class="progress-header">
             <span>Progreso de pago</span>
-            <span id="d-progress-label">0 cuotas (0%)</span>
+            <span id="d-progress-label">0%</span>
         </div>
         <div class="progress-bar"><div class="progress-fill" id="d-progress-fill"></div></div>
     </div>
-    <div class="cuota-banner">
+
+    <!-- Banner préstamo normal / grande -->
+    <div class="cuota-banner" id="cuota-banner-normal">
         <div class="cb-label">Cuota a pagar</div>
         <div class="cb-value" id="d-cuota">–</div>
         <div class="cb-sub" id="d-cuota-sub">–</div>
     </div>
+
+    <!-- Banner préstamo método — amortización francesa -->
+    <div class="cuota-banner-metodo" id="cuota-banner-metodo" style="display:none">
+        <div class="cb-label">Cuota fija que paga el cliente</div>
+        <div class="cb-value" id="d-metodo-cuota-fija">–</div>
+        <div class="metodo-split-row">
+            <div class="metodo-split-col">
+                <div class="metodo-split-label">→ Va a intereses</div>
+                <div class="metodo-split-value" id="d-metodo-int">–</div>
+            </div>
+            <div class="metodo-split-col right">
+                <div class="metodo-split-label">→ Abona capital</div>
+                <div class="metodo-split-value" id="d-metodo-cap">–</div>
+            </div>
+        </div>
+        <div class="cb-sub" id="d-cuota-sub-metodo">–</div>
+    </div>
+
+    <!-- ══════════════════════════════════════════════
+         TABLA DE AMORTIZACIÓN (solo préstamos Método)
+         ══════════════════════════════════════════════ -->
+    <div class="amort-card" id="amort-card" style="display:none">
+        <div class="amort-header" onclick="toggleAmort()">
+            <div class="amort-header-left">
+                <span>📋</span>
+                <span class="amort-title">Tabla de amortización</span>
+            </div>
+            <span class="amort-toggle" id="amort-toggle">▼</span>
+        </div>
+        <div class="amort-body open" id="amort-body">
+            <table class="amort-table">
+                <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Cuota</th>
+                    <th>Interés</th>
+                    <th>Capital</th>
+                    <th>Saldo</th>
+                </tr>
+                </thead>
+                <tbody id="amort-tbody"></tbody>
+            </table>
+        </div>
+    </div>
+
     <div class="info-card">
         <div class="info-row"><span class="ikey">Inicio</span><span class="ival" id="d-start">–</span></div>
         <div class="info-row"><span class="ikey">Vence</span><span class="ival" id="d-due">–</span></div>
@@ -342,13 +457,10 @@
         <div class="info-row"><span class="ikey">Plazo</span><span class="ival" id="d-plazo">–</span></div>
         <div class="info-row"><span class="ikey">Nº cuotas</span><span class="ival" id="d-num-cuotas">–</span></div>
         <div class="info-row"><span class="ikey">Fecha a pagar cuota</span><span class="ival" id="d-next-due" style="font-weight:700;color:var(--green)">–</span></div>
-
     </div>
     <div class="action-btns">
         <button class="btn-register" onclick="openPayModal()">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-                <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
-            </svg>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
             Registrar pago
         </button>
         <button class="btn-refund" onclick="openRefundModal()" id="btn-refund">↩ Devolución</button>
@@ -358,27 +470,43 @@
     <div id="d-payments-list"></div>
 </div>
 
+<!-- CONFIGURACIÓN -->
+<div class="page" id="page-configuracion">
+    <div class="greeting" style="margin-bottom:20px">
+        <h2>Configuración</h2>
+        <p>Personaliza tu experiencia</p>
+    </div>
+    <div class="config-section">
+        <div class="config-section-title">Apariencia</div>
+        <div class="config-item">
+            <div class="config-row">
+                <div class="config-row-left">
+                    <div class="config-row-icon dark">🌙</div>
+                    <div class="config-row-text">
+                        <div class="crt">Modo oscuro</div>
+                        <div class="crs">Fondo negro con colores fluorescentes</div>
+                    </div>
+                </div>
+                <label class="toggle-wrap">
+                    <input type="checkbox" id="toggle-dark-mode" onchange="toggleDarkMode(this.checked)">
+                    <span class="toggle-slider"></span>
+                </label>
+            </div>
+        </div>
+    </div>
+</div>
+
 <button class="fab" id="fab-btn" onclick="openNewLoan()">+</button>
 
 <nav class="bottom-nav">
     <div class="nav-item active" id="nav-inicio" onclick="navTo('inicio')">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
-            <polyline points="9 22 9 12 15 12 15 22"/>
-        </svg>Inicio
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>Inicio
     </div>
     <div class="nav-item" onclick="openNewLoan()">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/>
-        </svg>Nuevo
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>Nuevo
     </div>
     <div class="nav-item" id="nav-prestamos" onclick="navTo('prestamos')">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/>
-            <line x1="8" y1="18" x2="21" y2="18"/>
-            <line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/>
-            <line x1="3" y1="18" x2="3.01" y2="18"/>
-        </svg>Préstamos
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>Préstamos
     </div>
 </nav>
 
@@ -389,32 +517,39 @@
         <h2>Nuevo préstamo</h2>
         <div class="form-group">
             <label>Tipo de préstamo</label>
-            <div style="display:flex;gap:10px;margin-top:4px">
-                <button type="button" id="btn-tipo-normal" onclick="setTipoPrestamo('normal')"
-                        style="flex:1;padding:10px 0;border-radius:10px;border:2px solid var(--blue);background:var(--blue);color:#fff;font-weight:700;font-size:14px;cursor:pointer;transition:all .2s">
-                    Préstamo Normal
-                </button>
-                <button type="button" id="btn-tipo-grande" onclick="setTipoPrestamo('grande')"
-                        style="flex:1;padding:10px 0;border-radius:10px;border:2px solid var(--blue);background:#fff;color:var(--blue);font-weight:700;font-size:14px;cursor:pointer;transition:all .2s">
-                    Préstamo Grande
-                </button>
+            <div style="display:flex;gap:8px;margin-top:4px">
+                <button type="button" id="btn-tipo-normal" onclick="setTipoPrestamo('normal')" style="flex:1;padding:10px 0;border-radius:10px;border:2px solid var(--blue);background:var(--blue);color:#fff;font-weight:700;font-size:13px;cursor:pointer">Préstamo Normal</button>
+                <button type="button" id="btn-tipo-grande" onclick="setTipoPrestamo('grande')" style="flex:1;padding:10px 0;border-radius:10px;border:2px solid var(--blue);background:#fff;color:var(--blue);font-weight:700;font-size:13px;cursor:pointer">Préstamo Grande</button>
+                <button type="button" id="btn-tipo-metodo" onclick="setTipoPrestamo('metodo')" style="flex:1;padding:10px 0;border-radius:10px;border:2px solid var(--blue);background:#fff;color:var(--blue);font-weight:700;font-size:13px;cursor:pointer">Préstamo Método</button>
             </div>
         </div>
         <div class="form-group"><label>Nombre del deudor</label><input type="text" id="f-borrower" placeholder="Ej: Juan Pérez"></div>
         <div class="form-group"><label>Teléfono (opcional)</label><input type="tel" id="f-phone" placeholder="+57 300..."></div>
         <div class="form-group"><label>Monto prestado ($)</label><input type="number" id="f-amount" placeholder="0" inputmode="numeric"></div>
-        <div class="form-group"><label>Interés (%)</label><input type="number" id="f-interest" placeholder="0" inputmode="numeric"></div>
+        <div class="form-group"><label>Interés mensual (%)</label><input type="number" id="f-interest" placeholder="0" inputmode="numeric"></div>
         <div class="form-group"><label>Fecha de inicio</label><input type="date" id="f-startDate"></div>
-        <div class="form-group"><label>Fecha de fin</label><input type="date" id="f-endDate"></div>
+        <div class="form-group" id="f-endDate-group"><label>Fecha de fin</label><input type="date" id="f-endDate"></div>
         <div id="f-preview" style="display:none;background:#f0f4ff;border-radius:10px;padding:10px 14px;font-size:13px;margin-top:4px;color:#1a56db">
             <span id="prev-cuotas">–</span> cuotas de <strong id="prev-monto">–</strong>
         </div>
         <div class="form-group">
             <label>Frecuencia de cobro</label>
             <select id="f-frequency">
-                <option value="daily" class="opt-normal">Diario</option>
-                <option value="weekly" class="opt-normal">Semanal</option>
-                <option value="monthly">Mensual</option>
+                <option value="daily"  class="opt-normal opt-grande">Diario</option>
+                <option value="weekly" class="opt-normal opt-grande">Semanal</option>
+                <option value="monthly" class="opt-normal opt-grande">Mensual</option>
+                <option value="m1"  class="opt-metodo" style="display:none">1 mes</option>
+                <option value="m2"  class="opt-metodo" style="display:none">2 meses</option>
+                <option value="m3"  class="opt-metodo" style="display:none">3 meses</option>
+                <option value="m4"  class="opt-metodo" style="display:none">4 meses</option>
+                <option value="m5"  class="opt-metodo" style="display:none">5 meses</option>
+                <option value="m6"  class="opt-metodo" style="display:none">6 meses</option>
+                <option value="m7"  class="opt-metodo" style="display:none">7 meses</option>
+                <option value="m8"  class="opt-metodo" style="display:none">8 meses</option>
+                <option value="m9"  class="opt-metodo" style="display:none">9 meses</option>
+                <option value="m10" class="opt-metodo" style="display:none">10 meses</option>
+                <option value="m11" class="opt-metodo" style="display:none">11 meses</option>
+                <option value="m12" class="opt-metodo" style="display:none">1 año (12 meses)</option>
             </select>
         </div>
         <div class="form-group"><label>Notas (opcional)</label><textarea id="f-notes" placeholder="Ej: Teléfono como garantía"></textarea></div>
@@ -424,6 +559,7 @@
         </div>
     </div>
 </div>
+
 <!-- MODAL: DEVOLUCIÓN -->
 <div class="modal-bg" id="modal-refund">
     <div class="modal">
@@ -433,14 +569,8 @@
             <div style="font-size:12px;color:#e53e3e;font-weight:600">Cobrado de más</div>
             <div style="font-size:22px;font-weight:800;color:#e53e3e" id="refund-excess">–</div>
         </div>
-        <div class="form-group">
-            <label>Monto a devolver ($)</label>
-            <input type="number" id="refund-amount" placeholder="0" inputmode="numeric">
-        </div>
-        <div class="form-group">
-            <label>Nota (opcional)</label>
-            <input type="text" id="refund-note" placeholder="Ej: Devolución cobro de más">
-        </div>
+        <div class="form-group"><label>Monto a devolver ($)</label><input type="number" id="refund-amount" placeholder="0" inputmode="numeric"></div>
+        <div class="form-group"><label>Nota (opcional)</label><input type="text" id="refund-note" placeholder="Ej: Devolución cobro de más"></div>
         <div class="modal-actions">
             <button class="btn btn-cancel" onclick="closeModal('modal-refund')">Cancelar</button>
             <button class="btn btn-save" style="background:#e53e3e" onclick="saveRefund()">✓ Confirmar devolución</button>
@@ -453,22 +583,17 @@
     <div class="modal">
         <div class="modal-handle"></div>
         <h2>Registrar pago</h2>
+
+        <!-- Sugerido -->
         <div style="background:var(--green-l);border-radius:12px;padding:12px 16px;margin-bottom:16px">
             <div style="font-size:12px;color:var(--green);font-weight:600">Cuota sugerida</div>
             <div style="font-size:22px;font-weight:800;color:var(--green)" id="pay-suggested">–</div>
         </div>
 
-
         <!-- Pago normal -->
         <div id="pay-normal-section">
-            <div class="form-group">
-                <label>Monto recibido ($)</label>
-                <input type="number" id="pay-amount" placeholder="0" inputmode="numeric">
-            </div>
-            <div class="form-group">
-                <label>Nota (opcional)</label>
-                <input type="text" id="pay-note" placeholder="Ej: Pago parcial">
-            </div>
+            <div class="form-group"><label>Monto recibido ($)</label><input type="number" id="pay-amount" placeholder="0" inputmode="numeric"></div>
+            <div class="form-group"><label>Nota (opcional)</label><input type="text" id="pay-note" placeholder="Ej: Pago parcial"></div>
         </div>
 
         <!-- Pago grande -->
@@ -476,21 +601,31 @@
             <div style="background:#fef3c7;border-radius:10px;padding:10px 14px;margin-bottom:14px;font-size:13px;color:#92400e">
                 <strong>Intereses del mes:</strong> <span id="pay-g-interest-label">–</span>
             </div>
-            <div class="form-group">
-                <label>Abono a intereses ($)</label>
-                <input type="number" id="pay-g-interest" placeholder="0" inputmode="numeric" oninput="calcGrandePago()">
+            <div class="form-group"><label>Abono a intereses ($)</label><input type="number" id="pay-g-interest" placeholder="0" inputmode="numeric" oninput="calcGrandePago()"></div>
+            <div class="form-group"><label>Abono al capital ($)</label><input type="number" id="pay-g-capital" placeholder="0" inputmode="numeric" oninput="calcGrandePago()"></div>
+            <div id="pay-g-preview" style="display:none;background:#f0fdf4;border-radius:10px;padding:10px 14px;font-size:13px;color:#166534;margin-top:4px"><span id="pay-g-preview-text"></span></div>
+            <div class="form-group"><label>Nota (opcional)</label><input type="text" id="pay-g-note" placeholder="Ej: Pago parcial"></div>
+        </div>
+
+        <!-- PAGO MÉTODO — amortización francesa -->
+        <div id="pay-metodo-section" style="display:none">
+            <div style="background:#d1fae5;border-radius:10px;padding:12px 14px;margin-bottom:14px;font-size:13px;color:#065f46">
+                <div style="font-weight:700;font-size:14px;margin-bottom:8px">Distribución automática</div>
+                <div style="display:flex;justify-content:space-between;margin-bottom:4px">
+                    <span>→ Intereses (saldo × tasa):</span>
+                    <strong id="pay-m-int-display">–</strong>
+                </div>
+                <div style="display:flex;justify-content:space-between">
+                    <span>→ Abono a capital:</span>
+                    <strong id="pay-m-cap-display">–</strong>
+                </div>
             </div>
             <div class="form-group">
-                <label>Abono al capital ($)</label>
-                <input type="number" id="pay-g-capital" placeholder="0" inputmode="numeric" oninput="calcGrandePago()">
+                <label>Monto recibido ($) — cuota fija</label>
+                <input type="number" id="pay-m-total" placeholder="0" inputmode="numeric" oninput="previewMetodoPago()">
             </div>
-            <div id="pay-g-preview" style="display:none;background:#f0fdf4;border-radius:10px;padding:10px 14px;font-size:13px;color:#166534;margin-top:4px">
-                <span id="pay-g-preview-text"></span>
-            </div>
-            <div class="form-group">
-                <label>Nota (opcional)</label>
-                <input type="text" id="pay-g-note" placeholder="Ej: Pago parcial">
-            </div>
+            <div id="pay-m-preview" style="display:none;background:#f0fdf4;border-radius:10px;padding:10px 14px;font-size:13px;color:#166534;margin-top:4px"><span id="pay-m-preview-text"></span></div>
+            <div class="form-group"><label>Nota (opcional)</label><input type="text" id="pay-m-note" placeholder="Ej: Cuota mes 1"></div>
         </div>
 
         <div class="modal-actions">
@@ -501,36 +636,123 @@
 </div>
 
 <script>
-    const fmt = n => '$ ' + Math.round(n).toLocaleString('es-CO');
+    /* ─── UTILIDADES ────────────────────────────────────────── */
+    const fmt     = n => '$ ' + Math.round(n).toLocaleString('es-CO');
     const fmtDate = s => s ? new Date(s).toLocaleDateString('es-CO') : '–';
-    let currentLoanId = null;
-    let currentCuota = 0;
-    let allLoans = [];
-    let currentFilter = 'active';
-    let prevPage = 'prestamos';
 
-    // ── NAVEGACIÓN ────────────────────────────────────────────────────
+    let currentLoanId   = null;
+    let currentCuota    = 0;
+    let currentLoanData = null;
+    let allLoans        = [];
+    let currentFilter   = 'active';
+    let prevPage        = 'prestamos';
+
+    /* ─── AMORTIZACIÓN FRANCESA ─────────────────────────────── */
+    function calcCuotaFija(P, r, n) {
+        if (r === 0) return P / n;
+        return P * r / (1 - Math.pow(1 + r, -n));
+    }
+
+    function calcSaldoMetodo(P, r, n, cuotasPagadas) {
+        const cuota = calcCuotaFija(P, r, n);
+        let saldo = P;
+        for (let i = 0; i < cuotasPagadas; i++) {
+            const intMes = saldo * r;
+            const capMes = cuota - intMes;
+            saldo = Math.max(saldo - capMes, 0);
+        }
+        return saldo;
+    }
+
+    function calcDistribucionActual(P, r, n, cuotasPagadas) {
+        const cuota  = calcCuotaFija(P, r, n);
+        const saldo  = calcSaldoMetodo(P, r, n, cuotasPagadas);
+        const intMes = saldo * r;
+        const capMes = cuota - intMes;
+        return { cuota, saldo, intMes, capMes };
+    }
+
+    /* ─── TABLA DE AMORTIZACIÓN COMPLETA ────────────────────── */
+    function buildAmortTable(P, r, n, cuotasPagadas) {
+        const cuota = calcCuotaFija(P, r, n);
+        let saldo = P;
+        const rows = [];
+        for (let i = 1; i <= n; i++) {
+            const intMes = saldo * r;
+            const capMes = cuota - intMes;
+            saldo = Math.max(saldo - capMes, 0);
+            rows.push({ num: i, cuota, intMes, capMes, saldo });
+        }
+        return rows;
+    }
+
+    function renderAmortTable(P, r, n, cuotasPagadas) {
+        const rows   = buildAmortTable(P, r, n, cuotasPagadas);
+        const tbody  = document.getElementById('amort-tbody');
+        const actual = cuotasPagadas + 1; // cuota actual a pagar (1-based)
+
+        tbody.innerHTML = rows.map(row => {
+            let rowClass = '';
+            let numBadge = '';
+            if (row.num < actual) {
+                rowClass  = 'row-paid';
+                numBadge  = `<span class="cuota-num-badge paid">✓</span>`;
+            } else if (row.num === actual) {
+                rowClass  = 'row-current';
+                numBadge  = `<span class="cuota-num-badge current">${row.num}</span>`;
+            } else {
+                rowClass  = '';
+                numBadge  = `<span class="cuota-num-badge future">${row.num}</span>`;
+            }
+
+            /* Última fila: saldo puede llegar a 0 con decimales de redondeo */
+            const saldoDisplay = row.num === n ? '$ 0' : fmt(row.saldo);
+
+            return `<tr class="${rowClass}">
+                <td>${numBadge}</td>
+                <td class="td-cuota">${fmt(row.cuota)}</td>
+                <td class="td-int">${fmt(row.intMes)}</td>
+                <td class="td-cap">${fmt(row.capMes)}</td>
+                <td class="td-saldo">${saldoDisplay}</td>
+            </tr>`;
+        }).join('');
+
+        /* Hacer scroll automático a la cuota actual */
+        setTimeout(() => {
+            const body    = document.getElementById('amort-body');
+            const curRow  = tbody.querySelector('tr.row-current');
+            if (curRow && body) {
+                const rowTop   = curRow.offsetTop;
+                const bodyH    = body.clientHeight;
+                body.scrollTop = Math.max(rowTop - bodyH / 2, 0);
+            }
+        }, 100);
+    }
+
+    function toggleAmort() {
+        const body   = document.getElementById('amort-body');
+        const toggle = document.getElementById('amort-toggle');
+        body.classList.toggle('open');
+        toggle.classList.toggle('open');
+    }
+
+    /* ─── NAVEGACIÓN ────────────────────────────────────────── */
     function navTo(page, from) {
         closeDrawer();
         if (from) prevPage = from;
         document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
         document.getElementById('page-' + page).classList.add('active');
-
         document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
         const navEl = document.getElementById('nav-' + page);
         if (navEl) navEl.classList.add('active');
-
         document.querySelectorAll('.drawer-item').forEach(d => d.classList.remove('active'));
         const menuEl = document.getElementById('menu-' + page);
         if (menuEl) menuEl.classList.add('active');
-
-        const titles = { inicio:'PrestaApp', prestamos:'Mis Préstamos', detalle:'Detalle' };
+        const titles = { inicio:'PrestaApp', prestamos:'Mis Préstamos', detalle:'Detalle', configuracion:'Configuración' };
         document.getElementById('page-title').textContent = titles[page] || 'PrestaApp';
-
         const backBtn = document.getElementById('back-btn');
         const menuBtn = document.getElementById('menu-toggle');
-        const fab = document.getElementById('fab-btn');
-
+        const fab     = document.getElementById('fab-btn');
         if (page === 'inicio') {
             backBtn.classList.remove('visible');
             menuBtn.style.visibility = 'visible';
@@ -544,30 +766,24 @@
             menuBtn.style.visibility = 'visible';
             fab.style.display = 'flex';
         }
-
         if (page === 'prestamos') loadLoans();
-    }
-
-    function goBack() {
-        if (document.getElementById('page-detalle').classList.contains('active')) {
-            navTo(prevPage);
-        } else {
-            navTo('inicio');
+        if (page === 'configuracion') {
+            backBtn.classList.add('visible');
+            menuBtn.style.visibility = 'visible';
+            fab.style.display = 'none';
+            const chk = document.getElementById('toggle-dark-mode');
+            if (chk) chk.checked = document.body.classList.contains('dark-mode');
         }
     }
 
-    function openDrawer() {
-        document.getElementById('drawer').classList.add('open');
-        document.getElementById('drawer-overlay').classList.add('open');
-        document.body.style.overflow = 'hidden';
+    function goBack() {
+        if (document.getElementById('page-detalle').classList.contains('active')) navTo(prevPage);
+        else navTo('inicio');
     }
-    function closeDrawer() {
-        document.getElementById('drawer').classList.remove('open');
-        document.getElementById('drawer-overlay').classList.remove('open');
-        document.body.style.overflow = '';
-    }
+    function openDrawer()  { document.getElementById('drawer').classList.add('open'); document.getElementById('drawer-overlay').classList.add('open'); document.body.style.overflow='hidden'; }
+    function closeDrawer() { document.getElementById('drawer').classList.remove('open'); document.getElementById('drawer-overlay').classList.remove('open'); document.body.style.overflow=''; }
 
-    // ── STATS ─────────────────────────────────────────────────────────
+    /* ─── STATS ─────────────────────────────────────────────── */
     async function loadStats() {
         const d = await (await fetch('/api/stats')).json();
         document.getElementById('s-loaned').textContent      = fmt(d.totalLoaned);
@@ -584,17 +800,13 @@
     function renderChart(data) {
         const max = Math.max(...data.map(d => d.value), 1);
         document.getElementById('chart-wrap').innerHTML = data.map(d => {
-            const h = Math.max((d.value / max) * 68, 3);
+            const h   = Math.max((d.value / max) * 68, 3);
             const lbl = d.value > 0 ? (d.value >= 1000 ? Math.round(d.value/1000)+'k' : d.value) : '';
-            return `<div class="bar-col">
-              <span class="bar-val">${lbl}</span>
-              <div class="bar ${d.value===0?'empty':''}" style="height:${h}px"></div>
-              <span class="bar-label">${d.label}</span>
-            </div>`;
+            return `<div class="bar-col"><span class="bar-val">${lbl}</span><div class="bar ${d.value===0?'empty':''}" style="height:${h}px"></div><span class="bar-label">${d.label}</span></div>`;
         }).join('');
     }
 
-    // ── PRÉSTAMOS ─────────────────────────────────────────────────────
+    /* ─── PRÉSTAMOS ─────────────────────────────────────────── */
     async function loadLoans() {
         allLoans = await (await fetch('/api/loans')).json();
         renderLoans(currentFilter);
@@ -608,17 +820,20 @@
     }
 
     function renderLoans(status) {
-        const el = document.getElementById('loans-list');
+        const el       = document.getElementById('loans-list');
         const filtered = status === 'all' ? allLoans : allLoans.filter(l => l.status === status);
         if (!filtered.length) {
             const msgs = {active:'Sin préstamos activos',paid:'Sin préstamos pagados',overdue:'Sin préstamos en mora',all:'Sin préstamos registrados'};
             el.innerHTML = `<div class="empty-loans">${msgs[status]||'Sin resultados'}<br><small>Toca + para agregar uno</small></div>`;
             return;
         }
+        const tipoLabel = l => l.loanType==='grande'?'Préstamo Grande':l.loanType==='metodo'?'Préstamo Método':'Préstamo Normal';
+        const tipoClass = l => l.loanType==='grande'?'grande':l.loanType==='metodo'?'metodo':'';
+        const iconClass = l => l.loanType==='grande'?'grande-star-icon':l.loanType==='metodo'?'metodo-star-icon':'normal-star-icon';
         const freqLabel = f => f==='daily'?'Cobro diario':f==='weekly'?'Cobro semanal':'Cobro mensual';
         el.innerHTML = filtered.map(l => `
-            <div class="loan-item ${l.loanType==='grande'?'grande':''}" onclick="openDetail('${l.id}')">
-              <div class="${l.loanType==='grande'?'grande-star-icon':'normal-star-icon'}">${l.loanType==='grande'?'Préstamo Grande':'Préstamo Normal'}</div>
+            <div class="loan-item ${tipoClass(l)}" onclick="openDetail('${l.id}')">
+              <div class="${iconClass(l)}">${tipoLabel(l)}</div>
               <div class="loan-info">
                 <div class="borrower">${l.borrower}</div>
                 <div class="meta">${freqLabel(l.frequency)}</div>
@@ -630,190 +845,252 @@
             </div>`).join('');
     }
 
-    // ── DETALLE ───────────────────────────────────────────────────────
+    /* ─── DETALLE ────────────────────────────────────────────── */
     async function openDetail(id) {
         currentLoanId = id;
         const l = await (await fetch('/api/loans/' + id)).json();
-
-        const isGrandeDetail = l.loanType === 'grande';
-
-        const principal = l.amount; // Para grande: capital actual (ya reducido)
-        const interestRate = l.interest || 0;
-
-        // Para grande: total = capital actual + intereses del mes actual
-        // Para normal: total = capital + todos los intereses del plazo
-        const interestMes = principal * interestRate / 100;
-        const total     = isGrandeDetail
-            ? principal + interestMes          // lo que debe pagar este mes
-            : principal + (principal * interestRate / 100);
-
-        const paid      = l.paidTotal || 0;
-        const paidCap   = l.paidCapital || 0;
-        const paidInt   = l.paidInterest || 0;
-
-        // Para grande: "por cobrar" = capital actual (ya reducido en cada abono)
-        //              El capital en MongoDB ya descuenta lo abonado, es lo que falta pagar
-        // Para normal: por cobrar = total - todo lo pagado
-        const remaining = isGrandeDetail
-            ? principal   // capital pendiente actual
-            : Math.max(total - paid, 0);
-        const excess    = isGrandeDetail ? 0 : Math.max(paid - total, 0);
-
-        const numCuotas  = l.totalInstallments || 1;
-        // Para grande: cuota = intereses del mes + cualquier abono a capital pendiente
-        const cuota = isGrandeDetail ? interestMes : (l.installmentAmount || (total / numCuotas));
-        const freqName   = l.frequency === 'weekly' ? 'Semanal' : l.frequency === 'monthly' ? 'Mensual' : 'Diario';
-        const freqDias   = l.frequency === 'weekly' ? 7 : l.frequency === 'monthly' ? 30 : 1;
-        const plazoLabel = (numCuotas * freqDias) + ' días';
-        currentCuota = cuota;
-
-        // Progreso: para grande = capital abonado vs capital original prestado
-        const paidForProgress = isGrandeDetail ? paidCap : paid;
-        const totalForProgress = isGrandeDetail ? principal : total;
-        const paidCuotas = isGrandeDetail ? 0 : Math.floor(paidForProgress / cuota);
-        const pct = Math.min(paidForProgress / Math.max(totalForProgress, 1) * 100, 100);
-
-        const badgeMap = {active:'Activo',paid:'Pagado',overdue:'En mora'};
-        const badge = document.getElementById('d-badge');
-        badge.textContent = badgeMap[l.status] || l.status;
-        badge.className = 'badge ' + (l.status || 'active');
-
         currentLoanData = l;
-        document.getElementById('d-name').textContent         = l.borrower;
-        document.getElementById('d-notes-display').textContent = l.notes || '';
-        document.getElementById('d-principal').textContent    = fmt(principal);
-        document.getElementById('d-total').textContent        = fmt(total);
-        document.getElementById('d-paid').textContent         = fmt(l.loanType === 'grande' ? (l.paidCapital || 0) : paid);
-        document.getElementById('d-remaining').textContent    = fmt(remaining);
-        document.getElementById('d-progress-fill').style.width = pct + '%';
-        document.getElementById('d-progress-label').textContent = paidCuotas + '/' + numCuotas + ' cuotas (' + Math.round(pct) + '%)';
-        document.getElementById('d-cuota').textContent        = fmt(cuota);
-        document.getElementById('d-cuota-sub').textContent    = 'Pago ' + freqName.toLowerCase() + ' · ' + numCuotas + ' cuotas en total';
-        document.getElementById('d-start').textContent        = fmtDate(l.createdAt);
-        document.getElementById('d-due').textContent          = fmtDate(l.dueDate);
-        document.getElementById('d-interest').textContent     = (l.interest || 0) + '% ' + freqName.toLowerCase();
-        // Mostrar casilla intereses del mes solo para préstamo grande
-        const interestCard = document.getElementById('d-interest-card');
-        const paidIntCard  = document.getElementById('d-paid-interest-card');
-        if (l.loanType === 'grande') {
-            const intMes = (principal * (l.interest || 0)) / 100;
-            document.getElementById('d-interest-month').textContent = fmt(intMes);
-            interestCard.style.display = 'block';
-            document.getElementById('d-paid-interest').textContent = fmt(l.paidInterest || 0);
-            paidIntCard.style.display = 'block';
-        } else {
-            interestCard.style.display = 'none';
-            paidIntCard.style.display = 'none';
-        }
-        document.getElementById('d-freq').textContent         = freqName;
-        document.getElementById('d-cuota-row').textContent    = fmt(cuota);
-        document.getElementById('d-plazo').textContent        = plazoLabel;
-        document.getElementById('d-num-cuotas').textContent = numCuotas + ' cuotas';
 
-        // Fecha próxima cuota
-        const nextDueEl = document.getElementById('d-next-due');
-        const today     = new Date(); today.setHours(0,0,0,0);
+        const isGrande = l.loanType === 'grande';
+        const isMetodo = l.loanType === 'metodo';
 
-        if (l.loanType === 'grande') {
-            // Para préstamo grande: la fecha de pago es siempre el endDate actual
-            // (se amplía 1 mes cada vez que se pagan los intereses)
-            const endDate = new Date(l.endDate || l.dueDate);
-            endDate.setUTCHours(0,0,0,0);
-            nextDueEl.textContent = 'Próximo pago · ' + fmtDate(endDate.toISOString());
-            if (endDate < today && l.status === 'active') {
-                nextDueEl.style.color = 'var(--red)';
-                await fetch('/api/loans/' + currentLoanId, {
-                    method: 'PUT', headers: {'Content-Type':'application/json'},
-                    body: JSON.stringify({status: 'overdue'})
-                });
-                badge.textContent = 'En mora';
-                badge.className   = 'badge overdue';
-            } else {
+        let principal, total, paid, remaining, cuota, numCuotas, pct;
+
+        if (isMetodo) {
+            const P = l.amount;
+            const r = (l.interest || 0) / 100;
+            const n = l.totalInstallments || 1;
+            cuota = calcCuotaFija(P, r, n);
+
+            const pagosCapital = (l.payments || []).filter(p => p.paymentType === 'capital' && p.amount > 0);
+            const cuotasPagadas = pagosCapital.length;
+
+            const dist   = calcDistribucionActual(P, r, n, cuotasPagadas);
+            principal    = P;
+            total        = cuota * n;
+            paid         = l.paidTotal || 0;
+            remaining    = Math.max(dist.saldo, 0);
+            numCuotas    = n;
+            pct          = Math.min(cuotasPagadas / n * 100, 100);
+            currentCuota = cuota;
+
+            /* Banner método */
+            document.getElementById('cuota-banner-normal').style.display = 'none';
+            document.getElementById('cuota-banner-metodo').style.display = 'block';
+            document.getElementById('d-metodo-cuota-fija').textContent = fmt(cuota);
+            document.getElementById('d-metodo-int').textContent        = fmt(dist.intMes);
+            document.getElementById('d-metodo-cap').textContent        = fmt(dist.capMes);
+            document.getElementById('d-cuota-sub-metodo').textContent  =
+                'Cuota ' + (cuotasPagadas+1) + ' de ' + n + ' · amortización francesa';
+
+            /* ══ TABLA DE AMORTIZACIÓN ══ */
+            document.getElementById('amort-card').style.display = 'block';
+            renderAmortTable(P, r, n, cuotasPagadas);
+
+            /* Info card */
+            document.getElementById('d-cuota-row').textContent  = fmt(cuota);
+            document.getElementById('d-plazo').textContent      = n + ' meses';
+            document.getElementById('d-num-cuotas').textContent = n + ' cuotas';
+            document.getElementById('d-freq').textContent       = 'Método · ' + n + ' cuotas';
+            document.getElementById('d-progress-label').textContent =
+                cuotasPagadas + '/' + n + ' cuotas (' + Math.round(pct) + '%)';
+
+            /* Fecha próxima cuota */
+            const startD   = new Date(l.startDate || l.createdAt);
+            const nextDate = new Date(startD);
+            nextDate.setMonth(nextDate.getMonth() + cuotasPagadas + 1);
+            const today = new Date(); today.setHours(0,0,0,0);
+            const nextDueEl = document.getElementById('d-next-due');
+            if (cuotasPagadas >= n) {
+                nextDueEl.textContent = 'Todas pagadas ✓';
                 nextDueEl.style.color = 'var(--green)';
+            } else {
+                nextDueEl.textContent = 'Cuota ' + (cuotasPagadas+1) + ' · ' + fmtDate(nextDate.toISOString());
+                nextDueEl.style.color = nextDate < today ? 'var(--red)' : 'var(--green)';
+                if (nextDate < today && l.status === 'active') {
+                    await fetch('/api/loans/' + id, {method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({status:'overdue'})});
+                }
             }
-        } else {
-            const paidCount = Math.floor(Math.max(paid, 0) / cuota);
-            const startD    = new Date(l.startDate || l.createdAt);
-            startD.setUTCHours(0,0,0,0);
 
-            if (paidCount >= numCuotas) {
+        } else if (isGrande) {
+            /* Ocultar tabla para préstamos no-método */
+            document.getElementById('amort-card').style.display = 'none';
+
+            principal = l.amount;
+            const interestRate = l.interest || 0;
+            const intMes = principal * interestRate / 100;
+            total        = principal + intMes;
+            paid         = l.paidTotal || 0;
+            remaining    = principal;
+            numCuotas    = l.totalInstallments || 1;
+            cuota        = intMes;
+            pct          = Math.min((l.paidCapital || 0) / principal * 100, 100);
+            currentCuota = cuota;
+
+            document.getElementById('cuota-banner-normal').style.display = 'block';
+            document.getElementById('cuota-banner-metodo').style.display = 'none';
+            document.getElementById('d-cuota').textContent    = fmt(cuota);
+            document.getElementById('d-cuota-sub').textContent = 'Intereses del mes · abono capital opcional';
+            document.getElementById('d-cuota-row').textContent = fmt(cuota);
+            document.getElementById('d-plazo').textContent     = numCuotas + ' meses';
+            document.getElementById('d-num-cuotas').textContent= numCuotas + ' cuotas';
+            document.getElementById('d-freq').textContent      = 'Mensual';
+            document.getElementById('d-progress-label').textContent = Math.round(pct) + '%';
+
+            const endDate   = new Date(l.endDate || l.dueDate); endDate.setUTCHours(0,0,0,0);
+            const today     = new Date(); today.setHours(0,0,0,0);
+            const nextDueEl = document.getElementById('d-next-due');
+            nextDueEl.textContent = 'Próximo pago · ' + fmtDate(endDate.toISOString());
+            nextDueEl.style.color = endDate < today ? 'var(--red)' : 'var(--green)';
+            if (endDate < today && l.status === 'active') {
+                await fetch('/api/loans/' + id, {method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({status:'overdue'})});
+            }
+
+        } else {
+            /* Normal */
+            document.getElementById('amort-card').style.display = 'none';
+
+            principal = l.amount;
+            const interestRate = l.interest || 0;
+            total     = principal + (principal * interestRate / 100);
+            paid      = l.paidTotal || 0;
+            numCuotas = l.totalInstallments || 1;
+            cuota     = l.installmentAmount || (total / numCuotas);
+            remaining = Math.max(total - paid, 0);
+            const paidCuotas = Math.floor(paid / cuota);
+            pct = Math.min(paid / Math.max(total, 1) * 100, 100);
+            currentCuota = cuota;
+
+            const freqName = l.frequency==='weekly'?'Semanal':l.frequency==='monthly'?'Mensual':'Diario';
+            document.getElementById('cuota-banner-normal').style.display = 'block';
+            document.getElementById('cuota-banner-metodo').style.display = 'none';
+            document.getElementById('d-cuota').textContent    = fmt(cuota);
+            document.getElementById('d-cuota-sub').textContent = 'Pago ' + freqName.toLowerCase() + ' · ' + numCuotas + ' cuotas en total';
+            document.getElementById('d-cuota-row').textContent = fmt(cuota);
+            document.getElementById('d-plazo').textContent     = numCuotas + ' cuotas';
+            document.getElementById('d-num-cuotas').textContent= numCuotas + ' cuotas';
+            document.getElementById('d-freq').textContent      = freqName;
+            document.getElementById('d-progress-label').textContent = paidCuotas + '/' + numCuotas + ' cuotas (' + Math.round(pct) + '%)';
+
+            const startD = new Date(l.startDate || l.createdAt); startD.setUTCHours(0,0,0,0);
+            const today  = new Date(); today.setHours(0,0,0,0);
+            const nextDueEl = document.getElementById('d-next-due');
+            if (paidCuotas >= numCuotas) {
                 nextDueEl.textContent = 'Todas pagadas ✓';
                 nextDueEl.style.color = 'var(--green)';
             } else {
                 const nextDate = new Date(startD);
-                nextDate.setUTCHours(0,0,0,0);
-                const endD = new Date(l.endDate || l.dueDate);
-                if (l.frequency === 'monthly') {
-                    nextDate.setMonth(nextDate.getMonth() + (paidCount + 1));
-                } else if (l.frequency === 'weekly') {
-                    const msTotal = endD - nextDate;
-                    nextDate.setTime(nextDate.getTime() + (msTotal / numCuotas) * (paidCount + 1));
-                } else {
-                    nextDate.setDate(nextDate.getDate() + (paidCount + 1));
-                }
-                nextDueEl.textContent = 'Cuota ' + (paidCount + 1) + ' · ' + fmtDate(nextDate.toISOString());
+                if (l.frequency==='monthly')      nextDate.setMonth(nextDate.getMonth() + paidCuotas + 1);
+                else if (l.frequency==='weekly')  nextDate.setDate(nextDate.getDate() + 7*(paidCuotas+1));
+                else                               nextDate.setDate(nextDate.getDate() + paidCuotas + 1);
+                nextDueEl.textContent = 'Cuota ' + (paidCuotas+1) + ' · ' + fmtDate(nextDate.toISOString());
+                nextDueEl.style.color = nextDate < today ? 'var(--red)' : 'var(--green)';
                 if (nextDate < today && l.status === 'active') {
-                    nextDueEl.style.color = 'var(--red)';
-                    await fetch('/api/loans/' + currentLoanId, {
-                        method: 'PUT', headers: {'Content-Type':'application/json'},
-                        body: JSON.stringify({status: 'overdue'})
-                    });
-                    badge.textContent = 'En mora';
-                    badge.className   = 'badge overdue';
-                } else {
-                    nextDueEl.style.color = 'var(--green)';
+                    await fetch('/api/loans/' + id, {method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({status:'overdue'})});
                 }
             }
         }
+
+        /* Campos comunes */
+        const badgeMap = {active:'Activo',paid:'Pagado',overdue:'En mora'};
+        const badge    = document.getElementById('d-badge');
+        badge.textContent = badgeMap[l.status] || l.status;
+        badge.className   = 'badge ' + (l.status || 'active');
+
+        document.getElementById('d-name').textContent          = l.borrower;
+        document.getElementById('d-notes-display').textContent = l.notes || '';
+        document.getElementById('d-principal').textContent     = fmt(principal);
+        document.getElementById('d-total').textContent         = fmt(total);
+        document.getElementById('d-paid').textContent          = fmt(paid);
+        document.getElementById('d-remaining').textContent     = fmt(remaining);
+        document.getElementById('d-progress-fill').style.width = pct + '%';
+        document.getElementById('d-start').textContent         = fmtDate(l.createdAt);
+        document.getElementById('d-due').textContent           = fmtDate(l.dueDate);
+        document.getElementById('d-interest').textContent      = (l.interest || 0) + '% mensual';
+
+        /* Historial pagos */
         const payList = document.getElementById('d-payments-list');
         payList.innerHTML = !l.payments?.length
             ? '<div style="color:var(--gray-400);font-size:13px;padding:10px 0;text-align:center">Sin pagos registrados</div>'
             : l.payments.slice().reverse().map(p =>
                 `<div class="pay-item">
                   <div><div class="pay-date">${fmtDate(p.date)}</div><div style="font-size:11px;color:var(--gray-400)">${p.note||''}</div></div>
-                  <span class="pay-amt" style="${p.amount < 0 ? 'color:#e53e3e' : ''}">${p.amount < 0 ? '− ' + fmt(Math.abs(p.amount)) : fmt(p.amount)}</span>
+                  <span class="pay-amt" style="${p.amount<0?'color:#e53e3e':''}">${p.amount<0?'− '+fmt(Math.abs(p.amount)):fmt(p.amount)}</span>
                 </div>`).join('');
 
         document.getElementById('page-title').textContent = l.borrower;
-
         const from = document.getElementById('page-prestamos').classList.contains('active') ? 'prestamos' : 'inicio';
         navTo('detalle', from);
     }
 
-    let currentLoanData = null;
-
+    /* ─── MODAL PAGO ─────────────────────────────────────────── */
     function openPayModal() {
-        document.getElementById('pay-amount').value = '';
-        document.getElementById('pay-note').value = '';
-        document.getElementById('pay-g-interest').value = '';
-        document.getElementById('pay-g-capital').value = '';
+        const l        = currentLoanData;
+        const isGrande = l && l.loanType === 'grande';
+        const isMetodo = l && l.loanType === 'metodo';
+
+        ['pay-amount','pay-note','pay-g-interest','pay-g-capital','pay-g-note','pay-m-total','pay-m-note']
+            .forEach(id => document.getElementById(id).value = '');
         document.getElementById('pay-g-preview').style.display = 'none';
+        document.getElementById('pay-m-preview').style.display = 'none';
+
         document.getElementById('pay-suggested').textContent = fmt(currentCuota);
-
-        // Calcular si hay cobro de más y mostrarlo
-        const l = currentLoanData;
-        let excess = 0;
-        if (l) {
-            if (l.loanType === 'grande') {
-                const intMes = l.amount * (l.interest || 0) / 100;
-                excess = Math.max((l.paidInterest || 0) - intMes, 0);
-            } else {
-                const tot = l.amount + (l.amount * (l.interest || 0) / 100);
-                excess = Math.max((l.paidTotal || 0) - tot, 0);
-            }
-        }
-
-
-        const isGrande = currentLoanData && currentLoanData.loanType === 'grande';
-        document.getElementById('pay-normal-section').style.display = isGrande ? 'none' : 'block';
+        document.getElementById('pay-normal-section').style.display = (!isGrande && !isMetodo) ? 'block' : 'none';
         document.getElementById('pay-grande-section').style.display = isGrande ? 'block' : 'none';
+        document.getElementById('pay-metodo-section').style.display = isMetodo ? 'block' : 'none';
 
         if (isGrande) {
-            const interestMonth = (currentLoanData.amount * (currentLoanData.interest || 0)) / 100;
-            document.getElementById('pay-g-interest-label').textContent = fmt(interestMonth);
-            document.getElementById('pay-g-interest').placeholder = fmt(interestMonth);
+            const intMes = (l.amount * (l.interest||0)) / 100;
+            document.getElementById('pay-g-interest-label').textContent = fmt(intMes);
+            document.getElementById('pay-g-interest').placeholder = fmt(intMes);
+        }
+
+        if (isMetodo) {
+            const P = l.amount;
+            const r = (l.interest || 0) / 100;
+            const n = l.totalInstallments || 1;
+            const cuota = calcCuotaFija(P, r, n);
+            const cuotasPagadas = (l.payments || []).filter(p => p.paymentType === 'capital' && p.amount > 0).length;
+            const dist = calcDistribucionActual(P, r, n, cuotasPagadas);
+            document.getElementById('pay-m-int-display').textContent = fmt(dist.intMes);
+            document.getElementById('pay-m-cap-display').textContent = fmt(dist.capMes);
+            document.getElementById('pay-m-total').value = Math.round(cuota);
+            previewMetodoPago();
         }
         openModal('modal-pay');
+    }
+
+    function previewMetodoPago() {
+        if (!currentLoanData || currentLoanData.loanType !== 'metodo') return;
+        const l   = currentLoanData;
+        const P   = l.amount;
+        const r   = (l.interest || 0) / 100;
+        const n   = l.totalInstallments || 1;
+        const cuota = calcCuotaFija(P, r, n);
+        const cuotasPagadas = (l.payments || []).filter(p => p.paymentType === 'capital' && p.amount > 0).length;
+        const dist = calcDistribucionActual(P, r, n, cuotasPagadas);
+        const intActual = dist.intMes;
+
+        const ingresado = parseFloat(document.getElementById('pay-m-total').value) || 0;
+        const preview   = document.getElementById('pay-m-preview');
+        const txt       = document.getElementById('pay-m-preview-text');
+
+        if (ingresado <= 0) { preview.style.display='none'; return; }
+
+        const abonoInt = Math.min(ingresado, intActual);
+        const abonoCap = Math.max(ingresado - intActual, 0);
+        const diff     = Math.abs(ingresado - cuota);
+
+        let msg = '';
+        if (Math.abs(ingresado - cuota) < 1) {
+            msg = `✓ Intereses: ${fmt(abonoInt)} · Capital: ${fmt(abonoCap)}`;
+        } else if (ingresado < cuota) {
+            msg = `Intereses: ${fmt(abonoInt)} · Capital: ${fmt(abonoCap)} · Faltan ${fmt(diff)} para la cuota completa`;
+        } else {
+            msg = `Intereses: ${fmt(abonoInt)} · Capital: ${fmt(abonoCap)} · Excedente: ${fmt(diff)}`;
+        }
+        txt.textContent = msg;
+        preview.style.display = 'block';
     }
 
     function calcGrandePago() {
@@ -822,100 +1099,108 @@
         const abonoInt = parseFloat(document.getElementById('pay-g-interest').value) || 0;
         const abonoCap = parseFloat(document.getElementById('pay-g-capital').value) || 0;
         const preview  = document.getElementById('pay-g-preview');
-        const previewTxt = document.getElementById('pay-g-preview-text');
-
         if (abonoInt <= 0 && abonoCap <= 0) { preview.style.display='none'; return; }
-
         let msg = '';
         if (abonoInt >= interestMonth && abonoCap > 0) {
-            const newCapital = Math.max(currentLoanData.amount - abonoCap, 0);
-            const newInterest = (newCapital * (currentLoanData.interest || 0)) / 100;
-            msg = `✓ Capital queda en ${fmt(newCapital)} · Nuevo interés mensual: ${fmt(newInterest)} · Se amplía 1 mes`;
-        } else if (abonoInt >= interestMonth && abonoCap <= 0) {
+            const newCap = Math.max(currentLoanData.amount - abonoCap, 0);
+            const newInt = (newCap * (currentLoanData.interest || 0)) / 100;
+            msg = `✓ Capital queda en ${fmt(newCap)} · Nuevo interés mensual: ${fmt(newInt)} · Se amplía 1 mes`;
+        } else if (abonoInt >= interestMonth) {
             msg = `✓ Intereses pagados · Se amplía 1 mes`;
         } else {
             msg = `Faltan ${fmt(interestMonth - abonoInt)} para cubrir intereses del mes`;
         }
-        previewTxt.textContent = msg;
+        document.getElementById('pay-g-preview-text').textContent = msg;
         preview.style.display = 'block';
     }
 
+    /* ─── GUARDAR PAGO ───────────────────────────────────────── */
     async function savePayment() {
         const isGrande = currentLoanData && currentLoanData.loanType === 'grande';
+        const isMetodo = currentLoanData && currentLoanData.loanType === 'metodo';
 
-        if (isGrande) {
+        if (isMetodo) {
+            const l   = currentLoanData;
+            const P   = l.amount;
+            const r   = (l.interest || 0) / 100;
+            const n   = l.totalInstallments || 1;
+            const cuota = calcCuotaFija(P, r, n);
+
+            const ingresado = parseFloat(document.getElementById('pay-m-total').value) || 0;
+            if (!ingresado || ingresado <= 0) return alert('Ingresa un monto válido');
+            const note = document.getElementById('pay-m-note').value;
+
+            const cuotasPagadas = (l.payments || []).filter(p => p.paymentType === 'capital' && p.amount > 0).length;
+            const dist      = calcDistribucionActual(P, r, n, cuotasPagadas);
+            const intActual = dist.intMes;
+            const abonoInt  = Math.min(ingresado, intActual);
+            const abonoCap  = Math.max(ingresado - intActual, 0);
+            const numCuotaActual = cuotasPagadas + 1;
+
+            if (abonoInt > 0) {
+                await fetch('/api/payments', {
+                    method:'POST', headers:{'Content-Type':'application/json'},
+                    body: JSON.stringify({loanId: currentLoanId, amount: abonoInt, note: note || 'Intereses cuota ' + numCuotaActual, paymentType:'interest'})
+                });
+            }
+            if (abonoCap > 0) {
+                await fetch('/api/payments', {
+                    method:'POST', headers:{'Content-Type':'application/json'},
+                    body: JSON.stringify({loanId: currentLoanId, amount: abonoCap, note: note || 'Capital cuota ' + numCuotaActual, paymentType:'capital'})
+                });
+            }
+
+            if (numCuotaActual >= n) {
+                await fetch('/api/loans/' + currentLoanId, {
+                    method:'PUT', headers:{'Content-Type':'application/json'},
+                    body: JSON.stringify({status:'paid'})
+                });
+            }
+
+        } else if (isGrande) {
             const interestMonth = (currentLoanData.amount * (currentLoanData.interest || 0)) / 100;
             const abonoInt = parseFloat(document.getElementById('pay-g-interest').value) || 0;
             const abonoCap = parseFloat(document.getElementById('pay-g-capital').value) || 0;
             const note     = document.getElementById('pay-g-note').value;
-
             if (abonoInt <= 0 && abonoCap <= 0) return alert('Ingresa al menos un abono');
-
-            const totalPago = abonoInt + abonoCap;
-            // Registrar pago total
-            // Guardar abono intereses con type='interest'
             if (abonoInt > 0) {
-                await fetch('/api/payments', {method:'POST', headers:{'Content-Type':'application/json'},
-                    body: JSON.stringify({loanId: currentLoanId, amount: abonoInt, note: 'Intereses', paymentType: 'interest'})});
+                await fetch('/api/payments', {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({loanId:currentLoanId,amount:abonoInt,note:'Intereses',paymentType:'interest'})});
             }
-            // Guardar abono capital con type='capital'
             if (abonoCap > 0) {
-                await fetch('/api/payments', {method:'POST', headers:{'Content-Type':'application/json'},
-                    body: JSON.stringify({loanId: currentLoanId, amount: abonoCap, note: note || 'Abono capital', paymentType: 'capital'})});
+                await fetch('/api/payments', {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({loanId:currentLoanId,amount:abonoCap,note:note||'Abono capital',paymentType:'capital'})});
             }
-
-            const interesesCubiertos = abonoInt >= interestMonth;
-
-            if (interesesCubiertos) {
-                // Ampliar 1 mes la fecha de vencimiento
-                const l2 = await (await fetch('/api/loans/' + currentLoanId)).json();
+            if (abonoInt >= interestMonth) {
+                const l2        = await (await fetch('/api/loans/' + currentLoanId)).json();
                 const newEndDate = new Date(l2.endDate || l2.dueDate);
                 newEndDate.setMonth(newEndDate.getMonth() + 1);
-                const newEndStr = newEndDate.toISOString().split('T')[0];
-
-                let updateBody = { endDate: newEndStr, status: 'active' };
-                if (abonoCap > 0) {
-                    // Descontar capital y recalcular interés
-                    const newCapital = Math.max(currentLoanData.amount - abonoCap, 0);
-                    updateBody.amount = newCapital;
-                }
-                await fetch('/api/loans/' + currentLoanId, {
-                    method: 'PUT', headers: {'Content-Type':'application/json'},
-                    body: JSON.stringify(updateBody)
-                });
+                const updateBody = { endDate: newEndDate.toISOString().split('T')[0], status:'active' };
+                if (abonoCap > 0) updateBody.amount = Math.max(currentLoanData.amount - abonoCap, 0);
+                await fetch('/api/loans/' + currentLoanId, {method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(updateBody)});
             }
 
         } else {
             const amt = parseFloat(document.getElementById('pay-amount').value);
             if (!amt || amt <= 0) return alert('Ingresa un monto válido');
             const note = document.getElementById('pay-note').value;
-            await fetch('/api/payments', {method:'POST', headers:{'Content-Type':'application/json'},
-                body: JSON.stringify({loanId: currentLoanId, amount: amt, note})});
-
-            // Recalcular estado después del pago normal
+            await fetch('/api/payments', {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({loanId:currentLoanId,amount:amt,note})});
             const l        = await (await fetch('/api/loans/' + currentLoanId)).json();
             const total2   = l.totalInstallments || 1;
             const cuota2   = l.installmentAmount || 1;
             const pagados  = Math.floor((l.paidTotal || 0) / cuota2);
             const startD   = new Date(l.startDate || l.createdAt);
             const today    = new Date(); today.setHours(0,0,0,0);
-
             let nuevoStatus;
             if (pagados >= total2) {
                 nuevoStatus = 'paid';
             } else {
                 const nextDate = new Date(startD);
-                if (l.frequency === 'monthly') nextDate.setMonth(nextDate.getMonth() + (pagados + 1));
-                else if (l.frequency === 'weekly') nextDate.setDate(nextDate.getDate() + 7 * (pagados + 1));
-                else nextDate.setDate(nextDate.getDate() + (pagados + 1));
+                if (l.frequency==='monthly')     nextDate.setMonth(nextDate.getMonth() + pagados + 1);
+                else if (l.frequency==='weekly') nextDate.setDate(nextDate.getDate() + 7*(pagados+1));
+                else                              nextDate.setDate(nextDate.getDate() + pagados + 1);
                 nextDate.setHours(0,0,0,0);
                 nuevoStatus = nextDate < today ? 'overdue' : 'active';
             }
-
-            await fetch('/api/loans/' + currentLoanId, {
-                method: 'PUT', headers: {'Content-Type':'application/json'},
-                body: JSON.stringify({status: nuevoStatus})
-            });
+            await fetch('/api/loans/' + currentLoanId, {method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({status:nuevoStatus})});
         }
 
         closeModal('modal-pay');
@@ -923,21 +1208,23 @@
         loadStats();
     }
 
+    /* ─── DEVOLUCIÓN ─────────────────────────────────────────── */
     function openRefundModal() {
         const l = currentLoanData;
         let excess = 0;
         if (l.loanType === 'grande') {
-            // Para grande: exceso = intereses pagados de más este mes
-            const interestMes = l.amount * (l.interest || 0) / 100;
-            const paidInt = l.paidInterest || 0;
-            excess = Math.max(paidInt - interestMes, 0);
+            const intMes = l.amount * (l.interest || 0) / 100;
+            excess = Math.max((l.paidInterest || 0) - intMes, 0);
+        } else if (l.loanType === 'metodo') {
+            const total = calcCuotaFija(l.amount, (l.interest||0)/100, l.totalInstallments||1) * (l.totalInstallments||1);
+            excess = Math.max((l.paidTotal || 0) - total, 0);
         } else {
             const total = l.amount + (l.amount * (l.interest || 0) / 100);
             excess = Math.max((l.paidTotal || 0) - total, 0);
         }
         document.getElementById('refund-excess').textContent = fmt(excess);
-        document.getElementById('refund-amount').value = excess > 0 ? excess : '';
-        document.getElementById('refund-note').value   = 'Devolución cobro de más';
+        document.getElementById('refund-amount').value       = excess > 0 ? excess : '';
+        document.getElementById('refund-note').value         = 'Devolución cobro de más';
         openModal('modal-refund');
     }
 
@@ -945,18 +1232,8 @@
         const amt = parseFloat(document.getElementById('refund-amount').value);
         if (!amt || amt <= 0) return alert('Ingresa un monto válido');
         const note = document.getElementById('refund-note').value || 'Devolución';
-        // Guarda como pago negativo
-        await fetch('/api/payments', {
-            method: 'POST',
-            headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify({loanId: currentLoanId, amount: -amt, note, paymentType: 'normal'})
-        });
-        // Después de devolver plata queda saldo pendiente → mora
-        await fetch('/api/loans/' + currentLoanId, {
-            method: 'PUT',
-            headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify({status: 'overdue'})
-        });
+        await fetch('/api/payments', {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({loanId:currentLoanId,amount:-amt,note,paymentType:'normal'})});
+        await fetch('/api/loans/' + currentLoanId, {method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({status:'overdue'})});
         closeModal('modal-refund');
         openDetail(currentLoanId);
         loadStats();
@@ -969,31 +1246,22 @@
         loadStats();
     }
 
-    // ── NUEVO PRÉSTAMO ────────────────────────────────────────────────
+    /* ─── NUEVO PRÉSTAMO ─────────────────────────────────────── */
     let tipoPrestamo = 'normal';
 
     function setTipoPrestamo(tipo) {
         tipoPrestamo = tipo;
-        const btnNormal = document.getElementById('btn-tipo-normal');
-        const btnGrande = document.getElementById('btn-tipo-grande');
-        const sel = document.getElementById('f-frequency');
-        const optsNormal = sel.querySelectorAll('.opt-normal');
-
-        if (tipo === 'normal') {
-            btnNormal.style.background = 'var(--blue)';
-            btnNormal.style.color = '#fff';
-            btnGrande.style.background = '#fff';
-            btnGrande.style.color = 'var(--blue)';
-            optsNormal.forEach(o => o.style.display = '');
-            sel.value = 'daily';
-        } else {
-            btnGrande.style.background = 'var(--blue)';
-            btnGrande.style.color = '#fff';
-            btnNormal.style.background = '#fff';
-            btnNormal.style.color = 'var(--blue)';
-            optsNormal.forEach(o => o.style.display = 'none');
-            sel.value = 'monthly';
-        }
+        const btnN = document.getElementById('btn-tipo-normal');
+        const btnG = document.getElementById('btn-tipo-grande');
+        const btnM = document.getElementById('btn-tipo-metodo');
+        const sel  = document.getElementById('f-frequency');
+        [btnN, btnG, btnM].forEach(b => { b.style.background='#fff'; b.style.color='var(--blue)'; });
+        sel.querySelectorAll('.opt-normal,.opt-grande').forEach(o => o.style.display = tipo==='metodo'?'none':'');
+        sel.querySelectorAll('.opt-metodo').forEach(o => o.style.display = tipo==='metodo'?'':'none');
+        document.getElementById('f-endDate-group').style.display = tipo==='metodo'?'none':'';
+        if (tipo==='normal')       { btnN.style.background='var(--blue)'; btnN.style.color='#fff'; sel.value='daily'; }
+        else if (tipo==='grande')  { btnG.style.background='var(--blue)'; btnG.style.color='#fff'; sel.value='monthly'; }
+        else                       { btnM.style.background='var(--blue)'; btnM.style.color='#fff'; sel.value='m1'; }
         calcPreview();
     }
 
@@ -1008,19 +1276,34 @@
     }
 
     function calcPreview() {
-        const amount    = parseFloat(document.getElementById('f-amount').value) || 0;
-        const interest  = parseFloat(document.getElementById('f-interest').value) || 0;
+        const amount    = parseFloat(document.getElementById('f-amount').value)    || 0;
+        const interest  = parseFloat(document.getElementById('f-interest').value)  || 0;
         const startDate = document.getElementById('f-startDate').value;
         const endDate   = document.getElementById('f-endDate').value;
         const frequency = document.getElementById('f-frequency').value;
         const preview   = document.getElementById('f-preview');
-        if (!amount || !startDate || !endDate || endDate <= startDate) { preview.style.display='none'; return; }
-        const days = Math.round((new Date(endDate) - new Date(startDate)) / 86400000) ;
-        const cuotas = frequency === 'daily' ? days : frequency === 'weekly' ? Math.ceil(days/7) : Math.ceil(days/30);
-        const total  = amount + (amount * interest / 100);
-        const cuota  = total / Math.max(cuotas, 1);
+        if (!amount) { preview.style.display='none'; return; }
+
+        let cuotas;
+        if (frequency.startsWith('m')) {
+            cuotas = parseInt(frequency.substring(1));
+        } else {
+            if (!startDate || !endDate || endDate <= startDate) { preview.style.display='none'; return; }
+            const days = Math.round((new Date(endDate) - new Date(startDate)) / 86400000);
+            cuotas = frequency==='daily' ? days : frequency==='weekly' ? Math.ceil(days/7) : Math.ceil(days/30);
+        }
+
+        let cuotaAmt;
+        if (tipoPrestamo === 'metodo') {
+            const r = interest / 100;
+            cuotaAmt = calcCuotaFija(amount, r, Math.max(cuotas,1));
+        } else {
+            const total = amount + (amount * interest / 100);
+            cuotaAmt = total / Math.max(cuotas, 1);
+        }
+
         document.getElementById('prev-cuotas').textContent = Math.max(cuotas, 1);
-        document.getElementById('prev-monto').textContent  = fmt(cuota);
+        document.getElementById('prev-monto').textContent  = fmt(cuotaAmt);
         preview.style.display = 'block';
     }
     ['f-amount','f-interest','f-startDate','f-endDate','f-frequency'].forEach(id =>
@@ -1030,18 +1313,31 @@
         const borrower  = document.getElementById('f-borrower').value.trim();
         const amount    = parseFloat(document.getElementById('f-amount').value);
         const startDate = document.getElementById('f-startDate').value;
-        const endDate   = document.getElementById('f-endDate').value;
-        if (!borrower || !amount)   return alert('Completa nombre y monto');
-        if (!startDate || !endDate) return alert('Selecciona fecha de inicio y fecha de fin');
-        if (endDate <= startDate)   return alert('La fecha de fin debe ser mayor a la de inicio');
+        let   endDate   = document.getElementById('f-endDate').value;
+        const frequency = document.getElementById('f-frequency').value;
+
+        if (tipoPrestamo === 'metodo' && frequency.startsWith('m')) {
+            const meses = parseInt(frequency.substring(1));
+            const start = new Date(startDate + 'T00:00:00');
+            start.setMonth(start.getMonth() + meses);
+            endDate = start.toISOString().split('T')[0];
+        }
+
+        if (!borrower || !amount)                                     return alert('Completa nombre y monto');
+        if (!startDate)                                               return alert('Selecciona fecha de inicio');
+        if (tipoPrestamo !== 'metodo' && !endDate)                   return alert('Selecciona fecha de fin');
+        if (tipoPrestamo !== 'metodo' && endDate <= startDate)       return alert('La fecha de fin debe ser mayor a la de inicio');
+
         const phone = document.getElementById('f-phone').value.trim();
         const notes = document.getElementById('f-notes').value.trim();
         const combinedNotes = [phone, notes].filter(Boolean).join(' · ');
-        await fetch('/api/loans', {method:'POST', headers:{'Content-Type':'application/json'},
+        const freqToSend    = frequency.startsWith('m') ? 'monthly' : frequency;
+
+        await fetch('/api/loans', {method:'POST',headers:{'Content-Type':'application/json'},
             body: JSON.stringify({
                 borrower, amount, startDate, endDate,
                 interest:  parseFloat(document.getElementById('f-interest').value) || 0,
-                frequency: document.getElementById('f-frequency').value,
+                frequency: freqToSend,
                 loanType:  tipoPrestamo,
                 notes:     combinedNotes
             })});
@@ -1050,9 +1346,27 @@
         if (document.getElementById('page-prestamos').classList.contains('active')) loadLoans();
     }
 
-    function openModal(id) { document.getElementById(id).classList.add('open'); document.body.style.overflow='hidden'; }
+    /* ─── MODALES ────────────────────────────────────────────── */
+    function openModal(id)  { document.getElementById(id).classList.add('open'); document.body.style.overflow='hidden'; }
     function closeModal(id) { document.getElementById(id).classList.remove('open'); document.body.style.overflow=''; }
-    document.querySelectorAll('.modal-bg').forEach(bg => bg.addEventListener('click', e => { if(e.target===bg) closeModal(bg.id); }));
+    document.querySelectorAll('.modal-bg').forEach(bg =>
+        bg.addEventListener('click', e => { if(e.target===bg) closeModal(bg.id); }));
+
+    /* ─── MODO OSCURO ────────────────────────────────────────── */
+    function toggleDarkMode(enabled) {
+        document.body.classList.toggle('dark-mode', enabled);
+        localStorage.setItem('darkMode', enabled ? '1' : '0');
+    }
+
+    // Restaurar preferencia al cargar
+    (function() {
+        const saved = localStorage.getItem('darkMode');
+        if (saved === '1') {
+            document.body.classList.add('dark-mode');
+            const chk = document.getElementById('toggle-dark-mode');
+            if (chk) chk.checked = true;
+        }
+    })();
 
     loadStats();
 </script>
