@@ -998,7 +998,7 @@
         badge.className   = 'badge ' + (l.status || 'active');
 
         document.getElementById('d-name').textContent          = l.borrower;
-        document.getElementById('d-notes-display').textContent = l.notes || '';
+        document.getElementById('d-notes-display').textContent = [l.phone, l.notes].filter(Boolean).join(' · ');
         document.getElementById('d-principal').textContent     = fmt(principal);
         document.getElementById('d-total').textContent         = fmt(total);
         document.getElementById('d-paid').textContent          = fmt(paid);
@@ -1328,19 +1328,19 @@
         if (tipoPrestamo !== 'metodo' && !endDate)                   return alert('Selecciona fecha de fin');
         if (tipoPrestamo !== 'metodo' && endDate <= startDate)       return alert('La fecha de fin debe ser mayor a la de inicio');
 
-        const phone = document.getElementById('f-phone').value.trim();
-        const notes = document.getElementById('f-notes').value.trim();
-        const combinedNotes = [phone, notes].filter(Boolean).join(' · ');
-        const freqToSend    = frequency.startsWith('m') ? 'monthly' : frequency;
+       const phone = document.getElementById('f-phone').value.trim().replace(/\D/g, '');
+const notes = document.getElementById('f-notes').value.trim();
+const freqToSend = frequency.startsWith('m') ? 'monthly' : frequency;
 
-        await fetch('/api/loans', {method:'POST',headers:{'Content-Type':'application/json'},
-            body: JSON.stringify({
-                borrower, amount, startDate, endDate,
-                interest:  parseFloat(document.getElementById('f-interest').value) || 0,
-                frequency: freqToSend,
-                loanType:  tipoPrestamo,
-                notes:     combinedNotes
-            })});
+await fetch('/api/loans', {method:'POST',headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({
+        borrower, amount, startDate, endDate,
+        interest:  parseFloat(document.getElementById('f-interest').value) || 0,
+        frequency: freqToSend,
+        loanType:  tipoPrestamo,
+        notes:     notes,
+        phone:     phone
+    })});
         closeModal('modal-new');
         loadStats();
         if (document.getElementById('page-prestamos').classList.contains('active')) loadLoans();

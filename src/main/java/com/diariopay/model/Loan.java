@@ -11,7 +11,7 @@ import java.time.LocalDate;
 public class Loan {
     @Id
     private String id;
-
+    private String phone;  // número WhatsApp del prestatario, ej: "573001234567"
     private String userId;
     private String borrower;
     private double amount;
@@ -26,4 +26,5 @@ public class Loan {
     private LocalDate endDate;
     private int totalInstallments;
     private double installmentAmount;
+    private boolean moraNotificada = false;
 }
