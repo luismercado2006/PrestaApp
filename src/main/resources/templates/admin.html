@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+    <title>PrestaApp – Panel Admin</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+        :root{
+          --green:#16a34a;--green-l:#dcfce7;--blue:#1d4ed8;--blue-l:#eff6ff;--red:#dc2626;--red-l:#fef2f2;
+          --gray-50:#f9fafb;--gray-100:#f3f4f6;--gray-200:#e5e7eb;
+          --gray-400:#9ca3af;--gray-600:#4b5563;--gray-700:#374151;--gray-800:#1f2937;--white:#ffffff;
+        }
+        body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--gray-50);min-height:100vh;max-width:920px;margin:0 auto;padding-bottom:60px}
+        .topbar{background:var(--white);padding:16px 20px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--gray-100);position:sticky;top:0;z-index:10}
+        .topbar h1{font-size:17px;font-weight:800;color:var(--gray-800)}
+        .topbar a{font-size:13px;font-weight:700;color:var(--gray-600);text-decoration:none}
+        .wrap{padding:18px 16px}
+        .summary{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:16px}
+        .summary .card{background:var(--white);border:1px solid var(--gray-100);border-radius:14px;padding:14px}
+        .summary .card .lbl{font-size:11px;color:var(--gray-400);font-weight:600;margin-bottom:4px}
+        .summary .card .val{font-size:20px;font-weight:800}
+        .val.green{color:var(--green)}.val.red{color:var(--red)}.val.dark{color:var(--gray-800)}
+        .search{width:100%;padding:12px 14px;border:1.5px solid var(--gray-200);border-radius:12px;font-family:inherit;font-size:14px;margin-bottom:16px;outline:none}
+        .search:focus{border-color:var(--green)}
+        .user-card{background:var(--white);border:1px solid var(--gray-100);border-radius:16px;padding:16px;margin-bottom:12px}
+        .user-card.locked{border-left:4px solid var(--red)}
+        .user-card.active{border-left:4px solid var(--green)}
+        .uc-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px}
+        .uc-name{font-size:15px;font-weight:800;color:var(--gray-800)}
+        .uc-username{font-size:12px;color:var(--gray-400)}
+        .badge{font-size:11px;font-weight:700;padding:3px 10px;border-radius:20px;white-space:nowrap}
+        .badge.active{background:var(--green-l);color:var(--green)}
+        .badge.locked{background:var(--red-l);color:var(--red)}
+        .uc-info{display:flex;flex-wrap:wrap;gap:14px;font-size:12.5px;color:var(--gray-600);margin-bottom:12px}
+        .uc-info b{color:var(--gray-800)}
+        .uc-actions{display:flex;flex-wrap:wrap;gap:8px}
+        .btn-a{flex:1;min-width:100px;padding:9px 10px;border-radius:10px;font-family:inherit;font-size:12.5px;font-weight:700;cursor:pointer;border:none}
+        .btn-activar{background:var(--green-l);color:var(--green)}
+        .btn-desactivar{background:var(--red-l);color:var(--red)}
+        .btn-automatico{background:var(--gray-100);color:var(--gray-600)}
+        .btn-renovar{background:var(--blue-l);color:var(--blue)}
+        .empty{text-align:center;color:var(--gray-400);padding:40px 0;font-size:14px}
+        .override-tag{font-size:10.5px;color:var(--gray-400);margin-top:6px}
+    </style>
+</head>
+<body>
+
+<div class="topbar">
+    <h1>👑 Panel Admin · PrestaApp</h1>
+    <a href="/dashboard">← Volver a la app</a>
+</div>
+
+<div class="wrap">
+    <div class="summary">
+        <div class="card"><div class="lbl">Usuarios</div><div class="val dark" id="sum-total">–</div></div>
+        <div class="card"><div class="lbl">Activos</div><div class="val green" id="sum-active">–</div></div>
+        <div class="card"><div class="lbl">Bloqueados</div><div class="val red" id="sum-locked">–</div></div>
+    </div>
+
+    <input type="text" class="search" id="search-input" placeholder="Buscar por nombre o usuario..." oninput="renderUsers()">
+
+    <div id="users-list"><div class="empty">Cargando usuarios...</div></div>
+</div>
+
+<script>
+    function getCsrfToken() {
+        return document.cookie.split('; ').find(row => row.startsWith('XSRF-TOKEN='))?.split('=')[1];
+    }
+    function csrfHeaders() {
+        return {'Content-Type':'application/json','X-XSRF-TOKEN':getCsrfToken()};
+    }
+    const fmtDate = s => s ? new Date(s).toLocaleDateString('es-CO') : '–';
+
+    let allUsers = [];
+
+    async function loadUsers() {
+        try {
+            allUsers = await (await fetch('/api/admin/users')).json();
+            renderSummary();
+            renderUsers();
+        } catch (e) {
+            document.getElementById('users-list').innerHTML = '<div class="empty">Error cargando usuarios</div>';
+        }
+    }
+
+    function renderSummary() {
+        document.getElementById('sum-total').textContent  = allUsers.length;
+        document.getElementById('sum-active').textContent = allUsers.filter(u => u.active).length;
+        document.getElementById('sum-locked').textContent = allUsers.filter(u => !u.active).length;
+    }
+
+    function renderUsers() {
+        const q = (document.getElementById('search-input').value || '').toLowerCase();
+        const filtered = allUsers.filter(u =>
+            (u.username || '').toLowerCase().includes(q) || (u.name || '').toLowerCase().includes(q)
+        );
+        const el = document.getElementById('users-list');
+        if (!filtered.length) {
+            el.innerHTML = '<div class="empty">Sin resultados</div>';
+            return;
+        }
+        el.innerHTML = filtered.map(u => {
+            const dias = u.daysLeft >= 0 ? (u.daysLeft + ' días') : 'Vencido hace ' + Math.abs(u.daysLeft) + ' días';
+            return `
+            <div class="user-card ${u.active ? 'active' : 'locked'}">
+                <div class="uc-top">
+                    <div>
+                        <div class="uc-name">${u.name || u.username}</div>
+                        <div class="uc-username">@${u.username} ${u.role === 'ADMIN' ? '· 👑 admin' : ''}</div>
+                    </div>
+                    <span class="badge ${u.active ? 'active' : 'locked'}">${u.active ? 'Activo' : 'Bloqueado'}</span>
+                </div>
+                <div class="uc-info">
+                    <span>Registro: <b>${fmtDate(u.createdAt)}</b></span>
+                    <span>Vence: <b>${fmtDate(u.expiresAt)}</b></span>
+                    <span>${dias}</span>
+                </div>
+                <div class="uc-actions">
+                    <button class="btn-a btn-activar" onclick="accion('${u.id}','activar')">✓ Activar</button>
+                    <button class="btn-a btn-desactivar" onclick="accion('${u.id}','desactivar')">✕ Desactivar</button>
+                    <button class="btn-a btn-renovar" onclick="accion('${u.id}','renovar')">↻ Renovar 1 mes</button>
+                    <button class="btn-a btn-automatico" onclick="accion('${u.id}','automatico')">⟲ Automático</button>
+                </div>
+                <div class="override-tag">Control manual: ${u.override}</div>
+            </div>`;
+        }).join('');
+    }
+
+    async function accion(id, tipo) {
+        try {
+            const res = await fetch('/api/admin/users/' + id + '/' + tipo, {method:'POST', headers: csrfHeaders()});
+            if (!res.ok) { alert('No se pudo completar la acción'); return; }
+            await loadUsers();
+        } catch (e) {
+            alert('Error de conexión');
+        }
+    }
+
+    loadUsers();
+</script>
+</body>
+</html>

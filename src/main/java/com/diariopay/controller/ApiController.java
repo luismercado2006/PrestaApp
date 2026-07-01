@@ -39,11 +39,20 @@ class PaymentController {
         paymentRepo.save(p);
 
         // Solo los pagos de capital/normal cuentan para marcar como pagado
-        List<Payment> payments = paymentRepo.findByLoanId(loanId);
+        List<Payment> payments = paymentRepo.findByLoanIdAndArchivadoFalse(loanId);
         double paidCapital = payments.stream()
-                .filter(pay -> !"interest".equals(pay.getPaymentType()))
+                .filter(pay -> "capital".equals(pay.getPaymentType()) || "normal".equals(pay.getPaymentType()))
+                .filter(pay -> pay.getAmount() > 0)
                 .mapToDouble(Payment::getAmount).sum();
-        double total = loan.getAmount() + (loan.getAmount() * loan.getInterest() / 100);
+
+        double total;
+        if ("grande".equals(loan.getLoanType())) {
+            total = loan.getAmount(); // solo capital
+        } else if ("metodo".equals(loan.getLoanType())) {
+            total = loan.getAmount(); // cuota fija cubre todo
+        } else {
+            total = loan.getAmount() + (loan.getAmount() * loan.getInterest() / 100);
+        }
         if (paidCapital >= total) {
             loan.setStatus("paid");
             loanRepo.save(loan);
@@ -77,7 +86,9 @@ class StatsController {
 
         LocalDateTime todayStart = LocalDateTime.now().toLocalDate().atStartOfDay();
         List<Loan>    activeLoans = loanRepo.findByUserIdAndStatus(uid, "active");
-        List<Payment> allPayments = paymentRepo.findByUserId(uid);
+        List<Payment> allPayments = paymentRepo.findByUserId(uid).stream()
+                .filter(p -> !p.isArchivado())
+                .toList();
 
         double totalLoaned    = activeLoans.stream().mapToDouble(Loan::getAmount).sum();
         double totalCollected = allPayments.stream().mapToDouble(Payment::getAmount).sum();
@@ -121,5 +132,77 @@ class StatsController {
         String[] days = {"Lun","Mar","Mié","Jue","Vie","Sáb","Dom"};
         int dow = day.getDayOfWeek().getValue() - 1;
         return days[dow] + " " + day.getDayOfMonth();
+    }
+}
+
+// ─── Notificaciones (comprobantes de pago) ────────────────────────────────────
+@RestController
+@RequestMapping("/api/notifications")
+class NotificationController {
+
+    @Autowired private com.diariopay.repository.PaymentProofRepository proofRepo;
+
+    /** GET /api/notifications -> últimos comprobantes subidos por los prestatarios */
+    @GetMapping
+    public ResponseEntity<?> listar(HttpSession session) {
+        String uid = (String) session.getAttribute("userId");
+        if (uid == null) return ResponseEntity.status(401).body("Unauthorized");
+
+        List<com.diariopay.model.PaymentProof> proofs = proofRepo.findByUserIdOrderByFechaDesc(uid);
+        long noLeidas = proofs.stream().filter(p -> !p.isLeido()).count();
+
+        List<Map<String, Object>> items = proofs.stream().map(p -> {
+            Map<String, Object> m = new LinkedHashMap<>();
+            m.put("id", p.getId());
+            m.put("loanId", p.getLoanId());
+            m.put("borrower", p.getBorrower());
+            m.put("phone", p.getPhone());
+            m.put("amount", p.getAmount());
+            m.put("note", p.getNote());
+            m.put("imageBase64", p.getImageBase64());
+            m.put("estado", p.getEstado());
+            m.put("leido", p.isLeido());
+            m.put("fecha", p.getFecha());
+            return m;
+        }).toList();
+
+        return ResponseEntity.ok(Map.of("noLeidas", noLeidas, "items", items));
+    }
+
+    /** GET /api/notifications/count -> solo el conteo de no leídas (para el badge, liviano) */
+    @GetMapping("/count")
+    public ResponseEntity<?> contar(HttpSession session) {
+        String uid = (String) session.getAttribute("userId");
+        if (uid == null) return ResponseEntity.status(401).body("Unauthorized");
+        long noLeidas = proofRepo.countByUserIdAndLeidoFalse(uid);
+        return ResponseEntity.ok(Map.of("noLeidas", noLeidas));
+    }
+
+    /** PUT /api/notifications/{id}/leido -> marca una notificación como vista */
+    @PutMapping("/{id}/leido")
+    public ResponseEntity<?> marcarLeido(@PathVariable String id, HttpSession session) {
+        String uid = (String) session.getAttribute("userId");
+        if (uid == null) return ResponseEntity.status(401).body("Unauthorized");
+
+        Optional<com.diariopay.model.PaymentProof> opt = proofRepo.findById(id);
+        if (opt.isEmpty() || !opt.get().getUserId().equals(uid))
+            return ResponseEntity.status(404).body("No encontrado");
+
+        com.diariopay.model.PaymentProof p = opt.get();
+        p.setLeido(true);
+        proofRepo.save(p);
+        return ResponseEntity.ok(Map.of("ok", true));
+    }
+
+    /** PUT /api/notifications/leer-todas -> marca todas como vistas */
+    @PutMapping("/leer-todas")
+    public ResponseEntity<?> marcarTodasLeidas(HttpSession session) {
+        String uid = (String) session.getAttribute("userId");
+        if (uid == null) return ResponseEntity.status(401).body("Unauthorized");
+
+        List<com.diariopay.model.PaymentProof> pendientes = proofRepo.findByUserIdAndLeidoFalseOrderByFechaDesc(uid);
+        pendientes.forEach(p -> p.setLeido(true));
+        proofRepo.saveAll(pendientes);
+        return ResponseEntity.ok(Map.of("ok", true));
     }
 }

@@ -27,4 +27,25 @@ public class Loan {
     private int totalInstallments;
     private double installmentAmount;
     private boolean moraNotificada = false;
+    private String ruta;  // nombre de la ruta (opcional), ej: "Santa Rosa"
+
+    // ─── RENOVACIÓN DE CRÉDITO ──────────────────────────────────
+    private boolean renovado = false;
+    private RenovacionSnapshot snapshotAnterior;
+
+    @lombok.Data
+    public static class RenovacionSnapshot {
+        private double amount;
+        private double interest;
+        private String frequency;
+        private String loanType;
+        private String status;
+        private LocalDateTime createdAt;
+        private LocalDateTime dueDate;
+        private LocalDate startDate;
+        private LocalDate endDate;
+        private int totalInstallments;
+        private double installmentAmount;
+        private boolean moraNotificada;
+    }
 }

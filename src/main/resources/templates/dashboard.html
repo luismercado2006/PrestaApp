@@ -122,7 +122,53 @@
           color:var(--gray-600);cursor:pointer;background:none;border:none;padding:4px 6px;border-radius:8px}
         .back-btn svg{width:18px;height:18px}
         .back-btn.visible{display:flex}
-        .topnav-right{min-width:60px;display:flex;justify-content:flex-end}
+        .topnav-right{min-width:60px;display:flex;justify-content:flex-end;align-items:center;gap:8px}
+
+        .bell-btn{position:relative;background:none;border:none;cursor:pointer;padding:4px;
+          color:var(--gray-700);display:flex;align-items:center;justify-content:center}
+        .bell-btn svg{width:22px;height:22px}
+        .bell-badge{position:absolute;top:-2px;right:-2px;background:#dc2626;color:#fff;
+          font-size:10px;font-weight:800;min-width:16px;height:16px;border-radius:8px;
+          display:flex;align-items:center;justify-content:center;padding:0 4px;line-height:1}
+        body.dark-mode .bell-btn{color:#e5e5e5}
+
+        .notif-overlay{position:fixed;inset:0;background:rgba(0,0,0,.35);z-index:400;
+          opacity:0;pointer-events:none;transition:opacity .2s}
+        .notif-overlay.open{opacity:1;pointer-events:auto}
+        .notif-panel{position:fixed;top:0;right:0;height:100%;width:86%;max-width:340px;
+          background:var(--white);z-index:401;transform:translateX(100%);
+          transition:transform .25s ease;display:flex;flex-direction:column;box-shadow:-4px 0 20px rgba(0,0,0,.15)}
+        .notif-panel.open{transform:translateX(0)}
+        body.dark-mode .notif-panel{background:#111111}
+        .notif-panel-header{padding:18px 18px 14px;border-bottom:1px solid var(--gray-100);
+          display:flex;align-items:center;justify-content:space-between}
+        body.dark-mode .notif-panel-header{border-color:#2a2a2a}
+        .notif-panel-header h3{font-size:16px;font-weight:800;color:var(--gray-800)}
+        body.dark-mode .notif-panel-header h3{color:#fff}
+        .notif-close{background:none;border:none;font-size:20px;color:var(--gray-400);cursor:pointer;padding:4px}
+        .notif-mark-all{font-size:12px;font-weight:700;color:var(--primary,#2563eb);background:none;border:none;cursor:pointer;padding:0}
+        .notif-list{flex:1;overflow-y:auto;padding:8px 10px}
+        .notif-empty{padding:40px 16px;text-align:center;color:var(--gray-400);font-size:13px}
+        .notif-item{display:flex;gap:10px;padding:12px 10px;border-radius:12px;cursor:pointer;
+          margin-bottom:4px;background:var(--gray-50);position:relative}
+        body.dark-mode .notif-item{background:#1a1a1a}
+        .notif-item.unread{background:rgba(37,99,235,.08)}
+        body.dark-mode .notif-item.unread{background:rgba(57,255,20,.08)}
+        .notif-item.unread::before{content:'';position:absolute;left:3px;top:16px;width:7px;height:7px;
+          border-radius:50%;background:#2563eb}
+        body.dark-mode .notif-item.unread::before{background:#39ff14}
+        .notif-thumb{width:46px;height:46px;border-radius:10px;object-fit:cover;flex-shrink:0;background:var(--gray-100)}
+        .notif-body{flex:1;min-width:0}
+        .notif-title{font-size:13px;font-weight:700;color:var(--gray-800)}
+        body.dark-mode .notif-title{color:#fff}
+        .notif-sub{font-size:12px;color:var(--gray-500);margin-top:2px}
+        .notif-time{font-size:11px;color:var(--gray-400);margin-top:3px}
+
+        .proof-zoom-overlay{position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:500;
+          display:none;align-items:center;justify-content:center;padding:20px}
+        .proof-zoom-overlay.open{display:flex}
+        .proof-zoom-overlay img{max-width:100%;max-height:100%;border-radius:10px}
+
 
         .drawer-overlay{position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:300;opacity:0;pointer-events:none;transition:opacity .25s}
         .drawer-overlay.open{opacity:1;pointer-events:auto}
@@ -177,9 +223,29 @@
         .loan-right{text-align:right}
         .loan-right .amount{font-size:16px;font-weight:800;color:var(--blue)}
         .badge{display:inline-block;font-size:11px;font-weight:600;padding:2px 8px;border-radius:20px;margin-top:4px}
+        .loan-info .borrower-row{display:flex;align-items:center;gap:6px}
+        .no-phone-dot{width:8px;height:8px;border-radius:50%;background:#e53e3e;display:inline-block;flex-shrink:0;box-shadow:0 0 0 2px rgba(229,62,62,.18)}
+        .d-phone-row{display:flex;align-items:center;gap:8px}
+        .d-phone-edit-btn{font-size:12px;font-weight:700;color:var(--blue);background:#f0f4ff;border:none;border-radius:8px;padding:3px 10px;cursor:pointer;white-space:nowrap}
+        .d-phone-edit-btn.alert{color:#e53e3e;background:#fde8e8}
+        .d-phone-edit-btn:active{opacity:.7}
         .badge.active{background:var(--green-l);color:var(--green)}
         .badge.paid{background:var(--gray-100);color:var(--gray-400)}
         .badge.overdue{background:#fef2f2;color:var(--red)}
+        .countdown-box{background:var(--white);border-radius:16px;padding:16px 14px;border:1px solid var(--gray-100);margin-bottom:14px;text-align:center}
+        .countdown-box.urgent{border-color:#fecaca;background:#fff7f7}
+        .countdown-title{font-size:12px;color:var(--gray-400);font-weight:700;margin-bottom:10px}
+        .countdown-units{display:flex;align-items:flex-start;justify-content:center;gap:6px}
+        .cu-item{display:flex;flex-direction:column;align-items:center;min-width:46px}
+        .cu-num{font-size:22px;font-weight:800;color:var(--gray-800);font-variant-numeric:tabular-nums;background:#f3f4f6;border-radius:10px;padding:6px 8px;min-width:38px}
+        .countdown-box.urgent .cu-num{background:#fde8e8;color:var(--red)}
+        .cu-label{font-size:10px;color:var(--gray-400);margin-top:4px;text-transform:uppercase;letter-spacing:.5px}
+        .cu-sep{font-size:20px;font-weight:800;color:var(--gray-300);padding-top:4px}
+        .premium-toast{position:fixed;top:14px;left:50%;transform:translateX(-50%);z-index:999;background:#1f2937;color:#fff;border-radius:14px;padding:12px 14px;display:none;align-items:center;gap:12px;box-shadow:0 8px 24px rgba(0,0,0,.25);max-width:92vw;width:380px}
+        .premium-toast.show{display:flex}
+        .premium-toast-text{font-size:13px;font-weight:600;flex:1;line-height:1.4}
+        .premium-toast-btn{background:var(--green);color:#fff;border:none;border-radius:8px;padding:6px 10px;font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap}
+        .premium-toast-close{background:transparent;border:none;color:#9ca3af;font-size:14px;cursor:pointer;padding:2px 4px}
         .empty-loans{text-align:center;padding:32px 0;color:var(--gray-400);font-size:14px}
         .loan-item.grande{background:#fff;border:1px solid var(--gray-100) !important;border-left:4px solid #f59e0b !important;padding-left:12px;gap:10px;}
         .loan-item.grande .amount{color:#b45309 !important;}
@@ -290,6 +356,12 @@
 </head>
 <body>
 
+<div class="premium-toast" id="premium-reminder-toast">
+    <div class="premium-toast-text" id="premium-toast-text">–</div>
+    <button type="button" class="premium-toast-btn" onclick="contactarPagoPremium()">Pagar ahora</button>
+    <button type="button" class="premium-toast-close" onclick="closePremiumToast()">✕</button>
+</div>
+
 <div class="drawer-overlay" id="drawer-overlay" onclick="closeDrawer()"></div>
 <div class="drawer" id="drawer">
     <div class="drawer-header">
@@ -306,9 +378,21 @@
         <div class="drawer-item" id="menu-configuracion" onclick="navTo('configuracion')">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>Configuración
         </div>
+        <div class="drawer-item" id="menu-rutas" onclick="navTo('rutas')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12h18M3 6l9-3 9 3M3 18l9 3 9-3"/></svg>Rutas
+        </div>
+        <div class="drawer-item" id="menu-premium" onclick="navTo('premium')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l2.6 6.6L21 9.3l-5 4.6 1.4 6.9L12 17.3 6.6 20.8 8 13.9 3 9.3l6.4-.7z"/></svg>
+            <span id="menu-premium-label">Premium</span>
+            <span id="menu-premium-dot" style="display:none;width:8px;height:8px;border-radius:50%;background:#dc2626;margin-left:auto"></span>
+        </div>
+        <a th:if="${user.role == 'ADMIN'}" href="/admin" class="drawer-item" style="text-decoration:none">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l9 4.9V12c0 5-3.5 8.7-9 10-5.5-1.3-9-5-9-10V6.9z"/></svg>
+            👑 Panel Admin
+        </a>
     </div>
     <div class="drawer-footer">
-        <a href="/logout" class="drawer-logout">
+        <a href="#" onclick="doLogout()" class="drawer-logout">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>Cerrar sesión
         </a>
     </div>
@@ -321,8 +405,31 @@
         <button class="back-btn" id="back-btn" onclick="goBack()">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg>Atrás
         </button>
+        <button class="bell-btn" id="bell-btn" onclick="toggleNotifPanel()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+            <span class="bell-badge" id="bell-badge" style="display:none">0</span>
+        </button>
     </div>
 </nav>
+
+<div class="notif-overlay" id="notif-overlay" onclick="closeNotifPanel()"></div>
+<div class="notif-panel" id="notif-panel">
+    <div class="notif-panel-header">
+        <h3>Notificaciones</h3>
+        <div style="display:flex;align-items:center;gap:14px">
+            <button class="notif-mark-all" onclick="marcarTodasLeidas()">Marcar todo leído</button>
+            <button class="notif-close" onclick="closeNotifPanel()">✕</button>
+        </div>
+    </div>
+    <div class="notif-list" id="notif-list">
+        <div class="notif-empty">Sin notificaciones</div>
+    </div>
+</div>
+
+<div class="proof-zoom-overlay" id="proof-zoom-overlay" onclick="this.classList.remove('open')">
+    <img id="proof-zoom-img" src="" alt="Comprobante">
+</div>
+
 
 <!-- INICIO -->
 <div class="page active" id="page-inicio">
@@ -378,8 +485,11 @@
 <div class="page" id="page-detalle">
     <div class="detail-header-card">
         <div>
-            <div class="d-name" id="d-name">–</div>
-            <div class="d-phone" id="d-notes-display">–</div>
+            <div class="d-name" id="d-name"><span id="d-name-text">–</span> <span id="d-badge-renovado" style="display:none;font-size:11px;font-weight:700;color:#16a34a;background:#dcfce7;border-radius:6px;padding:2px 8px;vertical-align:middle;margin-left:6px">Renovado</span></div>
+            <div class="d-phone-row">
+                <span class="d-phone" id="d-notes-display">–</span>
+                <button type="button" class="d-phone-edit-btn" id="d-phone-edit-btn" onclick="openEditPhone()">Editar número</button>
+            </div>
         </div>
         <span class="badge" id="d-badge">–</span>
     </div>
@@ -465,6 +575,9 @@
         </button>
         <button class="btn-refund" onclick="openRefundModal()" id="btn-refund">↩ Devolución</button>
         <button class="btn-delete" onclick="deleteLoan()">🗑 Eliminar préstamo</button>
+        <button class="btn-refund" onclick="verFactura()" id="btn-factura" style="background:#1a1a2e;color:#00cfff">🧾 Ver factura</button>
+        <button class="btn-refund" onclick="abrirOpcionesRenovacion()" id="btn-renovar" style="background:#0a3d2e;color:#22e8a0">♻ Renovación de crédito</button>
+
     </div>
     <div class="pay-section-title">Historial de pagos</div>
     <div id="d-payments-list"></div>
@@ -493,6 +606,90 @@
                 </label>
             </div>
         </div>
+    </div>
+</div>
+<!-- RUTAS -->
+<div class="page" id="page-rutas">
+    <div class="greeting" style="margin-bottom:20px">
+        <h2>Rutas</h2>
+        <p>Cobro diario por ruta</p>
+    </div>
+    <div id="rutas-lista-view">
+        <div id="rutas-lista-content"></div>
+    </div>
+    <div id="ruta-detalle-view" style="display:none">
+        <button onclick="volverARutas()" style="background:none;border:none;color:var(--blue);font-size:14px;font-weight:700;cursor:pointer;padding:0 0 12px 0;display:flex;align-items:center;gap:6px">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:18px;height:18px"><polyline points="15 18 9 12 15 6"/></svg>Volver a Rutas
+        </button>
+        <div id="ruta-detalle-content"></div>
+    </div>
+</div>
+
+<!-- PREMIUM -->
+<div class="page" id="page-premium">
+    <div class="greeting" style="margin-bottom:20px">
+        <h2>Premium</h2>
+        <p>Tu plan y suscripción</p>
+    </div>
+
+    <div id="premium-card-active" style="display:none;background:var(--white);border-radius:16px;padding:20px;border:1px solid var(--gray-100);margin-bottom:14px">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px">
+            <div style="width:42px;height:42px;border-radius:12px;background:var(--green-l);display:flex;align-items:center;justify-content:center;font-size:20px">✅</div>
+            <div>
+                <div style="font-size:16px;font-weight:800;color:var(--gray-800)">Cuenta activa</div>
+                <div style="font-size:12px;color:var(--gray-400)">Tienes acceso completo a la app</div>
+            </div>
+        </div>
+        <div class="info-card" style="margin-bottom:0">
+            <div class="info-row"><span class="ikey">Inicio de tu cuenta</span><span class="ival" id="prem-start">–</span></div>
+            <div class="info-row"><span class="ikey">Vence el</span><span class="ival" id="prem-expires">–</span></div>
+            <div class="info-row"><span class="ikey">Días restantes</span><span class="ival green" id="prem-days">–</span></div>
+        </div>
+    </div>
+
+    <div class="countdown-box" id="premium-countdown-box" style="display:none">
+        <div class="countdown-title">⏳ Tiempo restante de tu plan</div>
+        <div class="countdown-units">
+            <div class="cu-item"><span class="cu-num" id="cd-days">–</span><span class="cu-label">días</span></div>
+            <div class="cu-sep">:</div>
+            <div class="cu-item"><span class="cu-num" id="cd-hours">–</span><span class="cu-label">horas</span></div>
+            <div class="cu-sep">:</div>
+            <div class="cu-item"><span class="cu-num" id="cd-mins">–</span><span class="cu-label">min</span></div>
+            <div class="cu-sep">:</div>
+            <div class="cu-item"><span class="cu-num" id="cd-secs">–</span><span class="cu-label">seg</span></div>
+        </div>
+    </div>
+
+    <div id="premium-card-locked" style="display:none;background:linear-gradient(135deg,#7f1d1d,#991b1b);border-radius:16px;padding:22px 20px;margin-bottom:14px;color:#fff">
+        <div style="font-size:34px;margin-bottom:8px">🔒</div>
+        <div style="font-size:18px;font-weight:800;margin-bottom:4px">Tu plan venció</div>
+        <div style="font-size:13px;opacity:.85;line-height:1.5">Tu mes de prueba terminó el <strong id="prem-expired-date">–</strong>. Para seguir usando PrestaApp (préstamos, pagos, rutas, etc.) necesitas ponerte al día con tu mensualidad.</div>
+    </div>
+
+    <div id="premium-card-soon" style="display:none;background:#fff7ed;border:1px solid #fed7aa;border-radius:16px;padding:18px 20px;margin-bottom:14px">
+        <div style="font-size:13px;color:#9a3412;font-weight:700;margin-bottom:4px">⏳ Tu prueba está por terminar</div>
+        <div style="font-size:13px;color:#9a3412">Te quedan <strong id="prem-days-soon">–</strong> días. Después de esa fecha la app se bloqueará hasta que actives tu plan.</div>
+    </div>
+
+    <div class="info-card" id="premium-info-locked" style="display:none">
+        <div class="info-row"><span class="ikey">Inicio de tu cuenta</span><span class="ival" id="prem-start-2">–</span></div>
+        <div class="info-row"><span class="ikey">Plan</span><span class="ival">Mensual</span></div>
+    </div>
+
+    <div class="amt-card" style="margin-bottom:14px">
+        <div class="alabel">Valor de la mensualidad</div>
+        <div class="avalue dark" id="prem-price">$ 50.000 / mes</div>
+    </div>
+
+    <div class="action-btns">
+        <button class="btn-register" onclick="contactarPagoPremium()">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg>
+            Pagar mensualidad
+        </button>
+        <button class="btn-refund" onclick="refrescarPremium()" style="background:#eff6ff;color:var(--blue)">↻ Ya pagué, verificar estado</button>
+    </div>
+    <div style="font-size:12px;color:var(--gray-400);text-align:center;margin-top:6px;line-height:1.5">
+        Después de confirmar tu pago, tu cuenta se activa manualmente en un plazo corto.<br>Toca "Ya pagué, verificar estado" para refrescar.
     </div>
 </div>
 
@@ -524,7 +721,7 @@
             </div>
         </div>
         <div class="form-group"><label>Nombre del deudor</label><input type="text" id="f-borrower" placeholder="Ej: Juan Pérez"></div>
-        <div class="form-group"><label>Teléfono (opcional)</label><input type="tel" id="f-phone" placeholder="+57 300..."></div>
+        <div class="form-group"><label>Teléfono <span style="color:#e53e3e">*</span></label><input type="tel" id="f-phone" placeholder="+57 300..." required></div>
         <div class="form-group"><label>Monto prestado ($)</label><input type="number" id="f-amount" placeholder="0" inputmode="numeric"></div>
         <div class="form-group"><label>Interés mensual (%)</label><input type="number" id="f-interest" placeholder="0" inputmode="numeric"></div>
         <div class="form-group"><label>Fecha de inicio</label><input type="date" id="f-startDate"></div>
@@ -553,9 +750,26 @@
             </select>
         </div>
         <div class="form-group"><label>Notas (opcional)</label><textarea id="f-notes" placeholder="Ej: Teléfono como garantía"></textarea></div>
+        <div class="form-group" id="f-ruta-group"><label>Ruta (opcional)</label><input type="text" id="f-ruta" placeholder="Ej: Santa Rosa" list="ruta-suggestions" autocomplete="off"><datalist id="ruta-suggestions"></datalist></div>
         <div class="modal-actions">
             <button class="btn btn-cancel" onclick="closeModal('modal-new')">Cancelar</button>
             <button class="btn btn-save" onclick="saveLoan()">Guardar</button>
+        </div>
+    </div>
+</div>
+
+<!-- MODAL: EDITAR NÚMERO -->
+<div class="modal-bg" id="modal-edit-phone">
+    <div class="modal">
+        <div class="modal-handle"></div>
+        <h2>Editar número</h2>
+        <div class="form-group">
+            <label>Teléfono <span style="color:#e53e3e">*</span></label>
+            <input type="tel" id="f-edit-phone" placeholder="+57 300...">
+        </div>
+        <div class="modal-actions">
+            <button class="btn btn-cancel" onclick="closeModal('modal-edit-phone')">Cancelar</button>
+            <button class="btn btn-save" onclick="saveEditPhone()">Guardar</button>
         </div>
     </div>
 </div>
@@ -574,6 +788,83 @@
         <div class="modal-actions">
             <button class="btn btn-cancel" onclick="closeModal('modal-refund')">Cancelar</button>
             <button class="btn btn-save" style="background:#e53e3e" onclick="saveRefund()">✓ Confirmar devolución</button>
+        </div>
+    </div>
+</div>
+
+<!-- MODAL: SELECCIONAR OPCIÓN DE RENOVACIÓN -->
+<div class="modal-bg" id="modal-renovacion-opciones">
+    <div class="modal">
+        <div class="modal-handle"></div>
+        <h2>Renovación de crédito</h2>
+        <div class="form-group" style="display:flex;flex-direction:column;gap:10px;margin-top:4px">
+            <button type="button" id="opcion-renovar-btn" onclick="seleccionarOpcionRenovar()"
+                    style="text-align:left;padding:14px 16px;border-radius:12px;border:2px solid #16a34a;background:#eafff5;cursor:pointer">
+                <div style="font-weight:800;color:#0a3d2e;font-size:15px">♻ Renovar crédito</div>
+                <div style="font-size:12.5px;color:#3a6b58;margin-top:2px">Pone el préstamo en cero y lo recalcula con un nuevo monto y porcentaje</div>
+            </button>
+            <button type="button" id="opcion-deshacer-btn" onclick="seleccionarOpcionDeshacer()"
+                    style="text-align:left;padding:14px 16px;border-radius:12px;border:2px solid #dc2626;background:#fff1f1;cursor:pointer">
+                <div style="font-weight:800;color:#7a1f1f;font-size:15px">↺ Deshacer renovación</div>
+                <div style="font-size:12.5px;color:#9a4a4a;margin-top:2px">Vuelve al préstamo anterior, tal como estaba antes de renovar</div>
+            </button>
+            <div id="opcion-deshacer-bloqueada-msg" style="display:none;font-size:12px;color:#9ca3af;padding:0 4px">
+                🔒 No disponible: este préstamo no tiene ninguna renovación activa
+            </div>
+        </div>
+        <div class="modal-actions">
+            <button class="btn btn-cancel" onclick="closeModal('modal-renovacion-opciones')">Cancelar</button>
+        </div>
+    </div>
+</div>
+
+<!-- MODAL: RENOVACIÓN DE CRÉDITO -->
+<div class="modal-bg" id="modal-renovar">
+    <div class="modal">
+        <div class="modal-handle"></div>
+        <h2>Renovación de crédito</h2>
+        <div style="background:#eafff5;border-radius:12px;padding:12px 16px;margin-bottom:16px">
+            <div style="font-size:12px;color:#0a3d2e;font-weight:600">El préstamo se pondrá en cero y se recalculará con el nuevo monto y porcentaje</div>
+        </div>
+        <div class="form-group"><label>Monto a ingresar ($)</label><input type="number" id="renovar-amount" placeholder="0" inputmode="numeric"></div>
+        <div class="form-group"><label>Porcentaje (%)</label><input type="number" id="renovar-interest" placeholder="0" inputmode="numeric"></div>
+
+        <!-- Solo para Normal y Grande -->
+        <div id="renovar-fields-normal-grande">
+            <div class="form-group"><label>Fecha de fin</label><input type="date" id="renovar-endDate"></div>
+            <div class="form-group">
+                <label>Frecuencia de cobro</label>
+                <select id="renovar-frequency">
+                    <option value="daily">Diario</option>
+                    <option value="weekly">Semanal</option>
+                    <option value="monthly">Mensual</option>
+                </select>
+            </div>
+        </div>
+
+        <!-- Solo para Método -->
+        <div id="renovar-fields-metodo" style="display:none">
+            <div class="form-group">
+                <label>Plazo</label>
+                <select id="renovar-meses">
+                    <option value="1">1 mes</option>
+                    <option value="2">2 meses</option>
+                    <option value="3">3 meses</option>
+                    <option value="4">4 meses</option>
+                    <option value="5">5 meses</option>
+                    <option value="6">6 meses</option>
+                    <option value="7">7 meses</option>
+                    <option value="8">8 meses</option>
+                    <option value="9">9 meses</option>
+                    <option value="10">10 meses</option>
+                    <option value="11">11 meses</option>
+                    <option value="12">1 año (12 meses)</option>
+                </select>
+            </div>
+        </div>
+        <div class="modal-actions">
+            <button class="btn btn-cancel" onclick="closeModal('modal-renovar')">Cancelar</button>
+            <button class="btn btn-save" style="background:#16a34a" onclick="confirmarRenovacion()">✓ Confirmar renovación</button>
         </div>
     </div>
 </div>
@@ -637,8 +928,121 @@
 
 <script>
     /* ─── UTILIDADES ────────────────────────────────────────── */
+    function getCsrfToken() {
+    return document.cookie.split('; ')
+        .find(row => row.startsWith('XSRF-TOKEN='))
+        ?.split('=')[1];
+}
+
+function csrfHeaders() {
+    return {'Content-Type':'application/json','X-XSRF-TOKEN':getCsrfToken()};
+}
+
+/* ─── NOTIFICACIONES (comprobantes de pago) ──────────────────────────── */
+let notifPollTimer = null;
+
+function timeAgo(iso) {
+    if (!iso) return '';
+    const diffMs = Date.now() - new Date(iso).getTime();
+    const min = Math.floor(diffMs / 60000);
+    if (min < 1) return 'ahora';
+    if (min < 60) return 'hace ' + min + ' min';
+    const hr = Math.floor(min / 60);
+    if (hr < 24) return 'hace ' + hr + ' h';
+    const d = Math.floor(hr / 24);
+    return 'hace ' + d + ' d';
+}
+
+async function refreshNotifBadge() {
+    try {
+        const r = await fetch('/api/notifications/count');
+        if (!r.ok) return;
+        const d = await r.json();
+        const badge = document.getElementById('bell-badge');
+        if (d.noLeidas > 0) {
+            badge.style.display = 'flex';
+            badge.textContent = d.noLeidas > 99 ? '99+' : d.noLeidas;
+        } else {
+            badge.style.display = 'none';
+        }
+    } catch (e) { console.error('Error notif badge:', e); }
+}
+
+async function loadNotifList() {
+    const list = document.getElementById('notif-list');
+    try {
+        const r = await fetch('/api/notifications');
+        if (!r.ok) { list.innerHTML = '<div class="notif-empty">No se pudieron cargar</div>'; return; }
+        const d = await r.json();
+        if (!d.items || d.items.length === 0) {
+            list.innerHTML = '<div class="notif-empty">Sin notificaciones</div>';
+            return;
+        }
+        list.innerHTML = d.items.map(n => `
+            <div class="notif-item ${n.leido ? '' : 'unread'}" onclick="abrirNotificacion('${n.id}')">
+                ${n.imageBase64 ? `<img class="notif-thumb" src="${n.imageBase64}">` : '<div class="notif-thumb"></div>'}
+                <div class="notif-body">
+                    <div class="notif-title">${n.borrower || 'Prestatario'} subió un comprobante</div>
+                    <div class="notif-sub">${n.amount ? fmt(n.amount) : ''} ${n.note ? '· ' + n.note : ''}</div>
+                    <div class="notif-time">${timeAgo(n.fecha)}</div>
+                </div>
+            </div>
+        `).join('');
+    } catch (e) {
+        console.error('Error cargando notificaciones:', e);
+        list.innerHTML = '<div class="notif-empty">No se pudieron cargar</div>';
+    }
+}
+
+function toggleNotifPanel() {
+    const panel = document.getElementById('notif-panel');
+    if (panel.classList.contains('open')) closeNotifPanel();
+    else openNotifPanel();
+}
+function openNotifPanel() {
+    document.getElementById('notif-panel').classList.add('open');
+    document.getElementById('notif-overlay').classList.add('open');
+    loadNotifList();
+}
+function closeNotifPanel() {
+    document.getElementById('notif-panel').classList.remove('open');
+    document.getElementById('notif-overlay').classList.remove('open');
+}
+
+async function abrirNotificacion(id) {
+    // Marcar como leída (deja de contar y se le quita el punto azul)
+    try {
+        await fetch('/api/notifications/' + id + '/leido', {method:'PUT', headers:csrfHeaders()});
+    } catch (e) { console.error(e); }
+    await loadNotifList();
+    refreshNotifBadge();
+
+    // Mostrar la foto del comprobante en grande
+    const r = await fetch('/api/notifications');
+    const d = await r.json();
+    const item = (d.items || []).find(n => n.id === id);
+    if (item && item.imageBase64) {
+        document.getElementById('proof-zoom-img').src = item.imageBase64;
+        document.getElementById('proof-zoom-overlay').classList.add('open');
+    }
+}
+
+async function marcarTodasLeidas() {
+    try {
+        await fetch('/api/notifications/leer-todas', {method:'PUT', headers:csrfHeaders()});
+        await loadNotifList();
+        refreshNotifBadge();
+    } catch (e) { console.error(e); }
+}
+
+function startNotifPolling() {
+    refreshNotifBadge();
+    if (notifPollTimer) clearInterval(notifPollTimer);
+    notifPollTimer = setInterval(refreshNotifBadge, 20000); // cada 20s
+}
     const fmt     = n => '$ ' + Math.round(n).toLocaleString('es-CO');
     const fmtDate = s => s ? new Date(s).toLocaleDateString('es-CO') : '–';
+    const nombreEmpresa = document.querySelector('#page-inicio h2 span')?.textContent || 'PrestaApp';
 
     let currentLoanId   = null;
     let currentCuota    = 0;
@@ -737,7 +1141,12 @@
     }
 
     /* ─── NAVEGACIÓN ────────────────────────────────────────── */
+    let premiumLocked = false; // se actualiza con checkPremiumGate()
+
     function navTo(page, from) {
+        if (premiumLocked && page !== 'premium') {
+            page = 'premium';
+        }
         closeDrawer();
         if (from) prevPage = from;
         document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
@@ -748,7 +1157,7 @@
         document.querySelectorAll('.drawer-item').forEach(d => d.classList.remove('active'));
         const menuEl = document.getElementById('menu-' + page);
         if (menuEl) menuEl.classList.add('active');
-        const titles = { inicio:'PrestaApp', prestamos:'Mis Préstamos', detalle:'Detalle', configuracion:'Configuración' };
+        const titles = { inicio:'PrestaApp', prestamos:'Mis Préstamos', detalle:'Detalle', configuracion:'Configuración', rutas:'Rutas', premium:'Premium' };
         document.getElementById('page-title').textContent = titles[page] || 'PrestaApp';
         const backBtn = document.getElementById('back-btn');
         const menuBtn = document.getElementById('menu-toggle');
@@ -756,7 +1165,7 @@
         if (page === 'inicio') {
             backBtn.classList.remove('visible');
             menuBtn.style.visibility = 'visible';
-            fab.style.display = 'flex';
+            fab.style.display = premiumLocked ? 'none' : 'flex';
         } else if (page === 'detalle') {
             backBtn.classList.add('visible');
             menuBtn.style.visibility = 'hidden';
@@ -764,15 +1173,21 @@
         } else {
             backBtn.classList.add('visible');
             menuBtn.style.visibility = 'visible';
-            fab.style.display = 'flex';
+            fab.style.display = (page === 'premium' || premiumLocked) ? 'none' : 'flex';
         }
-        if (page === 'prestamos') loadLoans();
+        if (page === 'prestamos' && !premiumLocked) loadLoans();
         if (page === 'configuracion') {
             backBtn.classList.add('visible');
             menuBtn.style.visibility = 'visible';
             fab.style.display = 'none';
             const chk = document.getElementById('toggle-dark-mode');
             if (chk) chk.checked = document.body.classList.contains('dark-mode');
+        }
+        if (page === 'rutas' && !premiumLocked) {
+    loadRutas();
+}
+        if (page === 'premium') {
+            renderPremiumPage();
         }
     }
 
@@ -835,7 +1250,7 @@
             <div class="loan-item ${tipoClass(l)}" onclick="openDetail('${l.id}')">
               <div class="${iconClass(l)}">${tipoLabel(l)}</div>
               <div class="loan-info">
-                <div class="borrower">${l.borrower}</div>
+                <div class="borrower-row"><span class="borrower">${l.borrower}</span>${!l.phone ? '<span class="no-phone-dot" title="Sin número registrado"></span>' : ''}</div>
                 <div class="meta">${freqLabel(l.frequency)}</div>
               </div>
               <div class="loan-right">
@@ -908,24 +1323,24 @@
                 nextDueEl.textContent = 'Cuota ' + (cuotasPagadas+1) + ' · ' + fmtDate(nextDate.toISOString());
                 nextDueEl.style.color = nextDate < today ? 'var(--red)' : 'var(--green)';
                 if (nextDate < today && l.status === 'active') {
-                    await fetch('/api/loans/' + id, {method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({status:'overdue'})});
+                    await fetch('/api/loans/' + id, {method:'PUT',headers:csrfHeaders(),body:JSON.stringify({status:'overdue'})});
                 }
             }
 
-        } else if (isGrande) {
-            /* Ocultar tabla para préstamos no-método */
-            document.getElementById('amort-card').style.display = 'none';
+       } else if (isGrande) {
+    document.getElementById('amort-card').style.display = 'none';
 
-            principal = l.amount;
-            const interestRate = l.interest || 0;
-            const intMes = principal * interestRate / 100;
-            total        = principal + intMes;
-            paid         = l.paidTotal || 0;
-            remaining    = principal;
-            numCuotas    = l.totalInstallments || 1;
-            cuota        = intMes;
-            pct          = Math.min((l.paidCapital || 0) / principal * 100, 100);
-            currentCuota = cuota;
+    principal = l.amount;
+    const interestRate = l.interest || 0;
+    const saldoCapital = Math.max(principal - (l.paidCapital || 0), 0);  // ✅ primero el saldo
+    const intMes = saldoCapital * interestRate / 100;                     // ✅ interés sobre saldo
+    total        = saldoCapital + (saldoCapital * interestRate / 100);          // total original de referencia
+    paid         = l.paidTotal || 0;
+    remaining    = saldoCapital;                                          // ✅ lo que falta
+    numCuotas    = l.totalInstallments || 1;
+    cuota        = intMes;                                                // ✅ cuota = interés real
+    pct          = Math.min((l.paidCapital || 0) / principal * 100, 100);
+    currentCuota = cuota;
 
             document.getElementById('cuota-banner-normal').style.display = 'block';
             document.getElementById('cuota-banner-metodo').style.display = 'none';
@@ -943,7 +1358,7 @@
             nextDueEl.textContent = 'Próximo pago · ' + fmtDate(endDate.toISOString());
             nextDueEl.style.color = endDate < today ? 'var(--red)' : 'var(--green)';
             if (endDate < today && l.status === 'active') {
-                await fetch('/api/loans/' + id, {method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({status:'overdue'})});
+                await fetch('/api/loans/' + id, {method:'PUT',headers:csrfHeaders(),body:JSON.stringify({status:'overdue'})});
             }
 
         } else {
@@ -986,7 +1401,7 @@
                 nextDueEl.textContent = 'Cuota ' + (paidCuotas+1) + ' · ' + fmtDate(nextDate.toISOString());
                 nextDueEl.style.color = nextDate < today ? 'var(--red)' : 'var(--green)';
                 if (nextDate < today && l.status === 'active') {
-                    await fetch('/api/loans/' + id, {method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({status:'overdue'})});
+                    await fetch('/api/loans/' + id, {method:'PUT',headers:csrfHeaders(),body:JSON.stringify({status:'overdue'})});
                 }
             }
         }
@@ -997,8 +1412,17 @@
         badge.textContent = badgeMap[l.status] || l.status;
         badge.className   = 'badge ' + (l.status || 'active');
 
-        document.getElementById('d-name').textContent          = l.borrower;
+        document.getElementById('d-name-text').textContent     = l.borrower;
+        document.getElementById('d-badge-renovado').style.display = l.renovado ? 'inline-block' : 'none';
         document.getElementById('d-notes-display').textContent = [l.phone, l.notes].filter(Boolean).join(' · ');
+        const phoneEditBtn = document.getElementById('d-phone-edit-btn');
+        if (!l.phone) {
+            phoneEditBtn.textContent = '⚠ Agregar número';
+            phoneEditBtn.classList.add('alert');
+        } else {
+            phoneEditBtn.textContent = 'Editar número';
+            phoneEditBtn.classList.remove('alert');
+        }
         document.getElementById('d-principal').textContent     = fmt(principal);
         document.getElementById('d-total').textContent         = fmt(total);
         document.getElementById('d-paid').textContent          = fmt(paid);
@@ -1040,7 +1464,8 @@
         document.getElementById('pay-metodo-section').style.display = isMetodo ? 'block' : 'none';
 
         if (isGrande) {
-            const intMes = (l.amount * (l.interest||0)) / 100;
+            const saldoCapital = Math.max(l.amount - (l.paidCapital || 0), 0);
+const intMes = (saldoCapital * (l.interest||0)) / 100;
             document.getElementById('pay-g-interest-label').textContent = fmt(intMes);
             document.getElementById('pay-g-interest').placeholder = fmt(intMes);
         }
@@ -1093,26 +1518,27 @@
         preview.style.display = 'block';
     }
 
-    function calcGrandePago() {
-        if (!currentLoanData) return;
-        const interestMonth = (currentLoanData.amount * (currentLoanData.interest || 0)) / 100;
-        const abonoInt = parseFloat(document.getElementById('pay-g-interest').value) || 0;
-        const abonoCap = parseFloat(document.getElementById('pay-g-capital').value) || 0;
-        const preview  = document.getElementById('pay-g-preview');
-        if (abonoInt <= 0 && abonoCap <= 0) { preview.style.display='none'; return; }
-        let msg = '';
-        if (abonoInt >= interestMonth && abonoCap > 0) {
-            const newCap = Math.max(currentLoanData.amount - abonoCap, 0);
-            const newInt = (newCap * (currentLoanData.interest || 0)) / 100;
-            msg = `✓ Capital queda en ${fmt(newCap)} · Nuevo interés mensual: ${fmt(newInt)} · Se amplía 1 mes`;
-        } else if (abonoInt >= interestMonth) {
-            msg = `✓ Intereses pagados · Se amplía 1 mes`;
-        } else {
-            msg = `Faltan ${fmt(interestMonth - abonoInt)} para cubrir intereses del mes`;
-        }
-        document.getElementById('pay-g-preview-text').textContent = msg;
-        preview.style.display = 'block';
+   function calcGrandePago() {
+    if (!currentLoanData) return;
+    const saldoCapital = Math.max(currentLoanData.amount - (currentLoanData.paidCapital || 0), 0);
+    const interestMonth = (saldoCapital * (currentLoanData.interest || 0)) / 100;
+    const abonoInt = parseFloat(document.getElementById('pay-g-interest').value) || 0;
+    const abonoCap = parseFloat(document.getElementById('pay-g-capital').value) || 0;
+    const preview  = document.getElementById('pay-g-preview');
+    if (abonoInt <= 0 && abonoCap <= 0) { preview.style.display='none'; return; }
+    let msg = '';
+    if (abonoInt >= interestMonth && abonoCap > 0) {
+        const newCap = Math.max(saldoCapital - abonoCap, 0);  // ✅ resta del saldo real
+        const newInt = (newCap * (currentLoanData.interest || 0)) / 100;
+        msg = `✓ Capital queda en ${fmt(newCap)} · Nuevo interés mensual: ${fmt(newInt)} · Se amplía 1 mes`;
+    } else if (abonoInt >= interestMonth) {
+        msg = `✓ Intereses pagados · Se amplía 1 mes`;
+    } else {
+        msg = `Faltan ${fmt(interestMonth - abonoInt)} para cubrir intereses del mes`;
     }
+    document.getElementById('pay-g-preview-text').textContent = msg;
+    preview.style.display = 'block';
+}
 
     /* ─── GUARDAR PAGO ───────────────────────────────────────── */
     async function savePayment() {
@@ -1139,50 +1565,54 @@
 
             if (abonoInt > 0) {
                 await fetch('/api/payments', {
-                    method:'POST', headers:{'Content-Type':'application/json'},
+                    method:'POST', headers:csrfHeaders(),
                     body: JSON.stringify({loanId: currentLoanId, amount: abonoInt, note: note || 'Intereses cuota ' + numCuotaActual, paymentType:'interest'})
                 });
             }
             if (abonoCap > 0) {
                 await fetch('/api/payments', {
-                    method:'POST', headers:{'Content-Type':'application/json'},
+                    method:'POST', headers:csrfHeaders(),
                     body: JSON.stringify({loanId: currentLoanId, amount: abonoCap, note: note || 'Capital cuota ' + numCuotaActual, paymentType:'capital'})
                 });
             }
 
             if (numCuotaActual >= n) {
                 await fetch('/api/loans/' + currentLoanId, {
-                    method:'PUT', headers:{'Content-Type':'application/json'},
+                    method:'PUT', headers:csrfHeaders(),
                     body: JSON.stringify({status:'paid'})
                 });
             }
 
-        } else if (isGrande) {
-            const interestMonth = (currentLoanData.amount * (currentLoanData.interest || 0)) / 100;
-            const abonoInt = parseFloat(document.getElementById('pay-g-interest').value) || 0;
-            const abonoCap = parseFloat(document.getElementById('pay-g-capital').value) || 0;
-            const note     = document.getElementById('pay-g-note').value;
-            if (abonoInt <= 0 && abonoCap <= 0) return alert('Ingresa al menos un abono');
-            if (abonoInt > 0) {
-                await fetch('/api/payments', {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({loanId:currentLoanId,amount:abonoInt,note:'Intereses',paymentType:'interest'})});
-            }
-            if (abonoCap > 0) {
-                await fetch('/api/payments', {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({loanId:currentLoanId,amount:abonoCap,note:note||'Abono capital',paymentType:'capital'})});
-            }
-            if (abonoInt >= interestMonth) {
-                const l2        = await (await fetch('/api/loans/' + currentLoanId)).json();
-                const newEndDate = new Date(l2.endDate || l2.dueDate);
-                newEndDate.setMonth(newEndDate.getMonth() + 1);
-                const updateBody = { endDate: newEndDate.toISOString().split('T')[0], status:'active' };
-                if (abonoCap > 0) updateBody.amount = Math.max(currentLoanData.amount - abonoCap, 0);
-                await fetch('/api/loans/' + currentLoanId, {method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(updateBody)});
-            }
+       } else if (isGrande) {
+    const saldoCapital = Math.max(currentLoanData.amount - (currentLoanData.paidCapital || 0), 0);
+    const interestMonth = (saldoCapital * (currentLoanData.interest || 0)) / 100;
+    const abonoInt = parseFloat(document.getElementById('pay-g-interest').value) || 0;
+    const abonoCap = parseFloat(document.getElementById('pay-g-capital').value) || 0;
+    const note     = document.getElementById('pay-g-note').value;
+    if (abonoInt <= 0 && abonoCap <= 0) return alert('Ingresa al menos un abono');
+    if (abonoInt > 0) {
+        await fetch('/api/payments', {method:'POST',headers:csrfHeaders(),body:JSON.stringify({loanId:currentLoanId,amount:abonoInt,note:'Intereses',paymentType:'interest'})});
+    }
+    if (abonoCap > 0) {
+        await fetch('/api/payments', {method:'POST',headers:csrfHeaders(),body:JSON.stringify({loanId:currentLoanId,amount:abonoCap,note:note||'Abono capital',paymentType:'capital'})});
+    }
+    const loanActualizado = await (await fetch('/api/loans/' + currentLoanId)).json();
+    const capitalYaPagado = loanActualizado.paidCapital || 0;
+    const saldoTrasAbono  = Math.max(loanActualizado.amount - capitalYaPagado, 0);
+    if (saldoTrasAbono <= 0) {
+        await fetch('/api/loans/' + currentLoanId, {method:'PUT',headers:csrfHeaders(),body:JSON.stringify({status:'paid'})});
+    } else if (abonoInt >= interestMonth) {
+        const newEndDate = new Date(loanActualizado.endDate || loanActualizado.dueDate);
+        newEndDate.setMonth(newEndDate.getMonth() + 1);
+        const updateBody = { endDate: newEndDate.toISOString().split('T')[0], status: 'active' };
+        await fetch('/api/loans/' + currentLoanId, {method:'PUT',headers:csrfHeaders(),body:JSON.stringify(updateBody)});
+    }
 
         } else {
             const amt = parseFloat(document.getElementById('pay-amount').value);
             if (!amt || amt <= 0) return alert('Ingresa un monto válido');
             const note = document.getElementById('pay-note').value;
-            await fetch('/api/payments', {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({loanId:currentLoanId,amount:amt,note})});
+            await fetch('/api/payments', {method:'POST',headers:csrfHeaders(),body:JSON.stringify({loanId:currentLoanId,amount:amt,note})});
             const l        = await (await fetch('/api/loans/' + currentLoanId)).json();
             const total2   = l.totalInstallments || 1;
             const cuota2   = l.installmentAmount || 1;
@@ -1200,7 +1630,7 @@
                 nextDate.setHours(0,0,0,0);
                 nuevoStatus = nextDate < today ? 'overdue' : 'active';
             }
-            await fetch('/api/loans/' + currentLoanId, {method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({status:nuevoStatus})});
+            await fetch('/api/loans/' + currentLoanId, {method:'PUT',headers:csrfHeaders(),body:JSON.stringify({status:nuevoStatus})});
         }
 
         closeModal('modal-pay');
@@ -1232,47 +1662,284 @@
         const amt = parseFloat(document.getElementById('refund-amount').value);
         if (!amt || amt <= 0) return alert('Ingresa un monto válido');
         const note = document.getElementById('refund-note').value || 'Devolución';
-        await fetch('/api/payments', {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({loanId:currentLoanId,amount:-amt,note,paymentType:'normal'})});
-        await fetch('/api/loans/' + currentLoanId, {method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({status:'overdue'})});
+        await fetch('/api/payments', {method:'POST',headers:csrfHeaders(),body:JSON.stringify({loanId:currentLoanId,amount:-amt,note,paymentType:'normal'})});
+        await fetch('/api/loans/' + currentLoanId, {method:'PUT',headers:csrfHeaders(),body:JSON.stringify({status:'overdue'})});
         closeModal('modal-refund');
         openDetail(currentLoanId);
         loadStats();
     }
 
-    async function deleteLoan() {
-        if (!confirm('¿Eliminar este préstamo y todos sus pagos?')) return;
-        await fetch('/api/loans/' + currentLoanId, {method:'DELETE'});
-        navTo('prestamos');
+    /* ─── RENOVACIÓN DE CRÉDITO ──────────────────────────────── */
+
+    function abrirOpcionesRenovacion() {
+        const l = currentLoanData;
+        const btnDeshacer  = document.getElementById('opcion-deshacer-btn');
+        const msgBloqueado = document.getElementById('opcion-deshacer-bloqueada-msg');
+
+        if (l && l.renovado) {
+            btnDeshacer.disabled = false;
+            btnDeshacer.style.opacity = '1';
+            btnDeshacer.style.cursor  = 'pointer';
+            btnDeshacer.style.pointerEvents = 'auto';
+            msgBloqueado.style.display = 'none';
+        } else {
+            btnDeshacer.disabled = true;
+            btnDeshacer.style.opacity = '0.45';
+            btnDeshacer.style.cursor  = 'not-allowed';
+            btnDeshacer.style.pointerEvents = 'none';
+            msgBloqueado.style.display = 'block';
+        }
+        openModal('modal-renovacion-opciones');
+    }
+
+    function seleccionarOpcionRenovar() {
+        closeModal('modal-renovacion-opciones');
+        abrirRenovacion();
+    }
+
+    function seleccionarOpcionDeshacer() {
+        const l = currentLoanData;
+        if (!l || !l.renovado) return;
+        closeModal('modal-renovacion-opciones');
+        deshacerRenovacion();
+    }
+
+    function abrirRenovacion() {
+    const l = currentLoanData;
+    const isMetodo = l && l.loanType === 'metodo';
+    const isGrande = l && l.loanType === 'grande';
+
+    document.getElementById('renovar-amount').value   = '';
+    document.getElementById('renovar-interest').value = '';
+
+    document.getElementById('renovar-fields-normal-grande').style.display = isMetodo ? 'none' : '';
+    document.getElementById('renovar-fields-metodo').style.display        = isMetodo ? '' : 'none';
+
+    if (!isMetodo) {
+        document.getElementById('renovar-endDate').value  = '';
+        const freqSel = document.getElementById('renovar-frequency');
+
+        // NUEVO: en Préstamo Grande, solo permitir Mensual
+        Array.from(freqSel.options).forEach(opt => {
+            opt.style.display = (isGrande && opt.value !== 'monthly') ? 'none' : '';
+        });
+        freqSel.value = isGrande ? 'monthly' : (l.frequency || 'daily');
+    } else {
+        document.getElementById('renovar-meses').value = l.totalInstallments || '1';
+    }
+    openModal('modal-renovar');
+}
+
+    async function confirmarRenovacion() {
+    const amount   = parseFloat(document.getElementById('renovar-amount').value);
+    const interest = parseFloat(document.getElementById('renovar-interest').value);
+    if (!amount || amount <= 0)                          return alert('Ingresa un monto válido');
+    if (isNaN(interest) || interest < 0)                 return alert('Ingresa un porcentaje válido');
+
+    const l        = currentLoanData;
+    const isMetodo = l && l.loanType === 'metodo';
+
+    let endDate, frequency, totalInstallments;
+
+    if (isMetodo) {
+        const meses = parseInt(document.getElementById('renovar-meses').value);
+        const start = new Date();
+        start.setMonth(start.getMonth() + meses);
+        endDate           = start.toISOString().split('T')[0];
+        frequency         = 'monthly';
+        totalInstallments = meses;
+    } else {
+        endDate   = document.getElementById('renovar-endDate').value;
+        frequency = document.getElementById('renovar-frequency').value;
+        if (!endDate) return alert('Selecciona la fecha de fin');
+    }
+
+    if (!confirm('¿Confirmas la renovación?\n\nMonto: $' + amount.toLocaleString('es-CO') + ' · Interés: ' + interest + '%')) return;
+
+    const body = { amount, interest, endDate, frequency };
+    if (isMetodo) body.totalInstallments = totalInstallments;
+
+    const res = await fetch('/api/loans/' + currentLoanId + '/renovar', {
+        method: 'POST', headers: csrfHeaders(), body: JSON.stringify(body)
+    });
+    if (!res.ok) return alert('No se pudo renovar: ' + await res.text());
+
+    closeModal('modal-renovar');
+    openDetail(currentLoanId);
+    loadStats();
+}
+
+    async function deshacerRenovacion() {
+        if (!confirm('¿Deshacer la renovación de este crédito?\n\nEl préstamo volverá exactamente al estado anterior (monto, porcentaje y pagos de antes de renovar).')) {
+            return;
+        }
+        const res = await fetch('/api/loans/' + currentLoanId + '/deshacer-renovacion', {
+            method: 'POST',
+            headers: csrfHeaders()
+        });
+        if (!res.ok) {
+            const msg = await res.text();
+            return alert('No se pudo deshacer la renovación: ' + msg);
+        }
+        openDetail(currentLoanId);
         loadStats();
     }
+
+    function verFactura() {
+    const l = currentLoanData;
+    const isGrande = l.loanType === 'grande';
+    const isMetodo = l.loanType === 'metodo';
+
+    const saldoCapital = isGrande ? Math.max(l.amount - (l.paidCapital || 0), 0) : 0;
+    const interes      = isGrande ? (saldoCapital * (l.interest || 0) / 100) : 0;
+
+    const pagos = (l.payments || []).slice().reverse().map(p => `
+        <tr>
+            <td>${new Date(p.date).toLocaleDateString('es-CO')}</td>
+            <td>${p.note || '–'}</td>
+            <td style="text-align:right;color:${p.amount < 0 ? '#e53e3e' : '#16a34a'};font-weight:700">
+                ${p.amount < 0 ? '− $ ' + Math.abs(Math.round(p.amount)).toLocaleString('es-CO') : '$ ' + Math.round(p.amount).toLocaleString('es-CO')}
+            </td>
+        </tr>`).join('');
+
+    const tipoLabel = l.loanType === 'grande' ? 'Préstamo Grande' : l.loanType === 'metodo' ? 'Préstamo Método' : 'Préstamo Normal';
+
+    const html = `<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Factura – ${l.borrower}</title>
+<style>
+    body { font-family: Arial, sans-serif; max-width: 600px; margin: 40px auto; padding: 20px; color: #1f2937; }
+    h1 { font-size: 22px; margin-bottom: 4px; }
+    .sub { color: #6b7280; font-size: 14px; margin-bottom: 24px; }
+    .section { margin-bottom: 24px; }
+    .section-title { font-size: 13px; font-weight: 700; color: #6b7280; text-transform: uppercase; letter-spacing: .5px; margin-bottom: 10px; border-bottom: 1px solid #e5e7eb; padding-bottom: 6px; }
+    .row { display: flex; justify-content: space-between; padding: 7px 0; border-bottom: 1px solid #f3f4f6; font-size: 14px; }
+    .row .key { color: #6b7280; }
+    .row .val { font-weight: 700; }
+    .val.green { color: #16a34a; }
+    .val.red { color: #dc2626; }
+    .val.blue { color: #1d4ed8; }
+    table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    th { text-align: left; padding: 8px; background: #f9fafb; color: #6b7280; font-size: 11px; text-transform: uppercase; }
+    td { padding: 8px; border-top: 1px solid #f3f4f6; }
+    .footer { margin-top: 32px; text-align: center; font-size: 12px; color: #9ca3af; }
+    @media print { body { margin: 20px; } }
+</style>
+</head>
+<body>
+<h1>Estado de Préstamo</h1>
+<div style="font-size:15px;font-weight:700;color:#1d4ed8;margin-bottom:2px">Empresa: ${nombreEmpresa}</div>
+<div class="sub">${tipoLabel} · Generado el ${new Date().toLocaleDateString('es-CO')}</div>
+
+<div class="section">
+    <div class="section-title">Deudor</div>
+    <div class="row"><span class="key">Nombre</span><span class="val">${l.borrower}</span></div>
+    ${l.phone ? `<div class="row"><span class="key">Teléfono</span><span class="val">${l.phone}</span></div>` : ''}
+    ${l.notes ? `<div class="row"><span class="key">Notas</span><span class="val">${l.notes}</span></div>` : ''}
+</div>
+
+<div class="section">
+    <div class="section-title">Detalle del préstamo</div>
+    <div class="row"><span class="key">Monto prestado</span><span class="val blue">$ ${Math.round(l.amount).toLocaleString('es-CO')}</span></div>
+    <div class="row"><span class="key">Interés mensual</span><span class="val">${l.interest || 0}%</span></div>
+    <div class="row"><span class="key">Fecha de inicio</span><span class="val">${new Date(l.createdAt).toLocaleDateString('es-CO')}</span></div>
+    <div class="row"><span class="key">Fecha de vencimiento</span><span class="val">${new Date(l.dueDate).toLocaleDateString('es-CO')}</span></div>
+    <div class="row"><span class="key">Estado</span><span class="val ${l.status === 'paid' ? 'green' : l.status === 'overdue' ? 'red' : ''}">${l.status === 'active' ? 'Activo' : l.status === 'paid' ? 'Pagado' : 'En mora'}</span></div>
+</div>
+
+<div class="section">
+    <div class="section-title">Resumen financiero</div>
+    <div class="row"><span class="key">Total cobrado</span><span class="val green">$ ${Math.round(l.paidTotal || 0).toLocaleString('es-CO')}</span></div>
+    ${isGrande ? `
+    <div class="row"><span class="key">Capital pagado</span><span class="val green">$ ${Math.round(l.paidCapital || 0).toLocaleString('es-CO')}</span></div>
+    <div class="row"><span class="key">Capital pendiente</span><span class="val red">$ ${Math.round(saldoCapital).toLocaleString('es-CO')}</span></div>
+    <div class="row"><span class="key">Interés próximo mes</span><span class="val">$ ${Math.round(interes).toLocaleString('es-CO')}</span></div>
+    ` : `
+    <div class="row"><span class="key">Por cobrar</span><span class="val red">$ ${Math.round(Math.max((l.amount + l.amount * (l.interest||0)/100) - (l.paidTotal||0), 0)).toLocaleString('es-CO')}</span></div>
+    `}
+</div>
+
+<div class="section">
+    <div class="section-title">Historial de pagos</div>
+    <table>
+        <thead><tr><th>Fecha</th><th>Descripción</th><th style="text-align:right">Monto</th></tr></thead>
+        <tbody>${pagos || '<tr><td colspan="3" style="color:#9ca3af;text-align:center">Sin pagos</td></tr>'}</tbody>
+    </table>
+</div>
+
+<div class="footer">PrestaApp · ${new Date().toLocaleDateString('es-CO')}</div>
+<scr` + `ipt>window.print();</scr` + `ipt>
+</body>
+</html>`;
+
+const win = window.open('', '_blank');
+win.document.write(html);
+win.document.close();
+}
+
+    function doLogout() {
+    const form = document.createElement('form');
+    form.method = 'POST';
+    form.action = '/logout';
+    const csrf = document.createElement('input');
+    csrf.type = 'hidden';
+    csrf.name = '_csrf';
+    csrf.value = getCsrfToken();
+    form.appendChild(csrf);
+    document.body.appendChild(form);
+    form.submit();
+}
+
+async function deleteLoan() {
+    if (!confirm('¿Eliminar este préstamo y todos sus pagos?')) return;
+    await fetch('/api/loans/' + currentLoanId, {method:'DELETE', headers:csrfHeaders()});
+    navTo('prestamos');
+    loadStats();
+}
 
     /* ─── NUEVO PRÉSTAMO ─────────────────────────────────────── */
     let tipoPrestamo = 'normal';
 
     function setTipoPrestamo(tipo) {
-        tipoPrestamo = tipo;
-        const btnN = document.getElementById('btn-tipo-normal');
-        const btnG = document.getElementById('btn-tipo-grande');
-        const btnM = document.getElementById('btn-tipo-metodo');
-        const sel  = document.getElementById('f-frequency');
-        [btnN, btnG, btnM].forEach(b => { b.style.background='#fff'; b.style.color='var(--blue)'; });
-        sel.querySelectorAll('.opt-normal,.opt-grande').forEach(o => o.style.display = tipo==='metodo'?'none':'');
-        sel.querySelectorAll('.opt-metodo').forEach(o => o.style.display = tipo==='metodo'?'':'none');
-        document.getElementById('f-endDate-group').style.display = tipo==='metodo'?'none':'';
-        if (tipo==='normal')       { btnN.style.background='var(--blue)'; btnN.style.color='#fff'; sel.value='daily'; }
-        else if (tipo==='grande')  { btnG.style.background='var(--blue)'; btnG.style.color='#fff'; sel.value='monthly'; }
-        else                       { btnM.style.background='var(--blue)'; btnM.style.color='#fff'; sel.value='m1'; }
-        calcPreview();
+    tipoPrestamo = tipo;
+    const btnN = document.getElementById('btn-tipo-normal');
+    const btnG = document.getElementById('btn-tipo-grande');
+    const btnM = document.getElementById('btn-tipo-metodo');
+    const sel  = document.getElementById('f-frequency');
+    [btnN, btnG, btnM].forEach(b => { b.style.background='#fff'; b.style.color='var(--blue)'; });
+    sel.querySelectorAll('.opt-normal,.opt-grande').forEach(o => o.style.display = tipo==='metodo'?'none':'');
+    sel.querySelectorAll('.opt-metodo').forEach(o => o.style.display = tipo==='metodo'?'':'none');
+
+    // NUEVO: en Préstamo Grande solo permitir Mensual
+    if (tipo === 'grande') {
+        sel.querySelectorAll('.opt-normal').forEach(o => {
+            if (o.value !== 'monthly') o.style.display = 'none';
+        });
     }
 
+    document.getElementById('f-endDate-group').style.display = tipo==='metodo'?'none':'';
+    if (tipo==='normal')       { btnN.style.background='var(--blue)'; btnN.style.color='#fff'; sel.value='daily'; }
+    else if (tipo==='grande')  { btnG.style.background='var(--blue)'; btnG.style.color='#fff'; sel.value='monthly'; }
+    else                       { btnM.style.background='var(--blue)'; btnM.style.color='#fff'; sel.value='m1'; }
+    calcPreview();
+}
+
     function openNewLoan() {
+        if (premiumLocked) { navTo('premium'); return; }
         tipoPrestamo = 'normal';
-        ['f-borrower','f-phone','f-amount','f-interest','f-notes'].forEach(id => document.getElementById(id).value='');
+        ['f-borrower','f-phone','f-amount','f-interest','f-notes','f-ruta'].forEach(id => document.getElementById(id).value='');
         document.getElementById('f-startDate').value = new Date().toISOString().split('T')[0];
         document.getElementById('f-endDate').value   = '';
         document.getElementById('f-preview').style.display = 'none';
         setTipoPrestamo('normal');
-        openModal('modal-new');
+// Cargar sugerencias de rutas existentes
+fetch('/api/loans/rutas').then(r=>r.json()).then(rutas => {
+    const dl = document.getElementById('ruta-suggestions');
+    dl.innerHTML = rutas.map(r=>`<option value="${r}">`).join('');
+}).catch(()=>{});
+openModal('modal-new');
     }
 
     function calcPreview() {
@@ -1328,21 +1995,52 @@
         if (tipoPrestamo !== 'metodo' && !endDate)                   return alert('Selecciona fecha de fin');
         if (tipoPrestamo !== 'metodo' && endDate <= startDate)       return alert('La fecha de fin debe ser mayor a la de inicio');
 
-       const phone = document.getElementById('f-phone').value.trim().replace(/\D/g, '');
-const notes = document.getElementById('f-notes').value.trim();
-const freqToSend = frequency.startsWith('m') ? 'monthly' : frequency;
+      const phone = document.getElementById('f-phone').value.trim().replace(/\D/g, '');
+      if (!phone) { alert('El número de teléfono es obligatorio'); return; }
+      const notes = document.getElementById('f-notes').value.trim();
+      const ruta  = document.getElementById('f-ruta').value.trim();
+      const freqToSend = frequency.startsWith('m') ? 'monthly' : frequency;
 
-await fetch('/api/loans', {method:'POST',headers:{'Content-Type':'application/json'},
-    body: JSON.stringify({
+       const resp = await fetch('/api/loans', {method:'POST',headers:csrfHeaders(),
+            body: JSON.stringify({
         borrower, amount, startDate, endDate,
         interest:  parseFloat(document.getElementById('f-interest').value) || 0,
         frequency: freqToSend,
         loanType:  tipoPrestamo,
         notes:     notes,
-        phone:     phone
+        phone:     phone,
+        ruta:      ruta
     })});
+        if (!resp.ok) {
+            const err = await resp.json().catch(() => ({}));
+            alert(err.error || 'No se pudo guardar el préstamo');
+            return;
+        }
         closeModal('modal-new');
         loadStats();
+        if (document.getElementById('page-prestamos').classList.contains('active')) loadLoans();
+    }
+
+    /* ─── EDITAR NÚMERO DE TELÉFONO ──────────────────────────── */
+    function openEditPhone() {
+        document.getElementById('f-edit-phone').value = (currentLoanData && currentLoanData.phone) || '';
+        openModal('modal-edit-phone');
+    }
+
+    async function saveEditPhone() {
+        const phone = document.getElementById('f-edit-phone').value.trim().replace(/\D/g, '');
+        if (!phone) { alert('El número de teléfono es obligatorio'); return; }
+        const resp = await fetch('/api/loans/' + currentLoanId, {
+            method: 'PUT', headers: csrfHeaders(),
+            body: JSON.stringify({ phone: phone })
+        });
+        if (!resp.ok) {
+            const err = await resp.json().catch(() => ({}));
+            alert(err.error || 'No se pudo guardar el número');
+            return;
+        }
+        closeModal('modal-edit-phone');
+        await openDetail(currentLoanId);
         if (document.getElementById('page-prestamos').classList.contains('active')) loadLoans();
     }
 
@@ -1367,8 +2065,250 @@ await fetch('/api/loans', {method:'POST',headers:{'Content-Type':'application/js
             if (chk) chk.checked = true;
         }
     })();
+    /* ─── RUTAS ─────────────────────────────────────────────── */
+async function loadRutas() {
+    const cont = document.getElementById('rutas-lista-content');
+    cont.innerHTML = '<p style="color:var(--gray-400);text-align:center;padding:20px">Cargando rutas…</p>';
+    document.getElementById('rutas-lista-view').style.display = '';
+    document.getElementById('ruta-detalle-view').style.display = 'none';
+    try {
+        const rutas = await fetch('/api/loans/rutas').then(r=>r.json());
+        if (!rutas.length) {
+            cont.innerHTML = `<div style="text-align:center;padding:40px 20px">
+                <div style="font-size:40px;margin-bottom:12px">🗺️</div>
+                <div style="font-weight:700;color:var(--gray-700);margin-bottom:6px">Sin rutas registradas</div>
+                <div style="font-size:13px;color:var(--gray-400)">Al crear un préstamo Normal o Grande, escribe el nombre de la ruta en el campo opcional "Ruta".</div>
+            </div>`;
+            return;
+        }
+        const datos = await Promise.all(rutas.map(r =>
+            fetch('/api/loans/rutas/' + encodeURIComponent(r)).then(x=>x.json())
+        ));
+        cont.innerHTML = datos.map(d => `
+            <div onclick="verRuta('${d.ruta.replace(/'/g,"\\'")}') " style="background:var(--white);border-radius:16px;padding:16px 18px;margin-bottom:12px;box-shadow:0 1px 4px rgba(0,0,0,.07);cursor:pointer;display:flex;justify-content:space-between;align-items:center">
+                <div>
+                    <div style="font-weight:800;font-size:16px;color:var(--gray-800)">${d.ruta}</div>
+                    <div style="font-size:12px;color:var(--gray-400);margin-top:3px">${d.prestamos.length} préstamo${d.prestamos.length!==1?'s':''} activo${d.prestamos.length!==1?'s':''}</div>
+                </div>
+                <div style="text-align:right">
+                    <div style="font-size:11px;color:var(--gray-400);margin-bottom:2px">A cobrar hoy</div>
+                    <div style="font-weight:800;font-size:18px;color:var(--green)">${fmt(d.totalHoy)}</div>
+                </div>
+            </div>
+        `).join('');
+    } catch(e) {
+        cont.innerHTML = '<p style="color:red;text-align:center">Error cargando rutas</p>';
+    }
+}
 
-    loadStats();
+async function verRuta(nombre) {
+    document.getElementById('rutas-lista-view').style.display = 'none';
+    const dv = document.getElementById('ruta-detalle-view');
+    dv.style.display = '';
+    const cont = document.getElementById('ruta-detalle-content');
+    cont.innerHTML = '<p style="color:var(--gray-400);text-align:center;padding:20px">Cargando…</p>';
+    try {
+        const d = await fetch('/api/loans/rutas/' + encodeURIComponent(nombre)).then(r=>r.json());
+        const freqLabel = f => f==='weekly'?'Semanal':f==='monthly'?'Mensual':'Diario';
+        cont.innerHTML = `
+            <div style="background:var(--green-l);border-radius:16px;padding:16px 18px;margin-bottom:16px">
+                <div style="font-size:13px;color:var(--green);font-weight:700;margin-bottom:4px">📍 Ruta: ${d.ruta}</div>
+                <div style="font-size:12px;color:var(--gray-500);margin-bottom:8px">Total a recaudar hoy</div>
+                <div style="font-size:28px;font-weight:900;color:var(--green)">${fmt(d.totalHoy)}</div>
+            </div>
+            ${d.prestamos.length === 0
+                ? '<p style="text-align:center;color:var(--gray-400);padding:20px">No hay préstamos activos en esta ruta.</p>'
+                : d.prestamos.map(p => {
+                    const tipoLabel = p.loanType==='grande'?'Grande':p.loanType==='metodo'?'Método':'Normal';
+                    return `<div onclick="openDetail('${p.id}')" style="background:var(--white);border-radius:14px;padding:14px 16px;margin-bottom:10px;box-shadow:0 1px 4px rgba(0,0,0,.07);cursor:pointer">
+                        <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:6px">
+                            <div>
+                                <div style="font-weight:800;font-size:15px;color:var(--gray-800)">${p.borrower}</div>
+                                <div style="font-size:11px;color:var(--gray-400);margin-top:2px">${tipoLabel} · ${freqLabel(p.frequency)} · ${p.status==='overdue'?'⚠️ En mora':'Activo'}</div>
+                            </div>
+                            <div style="text-align:right">
+                                <div style="font-size:10px;color:var(--gray-400)">Cuota hoy</div>
+                                <div style="font-size:16px;font-weight:800;color:${p.cuotaHoy>0?'var(--green)':'var(--gray-400)'}">${p.cuotaHoy>0?fmt(p.cuotaHoy):'—'}</div>
+                            </div>
+                        </div>
+                        <div style="display:flex;justify-content:space-between;font-size:12px;color:var(--gray-500)">
+                            <span>Capital: ${fmt(p.amount)}</span>
+                            <span>Pagado: ${fmt(p.pagado)}</span>
+                            <span>Hasta: ${p.endDate||'—'}</span>
+                        </div>
+                    </div>`;
+                }).join('')
+            }
+        `;
+    } catch(e) {
+        cont.innerHTML = '<p style="color:red;text-align:center">Error cargando ruta</p>';
+    }
+}
+
+function volverARutas() {
+    document.getElementById('ruta-detalle-view').style.display = 'none';
+    document.getElementById('rutas-lista-view').style.display = '';
+}
+
+    /* ─── PREMIUM ───────────────────────────────────────────── */
+    let premiumData = null;
+
+    async function checkPremiumGate() {
+        try {
+            const d = await (await fetch('/api/premium/status')).json();
+            premiumData = d;
+            premiumLocked = !d.active;
+            maybeShowPremiumReminder(d);
+        } catch (e) {
+            console.error('Error checkPremiumGate:', e);
+            premiumLocked = false;
+        }
+        applyPremiumLockUI();
+        return premiumData;
+    }
+
+    function applyPremiumLockUI() {
+        const dot = document.getElementById('menu-premium-dot');
+        if (dot) dot.style.display = premiumLocked ? 'block' : 'none';
+
+        ['menu-inicio','menu-prestamos','menu-configuracion','menu-rutas','nav-inicio','nav-prestamos']
+            .forEach(id => {
+                const el = document.getElementById(id);
+                if (!el) return;
+                el.style.opacity       = premiumLocked ? '.4' : '';
+                el.style.pointerEvents = premiumLocked ? 'none' : '';
+            });
+        const navNuevo = document.querySelector('.bottom-nav .nav-item:nth-child(2)');
+        if (navNuevo) {
+            navNuevo.style.opacity       = premiumLocked ? '.4' : '';
+            navNuevo.style.pointerEvents = premiumLocked ? 'none' : '';
+        }
+
+        if (premiumLocked) {
+            navTo('premium');
+        }
+    }
+
+    function renderPremiumPage() {
+        if (!premiumData) return;
+        const d = premiumData;
+
+        document.getElementById('premium-card-active').style.display = d.active ? 'block' : 'none';
+        document.getElementById('premium-card-locked').style.display = d.active ? 'none' : 'block';
+        document.getElementById('premium-card-soon').style.display   = (d.active && d.daysLeft <= 5) ? 'block' : 'none';
+        document.getElementById('premium-info-locked').style.display = d.active ? 'none' : 'block';
+        document.getElementById('premium-countdown-box').style.display = d.active ? 'block' : 'none';
+
+        document.getElementById('prem-start').textContent         = fmtDate(d.createdAt);
+        document.getElementById('prem-start-2').textContent       = fmtDate(d.createdAt);
+        document.getElementById('prem-expires').textContent       = fmtDate(d.expiresAt);
+        document.getElementById('prem-expired-date').textContent  = fmtDate(d.expiresAt);
+        document.getElementById('prem-days').textContent          = d.daysLeft >= 0 ? (d.daysLeft + ' días') : 'Vencido';
+        document.getElementById('prem-days-soon').textContent     = Math.max(d.daysLeft, 0);
+
+        if (d.active && d.expiresAt) {
+            startPremiumCountdown(d.expiresAt);
+        } else {
+            stopPremiumCountdown();
+        }
+    }
+
+    /* ─── CUENTA REGRESIVA DEL PLAN (hasta las 11:59 pm del día de vencimiento) ─── */
+    let premiumCountdownInterval = null;
+
+    function pad2(n) { return n.toString().padStart(2, '0'); }
+
+    function getPremiumEndOfDay(expiresAtStr) {
+        const d = new Date(expiresAtStr);
+        return new Date(d.getFullYear(), d.getMonth(), d.getDate(), 23, 59, 0, 0);
+    }
+
+    function startPremiumCountdown(expiresAtStr) {
+        stopPremiumCountdown();
+        const target = getPremiumEndOfDay(expiresAtStr);
+        const box     = document.getElementById('premium-countdown-box');
+        const elDays  = document.getElementById('cd-days');
+        const elHours = document.getElementById('cd-hours');
+        const elMins  = document.getElementById('cd-mins');
+        const elSecs  = document.getElementById('cd-secs');
+        if (!box || !elDays || !elHours || !elMins || !elSecs) return;
+
+        function tick() {
+            const diffMs = target.getTime() - Date.now();
+            if (diffMs <= 0) {
+                elDays.textContent = '0'; elHours.textContent = '00';
+                elMins.textContent = '00'; elSecs.textContent = '00';
+                box.classList.add('urgent');
+                stopPremiumCountdown();
+                return;
+            }
+            let remaining = Math.floor(diffMs / 1000);
+            const days  = Math.floor(remaining / 86400); remaining -= days * 86400;
+            const hours = Math.floor(remaining / 3600);  remaining -= hours * 3600;
+            const mins  = Math.floor(remaining / 60);    remaining -= mins * 60;
+            const secs  = remaining;
+
+            elDays.textContent  = days;
+            elHours.textContent = pad2(hours);
+            elMins.textContent  = pad2(mins);
+            elSecs.textContent  = pad2(secs);
+            box.classList.toggle('urgent', days <= 5);
+        }
+        tick();
+        premiumCountdownInterval = setInterval(tick, 1000);
+    }
+
+    function stopPremiumCountdown() {
+        if (premiumCountdownInterval) {
+            clearInterval(premiumCountdownInterval);
+            premiumCountdownInterval = null;
+        }
+    }
+
+    /* ─── AVISO DE PAGO AL ENTRAR (5, 3 y 1 día antes de vencer) ─── */
+    function maybeShowPremiumReminder(d) {
+        if (!d || !d.active) return;
+        const days = Math.floor(d.daysLeft);
+        if (![5, 3, 1].includes(days)) return;
+
+        const toast = document.getElementById('premium-reminder-toast');
+        const text  = document.getElementById('premium-toast-text');
+        if (!toast || !text) return;
+
+        text.textContent = days === 1
+            ? '⚠️ Tu plan Premium vence mañana. Paga tu mensualidad para no perder acceso.'
+            : `⚠️ Tu plan Premium vence en ${days} días. Paga tu mensualidad para no perder acceso.`;
+        toast.classList.add('show');
+    }
+
+    function closePremiumToast() {
+        document.getElementById('premium-reminder-toast').classList.remove('show');
+    }
+
+    function contactarPagoPremium() {
+        const numero = '573112216829'; // ← reemplaza por tu número real de WhatsApp/Nequi para recibir pagos
+        const msg = encodeURIComponent('Hola, quiero pagar mi mensualidad de PrestaApp.');
+        window.open('https://wa.me/' + numero + '?text=' + msg, '_blank');
+    }
+
+    async function refrescarPremium() {
+        await checkPremiumGate();
+        renderPremiumPage();
+        if (!premiumLocked) {
+            navTo('inicio');
+            loadStats();
+        } else {
+            alert('Tu cuenta todavía no ha sido activada. Si ya pagaste, espera la confirmación.');
+        }
+    }
+
+    (async function initApp() {
+        await checkPremiumGate();
+        if (!premiumLocked) {
+            loadStats().catch(e => console.error('Error loadStats:', e));
+            startNotifPolling();
+        }
+    })();
 </script>
 </body>
 </html>

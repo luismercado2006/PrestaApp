@@ -19,7 +19,7 @@ public class MoraScheduler {
     @Autowired private UserRepository    userRepo;
     @Autowired private WhatsAppService   whatsAppService;
 
-    @Scheduled(cron = "0 0 8 * * *")
+    @Scheduled(cron = "0 35 20 * * *")
     public void verificarPrestamosEnMora() {
         LocalDate hoy = LocalDate.now();
 

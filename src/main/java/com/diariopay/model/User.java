@@ -23,4 +23,38 @@ public class User {
 
     private String role = "USER";
     private LocalDateTime createdAt = LocalDateTime.now();
+
+    /* ── PREMIUM / SUSCRIPCIÓN ──
+       premiumExpiresAt: fecha hasta la cual la cuenta tiene acceso (se fija en
+       el registro como createdAt + 1 mes, simulando el periodo de prueba/plan pagado).
+
+       premiumOverride: control manual desde la base de datos.
+         - null  -> automático: se usa premiumExpiresAt para decidir si está activa.
+         - true  -> el admin activó manualmente la cuenta (aunque la fecha ya venció).
+         - false -> el admin desactivó manualmente la cuenta (aunque la fecha no haya vencido).
+
+       Para reactivar una cuenta vencida desde Mongo:
+           db.users.updateOne({username:"..."}, {$set:{premiumOverride:true}})
+       Para volver al modo automático (que respete la fecha de nuevo):
+           db.users.updateOne({username:"..."}, {$unset:{premiumOverride:""}})
+       Para desactivar una cuenta manualmente:
+           db.users.updateOne({username:"..."}, {$set:{premiumOverride:false}})
+    */
+    private LocalDateTime premiumExpiresAt;
+    private Boolean premiumOverride;
+
+    public boolean isPremiumActive() {
+        if (premiumOverride != null) {
+            return premiumOverride;
+        }
+        return LocalDateTime.now().isBefore(getEffectivePremiumExpiresAt());
+    }
+
+    /** Fecha efectiva de vencimiento: usa premiumExpiresAt si existe,
+     *  o createdAt + 1 mes para cuentas antiguas que no tenían este campo. */
+    public LocalDateTime getEffectivePremiumExpiresAt() {
+        if (premiumExpiresAt != null) return premiumExpiresAt;
+        if (createdAt != null) return createdAt.plusMonths(1);
+        return LocalDateTime.now().plusMonths(1);
+    }
 }

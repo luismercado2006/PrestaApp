@@ -95,7 +95,16 @@ public class LoanController {
         loan.setFrequency((String) body.getOrDefault("frequency", "daily"));
         loan.setLoanType((String) body.getOrDefault("loanType", "normal"));
         loan.setNotes((String) body.getOrDefault("notes", ""));
-        loan.setPhone((String) body.getOrDefault("phone", ""));
+        String phoneVal = (String) body.getOrDefault("phone", "");
+        if (phoneVal == null || phoneVal.isBlank()) {
+            return ResponseEntity.badRequest().body(Map.of(
+                    "ok", false,
+                    "error", "El número de teléfono es obligatorio"
+            ));
+        }
+        loan.setPhone(phoneVal.trim());
+        String rutaVal = (String) body.getOrDefault("ruta", "");
+        loan.setRuta(rutaVal != null ? rutaVal.trim() : "");
         loan.setStatus("active");
 
         LocalDate startDate = LocalDate.parse((String) body.getOrDefault("startDate", LocalDate.now().toString()));
@@ -123,7 +132,16 @@ public class LoanController {
 
         double installmentAmount;
         if ("metodo".equals(loanType)) {
-            installmentAmount = loan.getAmount() / totalInstallments;
+            // Amortización francesa — misma fórmula que el frontend del dashboard
+            // r = interés mensual directo (ej: 20% -> 0.20), n = número de cuotas
+            // C = P * r / (1 - (1+r)^-n)
+            double r = loan.getInterest() / 100.0;
+            if (r == 0) {
+                installmentAmount = loan.getAmount() / totalInstallments;
+            } else {
+                installmentAmount = loan.getAmount() * r
+                        / (1 - Math.pow(1 + r, -totalInstallments));
+            }
         } else {
             double totalConInteres = loan.getAmount() + (loan.getAmount() * loan.getInterest() / 100);
             installmentAmount = totalConInteres / totalInstallments;
@@ -152,15 +170,15 @@ public class LoanController {
         Loan loan = opt.get();
         detectarMoraEnTiempoReal(List.of(loan));
 
-        List<Payment> payments = paymentRepo.findByLoanId(id);
+        List<Payment> payments = paymentRepo.findByLoanIdAndArchivadoFalse(id);
         double paidTotal    = payments.stream().mapToDouble(Payment::getAmount).sum();
         double paidInterest = payments.stream()
                 .filter(p -> "interest".equals(p.getPaymentType()))
                 .mapToDouble(Payment::getAmount).sum();
-        double paidCapital  = payments.stream()
-                .filter(p -> !"interest".equals(p.getPaymentType()))
+        double paidCapital = payments.stream()
+                .filter(p -> "capital".equals(p.getPaymentType()) || "normal".equals(p.getPaymentType()))
+                .filter(p -> p.getAmount() > 0)
                 .mapToDouble(Payment::getAmount).sum();
-
         Map<String, Object> resp = new LinkedHashMap<>();
         resp.put("id",                loan.getId());
         resp.put("borrower",          loan.getBorrower());
@@ -181,6 +199,7 @@ public class LoanController {
         resp.put("startDate",         loan.getStartDate());
         resp.put("endDate",           loan.getEndDate());
         resp.put("loanType",          loan.getLoanType() != null ? loan.getLoanType() : "normal");
+        resp.put("renovado",          loan.isRenovado());
         return ResponseEntity.ok(resp);
     }
 
@@ -199,7 +218,16 @@ public class LoanController {
         if (body.containsKey("status"))  loan.setStatus((String) body.get("status"));
         if (body.containsKey("notes"))   loan.setNotes((String) body.get("notes"));
         if (body.containsKey("amount"))  loan.setAmount(toDouble(body.get("amount")));
-        if (body.containsKey("phone"))   loan.setPhone((String) body.get("phone"));
+        if (body.containsKey("phone")) {
+            String newPhone = (String) body.get("phone");
+            if (newPhone == null || newPhone.isBlank()) {
+                return ResponseEntity.badRequest().body(Map.of(
+                        "ok", false,
+                        "error", "El número de teléfono es obligatorio"
+                ));
+            }
+            loan.setPhone(newPhone.trim());
+        }
         if (body.containsKey("endDate")) {
             LocalDate newEnd = LocalDate.parse((String) body.get("endDate"));
             loan.setEndDate(newEnd);
@@ -221,6 +249,238 @@ public class LoanController {
         paymentRepo.findByLoanId(id).forEach(p -> paymentRepo.deleteById(p.getId()));
         loanRepo.deleteById(id);
         return ResponseEntity.ok(Map.of("ok", true));
+    }
+    // ─── RENOVACIÓN DE CRÉDITO ──────────────────────────────────────────────
+
+    @PostMapping("/{id}/renovar")
+    public ResponseEntity<?> renovarCredito(@PathVariable String id,
+                                            @RequestBody Map<String, Object> body,
+                                            HttpSession session) {
+        String uid = (String) session.getAttribute("userId");
+        if (uid == null) return ResponseEntity.status(401).body("Unauthorized");
+
+        Optional<Loan> opt = loanRepo.findById(id);
+        if (opt.isEmpty() || !opt.get().getUserId().equals(uid))
+            return ResponseEntity.status(404).body("Not found");
+
+        Loan loan = opt.get();
+
+        double nuevoMonto      = toDouble(body.get("amount"));
+        double nuevoPorcentaje = toDouble(body.get("interest"));
+        if (nuevoMonto <= 0) {
+            return ResponseEntity.badRequest().body("El monto a ingresar debe ser mayor a 0");
+        }
+
+        Loan.RenovacionSnapshot snap = new Loan.RenovacionSnapshot();
+        snap.setAmount(loan.getAmount());
+        snap.setInterest(loan.getInterest());
+        snap.setFrequency(loan.getFrequency());
+        snap.setLoanType(loan.getLoanType());
+        snap.setStatus(loan.getStatus());
+        snap.setCreatedAt(loan.getCreatedAt());
+        snap.setDueDate(loan.getDueDate());
+        snap.setStartDate(loan.getStartDate());
+        snap.setEndDate(loan.getEndDate());
+        snap.setTotalInstallments(loan.getTotalInstallments());
+        snap.setInstallmentAmount(loan.getInstallmentAmount());
+        snap.setMoraNotificada(loan.isMoraNotificada());
+        loan.setSnapshotAnterior(snap);
+
+        List<Payment> pagosActuales = paymentRepo.findByLoanIdAndArchivadoFalse(id);
+        for (Payment p : pagosActuales) {
+            p.setArchivado(true);
+            paymentRepo.save(p);
+        }
+
+        LocalDate hoy = LocalDate.now();
+        String loanType = loan.getLoanType() != null ? loan.getLoanType() : "normal";
+
+// Leer nuevos campos del frontend si vienen, si no usar los del préstamo original
+        String freq = body.containsKey("frequency")
+                ? (String) body.get("frequency")
+                : (loan.getFrequency() != null ? loan.getFrequency() : "daily");
+
+        LocalDate nuevaFechaFin;
+        if (body.containsKey("endDate")) {
+            nuevaFechaFin = LocalDate.parse((String) body.get("endDate"));
+        } else {
+            long diasOriginal = (loan.getStartDate() != null && loan.getEndDate() != null)
+                    ? ChronoUnit.DAYS.between(loan.getStartDate(), loan.getEndDate())
+                    : 30;
+            if (diasOriginal < 1) diasOriginal = 30;
+            nuevaFechaFin = hoy.plusDays(diasOriginal);
+        }
+
+        int totalInstallments;
+        if ("metodo".equals(loanType)) {
+            totalInstallments = body.containsKey("totalInstallments")
+                    ? toInt(body.get("totalInstallments"))
+                    : (loan.getTotalInstallments() > 0 ? loan.getTotalInstallments() : 1);
+        } else {
+            long dias = ChronoUnit.DAYS.between(hoy, nuevaFechaFin);
+            totalInstallments = switch (freq) {
+                case "weekly"  -> (int) Math.ceil(dias / 7.0);
+                case "monthly" -> (int) Math.round(dias / 30.4375);
+                default        -> (int) dias;
+            };
+        }
+        if (totalInstallments < 1) totalInstallments = 1;
+
+        double installmentAmount;
+        if ("metodo".equals(loanType)) {
+            double r = nuevoPorcentaje / 100.0;
+            if (r == 0) {
+                installmentAmount = nuevoMonto / totalInstallments;
+            } else {
+                installmentAmount = nuevoMonto * r / (1 - Math.pow(1 + r, -totalInstallments));
+            }
+        } else {
+            double totalConInteres = nuevoMonto + (nuevoMonto * nuevoPorcentaje / 100);
+            installmentAmount = totalConInteres / totalInstallments;
+        }
+
+        loan.setAmount(nuevoMonto);
+        loan.setInterest(nuevoPorcentaje);
+        loan.setStartDate(hoy);
+        loan.setEndDate(nuevaFechaFin);
+        loan.setFrequency(freq);
+        loan.setCreatedAt(hoy.atStartOfDay());
+        loan.setDueDate(nuevaFechaFin.atStartOfDay());
+        loan.setTotalInstallments(totalInstallments);
+        loan.setInstallmentAmount(installmentAmount);
+        loan.setStatus("active");
+        loan.setMoraNotificada(false);
+        loan.setRenovado(true);
+
+        loanRepo.save(loan);
+
+        return ResponseEntity.ok(Map.of(
+                "ok", true,
+                "totalInstallments", totalInstallments,
+                "installmentAmount", installmentAmount
+        ));
+    }
+
+    @PostMapping("/{id}/deshacer-renovacion")
+    public ResponseEntity<?> deshacerRenovacion(@PathVariable String id, HttpSession session) {
+        String uid = (String) session.getAttribute("userId");
+        if (uid == null) return ResponseEntity.status(401).body("Unauthorized");
+
+        Optional<Loan> opt = loanRepo.findById(id);
+        if (opt.isEmpty() || !opt.get().getUserId().equals(uid))
+            return ResponseEntity.status(404).body("Not found");
+
+        Loan loan = opt.get();
+        if (!loan.isRenovado() || loan.getSnapshotAnterior() == null) {
+            return ResponseEntity.badRequest().body("Este préstamo no tiene una renovación para deshacer");
+        }
+
+        List<Payment> pagosDelCicloRenovado = paymentRepo.findByLoanIdAndArchivadoFalse(id);
+        for (Payment p : pagosDelCicloRenovado) {
+            paymentRepo.deleteById(p.getId());
+        }
+
+        List<Payment> pagosArchivados = paymentRepo.findByLoanIdAndArchivadoTrue(id);
+        for (Payment p : pagosArchivados) {
+            p.setArchivado(false);
+            paymentRepo.save(p);
+        }
+
+        Loan.RenovacionSnapshot snap = loan.getSnapshotAnterior();
+        loan.setAmount(snap.getAmount());
+        loan.setInterest(snap.getInterest());
+        loan.setFrequency(snap.getFrequency());
+        loan.setLoanType(snap.getLoanType());
+        loan.setStatus(snap.getStatus());
+        loan.setCreatedAt(snap.getCreatedAt());
+        loan.setDueDate(snap.getDueDate());
+        loan.setStartDate(snap.getStartDate());
+        loan.setEndDate(snap.getEndDate());
+        loan.setTotalInstallments(snap.getTotalInstallments());
+        loan.setInstallmentAmount(snap.getInstallmentAmount());
+        loan.setMoraNotificada(snap.isMoraNotificada());
+        loan.setRenovado(false);
+        loan.setSnapshotAnterior(null);
+
+        loanRepo.save(loan);
+
+        return ResponseEntity.ok(Map.of("ok", true));
+    }
+
+    // ─── RUTAS ─────────────────────────────────────────────────────────────
+
+    // ─── RUTAS ─────────────────────────────────────────────────────────────
+
+    /** Lista los nombres de rutas distintas que tiene el usuario */
+    @GetMapping("/rutas")
+    public ResponseEntity<?> getRutas(HttpSession session) {
+        String uid = (String) session.getAttribute("userId");
+        if (uid == null) return ResponseEntity.status(401).body("Unauthorized");
+
+        List<Loan> loans = loanRepo.findByUserIdConRuta(uid);
+        List<String> rutas = loans.stream()
+                .map(Loan::getRuta)
+                .filter(r -> r != null && !r.isBlank())
+                .distinct()
+                .sorted()
+                .toList();
+        return ResponseEntity.ok(rutas);
+    }
+
+    /** Préstamos activos de una ruta específica con cuota diaria de hoy */
+    @GetMapping("/rutas/{nombre}")
+    public ResponseEntity<?> getPrestamosPorRuta(@PathVariable String nombre, HttpSession session) {
+        String uid = (String) session.getAttribute("userId");
+        if (uid == null) return ResponseEntity.status(401).body("Unauthorized");
+
+        List<Loan> loans = loanRepo.findByUserIdAndRutaOrderByCreatedAtDesc(uid, nombre);
+        detectarMoraEnTiempoReal(loans);
+
+        LocalDate hoy = LocalDate.now();
+        double totalHoy = 0;
+        List<Map<String, Object>> resultado = new ArrayList<>();
+
+        for (Loan loan : loans) {
+            if (!"active".equals(loan.getStatus()) && !"overdue".equals(loan.getStatus())) continue;
+
+            double cuotaHoy = 0;
+            if (loan.getStartDate() != null && !hoy.isBefore(loan.getStartDate())) {
+                String freq = loan.getFrequency() != null ? loan.getFrequency() : "daily";
+                boolean aplica = switch (freq) {
+                    case "weekly"  -> loan.getStartDate().until(hoy).getDays() % 7 == 0;
+                    case "monthly" -> loan.getStartDate().getDayOfMonth() == hoy.getDayOfMonth();
+                    default        -> true;
+                };
+                if (aplica) {
+                    cuotaHoy = loan.getInstallmentAmount();
+                    totalHoy += cuotaHoy;
+                }
+            }
+
+            List<com.diariopay.model.Payment> pagos = paymentRepo.findByLoanIdAndArchivadoFalse(loan.getId());
+            double pagado = pagos.stream().mapToDouble(com.diariopay.model.Payment::getAmount).sum();
+
+            Map<String, Object> item = new LinkedHashMap<>();
+            item.put("id",                loan.getId());
+            item.put("borrower",          loan.getBorrower());
+            item.put("amount",            loan.getAmount());
+            item.put("interest",          loan.getInterest());
+            item.put("frequency",         loan.getFrequency());
+            item.put("loanType",          loan.getLoanType() != null ? loan.getLoanType() : "normal");
+            item.put("status",            loan.getStatus());
+            item.put("startDate",         loan.getStartDate());
+            item.put("endDate",           loan.getEndDate());
+            item.put("installmentAmount", loan.getInstallmentAmount());
+            item.put("cuotaHoy",          cuotaHoy);
+            item.put("pagado",            pagado);
+            resultado.add(item);
+        }
+
+        Map<String, Object> resp = new LinkedHashMap<>();
+        resp.put("ruta",      nombre);
+        resp.put("prestamos", resultado);
+        resp.put("totalHoy",  totalHoy);
+        return ResponseEntity.ok(resp);
     }
 
     private double toDouble(Object v) {

@@ -10,5 +10,7 @@ import java.util.List;
 public interface PaymentRepository extends MongoRepository<Payment, String> {
     List<Payment> findByUserId(String userId);
     List<Payment> findByLoanId(String loanId);
+    List<Payment> findByLoanIdAndArchivadoFalse(String loanId);
+    List<Payment> findByLoanIdAndArchivadoTrue(String loanId);
     List<Payment> findByUserIdAndDateBetween(String userId, LocalDateTime from, LocalDateTime to);
 }
