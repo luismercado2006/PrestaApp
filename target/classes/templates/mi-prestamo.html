@@ -1,0 +1,781 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+    <title>Mi Préstamo</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+        :root{
+          --green:#16a34a;--green-l:#dcfce7;--blue:#1d4ed8;--blue-l:#eff6ff;
+          --red:#dc2626;--red-l:#fee2e2;--orange:#ea580c;--orange-l:#fff7ed;
+          --gray-50:#f9fafb;--gray-100:#f3f4f6;--gray-200:#e5e7eb;
+          --gray-400:#9ca3af;--gray-600:#4b5563;--gray-700:#374151;
+          --gray-800:#1f2937;--white:#ffffff;
+          --radius:16px;--shadow:0 2px 12px rgba(0,0,0,.08);
+        }
+
+        body{
+          font-family:'Plus Jakarta Sans',sans-serif;
+          background:var(--gray-50);
+          color:var(--gray-800);
+          min-height:100vh;
+          padding-bottom:40px;
+        }
+
+        /* ─── HEADER ─── */
+        .header{
+          background:var(--white);
+          border-bottom:1px solid var(--gray-200);
+          padding:16px 20px;
+          display:flex;
+          align-items:center;
+          gap:12px;
+          position:sticky;top:0;z-index:10;
+        }
+        .header-logo{
+          width:40px;height:40px;border-radius:12px;
+          background:linear-gradient(135deg,#16a34a,#15803d);
+          display:flex;align-items:center;justify-content:center;
+          font-size:20px;
+        }
+        .header-title{font-size:18px;font-weight:700;color:var(--gray-800)}
+        .header-sub{font-size:12px;color:var(--gray-400);margin-top:1px}
+
+        /* ─── CONTAINER ─── */
+        .container{max-width:480px;margin:0 auto;padding:20px 16px}
+
+        /* ─── PHONE FORM ─── */
+        .phone-card{
+          background:var(--white);border-radius:var(--radius);
+          box-shadow:var(--shadow);padding:28px 24px;text-align:center;
+          border:1px solid var(--gray-200);
+        }
+        .phone-icon{font-size:48px;margin-bottom:12px}
+        .phone-title{font-size:20px;font-weight:700;color:var(--gray-800);margin-bottom:6px}
+        .phone-desc{font-size:14px;color:var(--gray-600);line-height:1.5;margin-bottom:24px}
+        .input-wrap{position:relative;margin-bottom:14px}
+        .input-prefix{
+          position:absolute;left:14px;top:50%;transform:translateY(-50%);
+          font-size:15px;font-weight:600;color:var(--gray-600);
+          pointer-events:none;
+        }
+        .phone-input{
+          width:100%;padding:14px 14px 14px 44px;
+          border:2px solid var(--gray-200);border-radius:12px;
+          font-size:16px;font-family:inherit;font-weight:600;
+          color:var(--gray-800);background:var(--gray-50);
+          outline:none;transition:border-color .2s;
+          letter-spacing:1px;
+        }
+        .phone-input:focus{border-color:var(--green);background:var(--white)}
+        .btn-buscar{
+          width:100%;padding:14px;border:none;border-radius:12px;
+          background:var(--green);color:var(--white);
+          font-size:15px;font-weight:700;font-family:inherit;
+          cursor:pointer;transition:opacity .2s,transform .1s;
+          display:flex;align-items:center;justify-content:center;gap:8px;
+        }
+        .btn-buscar:active{opacity:.9;transform:scale(.98)}
+        .btn-buscar:disabled{opacity:.6;cursor:not-allowed}
+        .error-msg{
+          background:var(--red-l);color:var(--red);
+          border-radius:10px;padding:12px 16px;font-size:14px;font-weight:600;
+          margin-top:12px;display:none;
+        }
+        .error-msg.show{display:block}
+
+        /* ─── LOADING ─── */
+        .loading{
+          text-align:center;padding:40px 20px;display:none;
+        }
+        .loading.show{display:block}
+        .spinner{
+          width:40px;height:40px;border:4px solid var(--gray-200);
+          border-top-color:var(--green);border-radius:50%;
+          animation:spin .8s linear infinite;margin:0 auto 16px;
+        }
+        @keyframes spin{to{transform:rotate(360deg)}}
+
+        /* ─── RESULTS ─── */
+        #results{display:none}
+        #results.show{display:block}
+
+        .borrower-greeting{
+          display:flex;align-items:center;gap:12px;
+          background:linear-gradient(135deg,#16a34a,#15803d);
+          border-radius:var(--radius);padding:18px 20px;
+          color:var(--white);margin-bottom:16px;
+        }
+        .borrower-avatar{
+          width:48px;height:48px;border-radius:50%;
+          background:rgba(255,255,255,.2);
+          display:flex;align-items:center;justify-content:center;
+          font-size:22px;font-weight:800;flex-shrink:0;
+        }
+        .borrower-name{font-size:18px;font-weight:700}
+        .borrower-phone{font-size:13px;opacity:.8;margin-top:2px}
+        .loans-count{
+          margin-left:auto;background:rgba(255,255,255,.2);
+          border-radius:20px;padding:4px 12px;font-size:13px;font-weight:600;
+        }
+
+        /* ─── LOAN CARD ─── */
+        .loan-card{
+          background:var(--white);border-radius:var(--radius);
+          box-shadow:var(--shadow);border:1px solid var(--gray-200);
+          margin-bottom:16px;overflow:hidden;
+        }
+        .loan-card-header{
+          padding:16px 20px 14px;
+          border-bottom:1px solid var(--gray-100);
+          display:flex;align-items:center;justify-content:space-between;
+        }
+        .loan-type-badge{
+          display:flex;align-items:center;gap:8px;
+        }
+        .loan-icon{
+          width:36px;height:36px;border-radius:10px;
+          display:flex;align-items:center;justify-content:center;font-size:16px;
+        }
+        .loan-icon.normal{background:var(--blue-l)}
+        .loan-icon.grande{background:#fff7ed}
+        .loan-icon.metodo{background:#f0fdf4}
+        .loan-label{font-size:13px;font-weight:600;color:var(--gray-600)}
+        .loan-date{font-size:12px;color:var(--gray-400);margin-top:2px}
+
+        .status-badge{
+          padding:5px 12px;border-radius:20px;font-size:12px;font-weight:700;
+        }
+        .status-badge.active{background:var(--green-l);color:var(--green)}
+        .status-badge.paid{background:var(--gray-100);color:var(--gray-600)}
+        .status-badge.overdue{background:var(--red-l);color:var(--red)}
+
+        /* ─── PROGRESO ─── */
+        .loan-progress{padding:16px 20px 14px;border-bottom:1px solid var(--gray-100)}
+        .progress-header{
+          display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;
+        }
+        .progress-label{font-size:13px;font-weight:600;color:var(--gray-600)}
+        .progress-pct{font-size:18px;font-weight:800;color:var(--green)}
+        .progress-bar{
+          height:10px;background:var(--gray-200);border-radius:99px;overflow:hidden;
+          margin-bottom:10px;
+        }
+        .progress-fill{
+          height:100%;background:var(--green);border-radius:99px;
+          transition:width 1s cubic-bezier(.4,0,.2,1);
+        }
+        .progress-fill.overdue{background:var(--red)}
+        .progress-fill.paid{background:var(--green)}
+        .progress-amounts{display:flex;justify-content:space-between}
+        .pa-item{text-align:center}
+        .pa-val{font-size:14px;font-weight:700;color:var(--gray-800)}
+        .pa-lbl{font-size:11px;color:var(--gray-400);margin-top:2px}
+
+        /* ─── INFO GRID ─── */
+        .loan-info{padding:14px 20px;display:grid;grid-template-columns:1fr 1fr;gap:12px;border-bottom:1px solid var(--gray-100)}
+        .info-item{}
+        .info-lbl{font-size:11px;color:var(--gray-400);font-weight:600;text-transform:uppercase;letter-spacing:.4px}
+        .info-val{font-size:15px;font-weight:700;color:var(--gray-800);margin-top:2px}
+        .info-val.green{color:var(--green)}
+        .info-val.orange{color:var(--orange)}
+        .info-val.red{color:var(--red)}
+
+        /* ─── CUOTA BANNER ─── */
+        .cuota-banner{
+          margin:0 20px 14px;border-radius:12px;
+          background:linear-gradient(135deg,#f0fdf4,#dcfce7);
+          border:1px solid #bbf7d0;
+          padding:12px 16px;
+          display:flex;align-items:center;justify-content:space-between;
+        }
+        .cuota-banner.overdue{
+          background:linear-gradient(135deg,#fff1f2,var(--red-l));
+          border-color:#fecdd3;
+        }
+        .cuota-left .cb-label{font-size:12px;font-weight:600;color:var(--gray-600)}
+        .cuota-left .cb-val{font-size:20px;font-weight:800;color:var(--green);margin-top:2px}
+        .cuota-banner.overdue .cuota-left .cb-val{color:var(--red)}
+        .cuota-right{font-size:24px}
+
+        /* ─── PAGOS RECIENTES ─── */
+        .payments-section{padding:14px 20px 16px}
+        .payments-title{
+          font-size:13px;font-weight:700;color:var(--gray-600);
+          text-transform:uppercase;letter-spacing:.4px;margin-bottom:10px;
+        }
+        .pay-list{}
+        .pay-item{
+          display:flex;align-items:center;gap:12px;
+          padding:10px 0;border-bottom:1px solid var(--gray-100);
+        }
+        .pay-item:last-child{border-bottom:none}
+        .pay-dot{
+          width:32px;height:32px;border-radius:10px;flex-shrink:0;
+          background:var(--green-l);display:flex;align-items:center;justify-content:center;font-size:14px;
+        }
+        .pay-info{flex:1;min-width:0}
+        .pay-date{font-size:13px;font-weight:600;color:var(--gray-700)}
+        .pay-note{font-size:12px;color:var(--gray-400);margin-top:1px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+        .pay-amt{font-size:15px;font-weight:700;color:var(--green)}
+        .no-payments{
+          text-align:center;padding:20px;color:var(--gray-400);font-size:14px;
+        }
+
+        /* ─── REFRESH BTN ─── */
+        .refresh-bar{
+          display:flex;align-items:center;justify-content:space-between;
+          margin-bottom:12px;
+        }
+        .refresh-btn{
+          display:flex;align-items:center;gap:6px;
+          background:var(--white);border:1px solid var(--gray-200);border-radius:10px;
+          padding:8px 14px;font-size:13px;font-weight:600;color:var(--gray-600);
+          cursor:pointer;font-family:inherit;transition:border-color .2s;
+        }
+        .refresh-btn:hover{border-color:var(--green);color:var(--green)}
+        .refresh-btn .spin{display:none}
+        .refresh-btn.refreshing .spin{display:inline;animation:spin .8s linear infinite}
+        .refresh-btn.refreshing .static{display:none}
+        .last-updated{font-size:12px;color:var(--gray-400)}
+
+        /* ─── BACK BTN ─── */
+        .back-btn{
+          display:flex;align-items:center;gap:6px;
+          font-size:14px;font-weight:600;color:var(--gray-600);
+          cursor:pointer;margin-bottom:16px;
+          background:none;border:none;font-family:inherit;padding:0;
+        }
+
+        /* ─── AUTO REFRESH badge ─── */
+        .live-badge{
+          display:inline-flex;align-items:center;gap:5px;
+          background:var(--green-l);color:var(--green);
+          border-radius:20px;padding:3px 10px;font-size:11px;font-weight:700;
+        }
+        .live-dot{
+          width:6px;height:6px;background:var(--green);border-radius:50%;
+          animation:pulse 1.5s ease infinite;
+        }
+        @keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+
+        /* ─── FOOTER ─── */
+        .footer{
+          text-align:center;margin-top:24px;
+          font-size:12px;color:var(--gray-400);
+        }
+        .btn-comprobante{
+          width:100%;margin-top:12px;padding:13px;border-radius:14px;border:1.5px dashed var(--blue);
+          background:var(--blue-l);color:var(--blue);font-size:14px;font-weight:700;cursor:pointer;
+        }
+        .btn-comprobante:active{opacity:.85;transform:scale(.98)}
+
+        .comprobante-overlay{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:200;
+          display:none;align-items:flex-end;justify-content:center}
+        .comprobante-overlay.open{display:flex}
+        .comprobante-modal{background:var(--white);width:100%;max-width:480px;border-radius:20px 20px 0 0;
+          padding:22px 20px 26px;max-height:88vh;overflow-y:auto}
+        .comprobante-modal h3{font-size:17px;font-weight:800;color:var(--gray-800);margin-bottom:6px}
+        .comprobante-hint{font-size:12.5px;color:var(--gray-400);margin-bottom:16px;line-height:1.5}
+        .comprobante-file-label{display:flex;flex-direction:column;align-items:center;justify-content:center;
+          border:2px dashed var(--gray-200);border-radius:14px;padding:18px;text-align:center;
+          cursor:pointer;margin-bottom:14px;min-height:90px;position:relative;overflow:hidden}
+        .comprobante-file-label input{position:absolute;inset:0;opacity:0;cursor:pointer}
+        .comprobante-file-label span{font-size:13px;color:var(--gray-500);font-weight:600}
+        .comprobante-file-label img{max-width:100%;max-height:220px;border-radius:10px;object-fit:contain}
+        .comprobante-field-label{font-size:12.5px;font-weight:700;color:var(--gray-600);margin-bottom:6px;display:block}
+        .comprobante-input{width:100%;padding:12px 14px;border-radius:12px;border:1.5px solid var(--gray-200);
+          font-size:14px;margin-bottom:14px;background:var(--gray-50);outline:none;box-sizing:border-box}
+        .comprobante-input:focus{border-color:var(--green)}
+        .comprobante-error{color:var(--red);font-size:12.5px;margin-bottom:8px;min-height:14px}
+        .comprobante-actions{display:flex;gap:10px;margin-top:4px}
+        .comprobante-btn-cancel,.comprobante-btn-send{flex:1;padding:13px;border-radius:14px;border:none;
+          font-size:14px;font-weight:700;cursor:pointer}
+        .comprobante-btn-cancel{background:var(--gray-100);color:var(--gray-600)}
+        .comprobante-btn-send{background:var(--green);color:var(--white)}
+        .comprobante-btn-send:disabled{opacity:.6;cursor:not-allowed}
+    </style>
+</head>
+<body>
+
+<!-- HEADER -->
+<div class="header">
+    <div class="header-logo">💰</div>
+    <div>
+        <div class="header-title">Mi Préstamo</div>
+        <div class="header-sub">Consulta tu estado de cuenta</div>
+    </div>
+</div>
+
+<div class="container">
+
+    <!-- FORMULARIO TELÉFONO -->
+    <div class="phone-card" id="phoneCard">
+        <div class="phone-icon">📱</div>
+        <div class="phone-title">Consulta tu préstamo</div>
+        <div class="phone-desc">Ingresa el número de celular con el que te registraron para ver el avance de tu préstamo.</div>
+
+        <div class="input-wrap">
+            <span class="input-prefix">📞</span>
+            <input
+                    id="phoneInput"
+                    class="phone-input"
+                    type="tel"
+                    placeholder="Ej: 3001234567"
+                    maxlength="15"
+                    inputmode="numeric"
+                    autocomplete="tel"
+            >
+        </div>
+        <button class="btn-buscar" id="btnBuscar" onclick="buscarPrestamo()">
+            <span>🔍</span> Ver mis préstamos
+        </button>
+        <div class="error-msg" id="errorMsg"></div>
+    </div>
+
+    <!-- LOADING -->
+    <div class="loading" id="loading">
+        <div class="spinner"></div>
+        <p style="color:var(--gray-600);font-weight:600">Buscando tus préstamos...</p>
+    </div>
+
+    <!-- RESULTADOS -->
+    <div id="results">
+        <button class="back-btn" onclick="volverAtras()">← Buscar otro número</button>
+
+        <div class="refresh-bar">
+            <div>
+                <span class="live-badge"><span class="live-dot"></span> En vivo</span>
+            </div>
+            <div style="display:flex;align-items:center;gap:8px">
+                <span class="last-updated" id="lastUpdated"></span>
+                <button class="refresh-btn" id="refreshBtn" onclick="actualizarDatos()">
+                    <span class="static">🔄</span>
+                    <span class="spin">⟳</span>
+                    Actualizar
+                </button>
+            </div>
+        </div>
+
+        <div id="borrowerGreeting" class="borrower-greeting"></div>
+        <div id="loansContainer"></div>
+
+        <div class="footer">
+            Se actualiza automáticamente cada 30 segundos · Solo lectura
+        </div>
+    </div>
+
+</div>
+
+<div class="comprobante-overlay" id="comprobanteOverlay" onclick="if(event.target===this) cerrarSubirComprobante()">
+    <div class="comprobante-modal">
+        <h3>Subir comprobante de pago</h3>
+        <p class="comprobante-hint">Sube la foto de tu transferencia (Nequi, Daviplata, banco, etc.). Tu prestamista la revisará y confirmará el pago.</p>
+
+        <label class="comprobante-file-label" id="comprobanteFileLabel">
+            <input type="file" id="comprobanteFile" accept="image/*" capture="environment" onchange="previewComprobante(event)">
+            <span id="comprobanteFileText">📷 Toca para tomar foto o elegir imagen</span>
+            <img id="comprobantePreview" style="display:none">
+        </label>
+
+        <label class="comprobante-field-label">Monto pagado (opcional)</label>
+        <input type="number" id="comprobanteAmount" class="comprobante-input" placeholder="Ej: 50000">
+
+        <label class="comprobante-field-label">Nota (opcional)</label>
+        <input type="text" id="comprobanteNote" class="comprobante-input" placeholder="Ej: Pago por Nequi">
+
+        <div class="comprobante-error" id="comprobanteError"></div>
+
+        <div class="comprobante-actions">
+            <button class="comprobante-btn-cancel" onclick="cerrarSubirComprobante()">Cancelar</button>
+            <button class="comprobante-btn-send" id="comprobanteBtnSend" onclick="enviarComprobante()">Enviar</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    let currentPhone = '';
+    let autoRefreshInterval = null;
+
+    // ─── BUSCAR ───────────────────────────────────────────────
+    async function buscarPrestamo() {
+      const input = document.getElementById('phoneInput');
+      const phone = input.value.replace(/\D/g, '').trim();
+      const errEl = document.getElementById('errorMsg');
+
+      if (phone.length < 7) {
+        mostrarError('Ingresa un número de teléfono válido.');
+        return;
+      }
+
+      errEl.classList.remove('show');
+      currentPhone = phone;
+      mostrarLoading(true);
+      ocultarResultados();
+
+      try {
+        await cargarDatos(phone);
+      } catch (e) {
+        mostrarLoading(false);
+        mostrarError('No se pudo conectar. Intenta de nuevo.');
+      }
+    }
+
+    // ─── CARGAR DATOS ─────────────────────────────────────────
+    async function cargarDatos(phone) {
+      const res = await fetch(`/public/borrower/${encodeURIComponent(phone)}`);
+      mostrarLoading(false);
+
+      if (res.status === 404) {
+        mostrarError('No encontramos préstamos con ese número. Verifica que sea el mismo que usaste al registrarte.');
+        return;
+      }
+      if (!res.ok) {
+        mostrarError('Error al consultar. Intenta más tarde.');
+        return;
+      }
+
+      const data = await res.json();
+      renderResultados(data);
+      iniciarAutoRefresh(phone);
+      actualizarTimestamp();
+    }
+
+    // ─── ACTUALIZAR ───────────────────────────────────────────
+    async function actualizarDatos() {
+      if (!currentPhone) return;
+      const btn = document.getElementById('refreshBtn');
+      btn.classList.add('refreshing');
+      try {
+        const res = await fetch(`/public/borrower/${encodeURIComponent(currentPhone)}`);
+        if (res.ok) {
+          const data = await res.json();
+          renderResultados(data);
+          actualizarTimestamp();
+        }
+      } catch(e) {}
+      btn.classList.remove('refreshing');
+    }
+
+    function actualizarTimestamp() {
+      const now = new Date();
+      const h = now.getHours().toString().padStart(2,'0');
+      const m = now.getMinutes().toString().padStart(2,'0');
+      document.getElementById('lastUpdated').textContent = `Actualizado ${h}:${m}`;
+    }
+
+    function iniciarAutoRefresh(phone) {
+      if (autoRefreshInterval) clearInterval(autoRefreshInterval);
+      autoRefreshInterval = setInterval(() => actualizarDatos(), 30000);
+    }
+
+    // ─── RENDER ───────────────────────────────────────────────
+    function renderResultados(data) {
+      const { borrower, phone, loans } = data;
+
+      // Saludo
+      const inicial = borrower ? borrower.trim()[0].toUpperCase() : '?';
+      document.getElementById('borrowerGreeting').innerHTML = `
+        <div class="borrower-avatar">${inicial}</div>
+        <div>
+          <div class="borrower-name">Hola, ${borrower}</div>
+          <div class="borrower-phone">📞 ${formatPhone(phone)}</div>
+        </div>
+        <div class="loans-count">${loans.length} préstamo${loans.length !== 1 ? 's' : ''}</div>
+      `;
+
+      // Tarjetas de préstamos
+      const container = document.getElementById('loansContainer');
+      container.innerHTML = loans.map(loan => renderLoanCard(loan)).join('');
+
+      // Animar barras
+      setTimeout(() => {
+        document.querySelectorAll('.progress-fill').forEach(bar => {
+          const target = bar.getAttribute('data-pct');
+          bar.style.width = target + '%';
+        });
+      }, 100);
+
+      mostrarResultados();
+    }
+
+    function renderLoanCard(loan) {
+      const statusLabel = { active: 'Al día', paid: 'Pagado', overdue: 'En mora' };
+      const statusIcon  = { active: '✅', paid: '🏁', overdue: '⚠️' };
+      const typeIcon    = { normal: '💵', grande: '💎', metodo: '📋' };
+      const typeLabel   = { normal: 'Préstamo normal', grande: 'Préstamo grande', metodo: 'Método' };
+      const freqLabel   = { daily: 'Diario', weekly: 'Semanal', monthly: 'Mensual' };
+
+      const st = loan.status;
+      const lt = loan.loanType;
+      const pct = loan.porcentaje;
+      const isOverdue = st === 'overdue';
+      const isPaid    = st === 'paid';
+
+      // Pagos recientes
+      let pagosHtml = '';
+      if (loan.ultimosPagos && loan.ultimosPagos.length > 0) {
+        pagosHtml = loan.ultimosPagos.map(p => `
+          <div class="pay-item">
+            <div class="pay-dot">💳</div>
+            <div class="pay-info">
+              <div class="pay-date">${formatDate(p.date)}</div>
+              <div class="pay-note">${p.note || (p.paymentType === 'interest' ? 'Pago de interés' : 'Pago de cuota')}</div>
+            </div>
+            <div class="pay-amt">${formatMoney(p.amount)}</div>
+          </div>
+        `).join('');
+      } else {
+        pagosHtml = '<div class="no-payments">Sin pagos registrados aún</div>';
+      }
+
+      // Banner cuota
+      let cuotaBannerHtml = '';
+      if (st === 'active' || st === 'overdue') {
+        cuotaBannerHtml = `
+          <div class="cuota-banner ${isOverdue ? 'overdue' : ''}">
+            <div class="cuota-left">
+              <div class="cb-label">${isOverdue ? '⚠️ Cuota vencida' : 'Cuota'} (${freqLabel[loan.frequency] || loan.frequency})</div>
+              <div class="cb-val">${formatMoney(loan.installmentAmount)}</div>
+            </div>
+            <div class="cuota-right">${isOverdue ? '🔴' : '📅'}</div>
+          </div>
+        `;
+      }
+
+      return `
+        <div class="loan-card">
+          <div class="loan-card-header">
+            <div class="loan-type-badge">
+              <div class="loan-icon ${lt}">${typeIcon[lt] || '💵'}</div>
+              <div>
+                <div class="loan-label">${typeLabel[lt] || lt}</div>
+                <div class="loan-date">Desde ${formatDateShort(loan.startDate)} · Hasta ${formatDateShort(loan.endDate)}</div>
+              </div>
+            </div>
+            <span class="status-badge ${st}">${statusIcon[st]} ${statusLabel[st] || st}</span>
+          </div>
+
+          <div class="loan-progress">
+            <div class="progress-header">
+              <span class="progress-label">Progreso del pago</span>
+              <span class="progress-pct" style="${isOverdue ? 'color:var(--red)' : ''}">${pct}%</span>
+            </div>
+            <div class="progress-bar">
+              <div class="progress-fill ${isOverdue ? 'overdue' : ''} ${isPaid ? 'paid' : ''}"
+                   style="width:0%" data-pct="${pct}"></div>
+            </div>
+            <div class="progress-amounts">
+              <div class="pa-item">
+                <div class="pa-val">${formatMoney(loan.paidCapital)}</div>
+                <div class="pa-lbl">Pagado</div>
+              </div>
+              <div class="pa-item">
+                <div class="pa-val" style="color:var(--gray-400)">${formatMoney(loan.saldo)}</div>
+                <div class="pa-lbl">Pendiente</div>
+              </div>
+              <div class="pa-item">
+                <div class="pa-val">${formatMoney(loan.totalAPagar)}</div>
+                <div class="pa-lbl">Total</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="loan-info">
+            <div class="info-item">
+              <div class="info-lbl">Capital prestado</div>
+              <div class="info-val">${formatMoney(loan.amount)}</div>
+            </div>
+            <div class="info-item">
+              <div class="info-lbl">Interés</div>
+              <div class="info-val">${loan.interest}%</div>
+            </div>
+            <div class="info-item">
+              <div class="info-lbl">Cuotas pagadas</div>
+              <div class="info-val green">${loan.cuotasPagadas} / ${loan.totalInstallments}</div>
+            </div>
+            <div class="info-item">
+              <div class="info-lbl">Frecuencia</div>
+              <div class="info-val">${freqLabel[loan.frequency] || loan.frequency}</div>
+            </div>
+            ${loan.proximaCuota ? `
+            <div class="info-item" style="grid-column:1/-1">
+              <div class="info-lbl">Próxima cuota</div>
+              <div class="info-val ${isOverdue ? 'red' : 'green'}">${loan.proximaCuota}</div>
+            </div>` : ''}
+          </div>
+
+          ${cuotaBannerHtml}
+
+          ${(st === 'active' || st === 'overdue') ? `
+          <button class="btn-comprobante" onclick="abrirSubirComprobante('${loan.id}', ${loan.installmentAmount})">
+            📤 Subir comprobante de pago
+          </button>` : ''}
+
+          <div class="payments-section">
+            <div class="payments-title">Últimos pagos</div>
+            <div class="pay-list">${pagosHtml}</div>
+          </div>
+        </div>
+      `;
+    }
+
+    // ─── UTILIDADES ───────────────────────────────────────────
+    function formatMoney(n) {
+      if (n == null) return '$0';
+      return '$' + Math.round(n).toLocaleString('es-CO');
+    }
+
+    function formatPhone(p) {
+      if (!p) return '';
+      if (p.length === 10) return p.replace(/(\d{3})(\d{3})(\d{4})/, '$1 $2 $3');
+      if (p.length === 12) return '+' + p.replace(/(\d{2})(\d{3})(\d{3})(\d{4})/, '$1 $2 $3 $4');
+      return p;
+    }
+
+    function formatDate(iso) {
+      if (!iso) return '';
+      const d = new Date(iso);
+      const months = ['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'];
+      return `${d.getDate()} ${months[d.getMonth()]} ${d.getFullYear()} ${d.getHours().toString().padStart(2,'0')}:${d.getMinutes().toString().padStart(2,'0')}`;
+    }
+
+    function formatDateShort(str) {
+      if (!str) return '—';
+      const [y, m, d] = str.toString().split('-');
+      const months = ['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'];
+      return `${parseInt(d)} ${months[parseInt(m)-1]} ${y}`;
+    }
+
+    function mostrarLoading(show) {
+      document.getElementById('loading').classList.toggle('show', show);
+      document.getElementById('phoneCard').style.display = show ? 'none' : '';
+    }
+
+    function ocultarResultados() {
+      document.getElementById('results').classList.remove('show');
+    }
+
+    function mostrarResultados() {
+      document.getElementById('results').classList.add('show');
+      document.getElementById('phoneCard').style.display = 'none';
+    }
+
+    function mostrarError(msg) {
+      const el = document.getElementById('errorMsg');
+      el.textContent = msg;
+      el.classList.add('show');
+      document.getElementById('phoneCard').style.display = '';
+    }
+
+    function volverAtras() {
+      if (autoRefreshInterval) clearInterval(autoRefreshInterval);
+      autoRefreshInterval = null;
+      currentPhone = '';
+      ocultarResultados();
+      document.getElementById('phoneCard').style.display = '';
+      document.getElementById('phoneInput').value = '';
+      document.getElementById('errorMsg').classList.remove('show');
+    }
+
+    // Enter para buscar
+    document.getElementById('phoneInput').addEventListener('keydown', e => {
+      if (e.key === 'Enter') buscarPrestamo();
+    });
+
+    /* ─── SUBIR COMPROBANTE DE PAGO ───────────────────────────── */
+    let comprobanteLoanId = null;
+    let comprobanteImgBase64 = null;
+
+    function abrirSubirComprobante(loanId, cuotaSugerida) {
+      comprobanteLoanId = loanId;
+      comprobanteImgBase64 = null;
+      document.getElementById('comprobanteFile').value = '';
+      document.getElementById('comprobantePreview').style.display = 'none';
+      document.getElementById('comprobanteFileText').style.display = '';
+      document.getElementById('comprobanteAmount').value = cuotaSugerida ? Math.round(cuotaSugerida) : '';
+      document.getElementById('comprobanteNote').value = '';
+      document.getElementById('comprobanteError').textContent = '';
+      document.getElementById('comprobanteBtnSend').disabled = false;
+      document.getElementById('comprobanteOverlay').classList.add('open');
+      document.body.style.overflow = 'hidden';
+    }
+
+    function cerrarSubirComprobante() {
+      document.getElementById('comprobanteOverlay').classList.remove('open');
+      document.body.style.overflow = '';
+    }
+
+    function previewComprobante(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+      const errEl = document.getElementById('comprobanteError');
+      errEl.textContent = '';
+
+      // Comprimir/redimensionar la imagen para no enviar archivos enormes
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const img = new Image();
+        img.onload = () => {
+          const maxW = 900;
+          const scale = Math.min(1, maxW / img.width);
+          const canvas = document.createElement('canvas');
+          canvas.width = img.width * scale;
+          canvas.height = img.height * scale;
+          const ctx = canvas.getContext('2d');
+          ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+          comprobanteImgBase64 = canvas.toDataURL('image/jpeg', 0.75);
+
+          const preview = document.getElementById('comprobantePreview');
+          preview.src = comprobanteImgBase64;
+          preview.style.display = '';
+          document.getElementById('comprobanteFileText').style.display = 'none';
+        };
+        img.src = e.target.result;
+      };
+      reader.readAsDataURL(file);
+    }
+
+    async function enviarComprobante() {
+      const errEl = document.getElementById('comprobanteError');
+      if (!comprobanteImgBase64) {
+        errEl.textContent = 'Por favor sube una foto del comprobante.';
+        return;
+      }
+      const btn = document.getElementById('comprobanteBtnSend');
+      btn.disabled = true;
+      btn.textContent = 'Enviando...';
+
+      const amount = document.getElementById('comprobanteAmount').value;
+      const note = document.getElementById('comprobanteNote').value;
+
+      try {
+        const res = await fetch('/public/borrower/comprobante', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            loanId: comprobanteLoanId,
+            amount: amount || 0,
+            note: note,
+            imageBase64: comprobanteImgBase64
+          })
+        });
+        if (!res.ok) {
+          const d = await res.json().catch(() => ({}));
+          throw new Error(d.error || 'No se pudo enviar el comprobante.');
+        }
+        cerrarSubirComprobante();
+        alert('✅ Comprobante enviado. Tu prestamista lo revisará pronto.');
+      } catch (e) {
+        errEl.textContent = e.message || 'Error al enviar. Intenta de nuevo.';
+        btn.disabled = false;
+        btn.textContent = 'Enviar';
+      }
+    }
+
+</script>
+</body>
+</html>
