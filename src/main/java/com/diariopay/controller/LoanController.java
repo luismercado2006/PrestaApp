@@ -122,14 +122,15 @@ public class LoanController {
         if ("metodo".equals(loanType) && body.containsKey("numMonths")) {
             totalInstallments = toInt(body.get("numMonths"));
         } else {
+            // floor (no ceil): así la última cuota (start + n*periodo) nunca cae
+            // después de la fecha de fin que el usuario eligió.
             totalInstallments = switch (freq) {
-                case "weekly"  -> (int) Math.ceil(daysBetween / 7.0);
+                case "weekly"  -> (int) Math.floor(daysBetween / 7.0);
                 case "monthly" -> (int) Math.round(daysBetween / 30.4375);
                 default        -> (int) daysBetween;
             };
         }
         if (totalInstallments < 1) totalInstallments = 1;
-
         double installmentAmount;
         if ("metodo".equals(loanType)) {
             // Amortización francesa — misma fórmula que el frontend del dashboard
@@ -318,8 +319,10 @@ public class LoanController {
                     : (loan.getTotalInstallments() > 0 ? loan.getTotalInstallments() : 1);
         } else {
             long dias = ChronoUnit.DAYS.between(hoy, nuevaFechaFin);
+            // floor (no ceil): consistente con la creación, evita que la última cuota
+            // caiga después de la nueva fecha de fin.
             totalInstallments = switch (freq) {
-                case "weekly"  -> (int) Math.ceil(dias / 7.0);
+                case "weekly"  -> (int) Math.floor(dias / 7.0);
                 case "monthly" -> (int) Math.round(dias / 30.4375);
                 default        -> (int) dias;
             };

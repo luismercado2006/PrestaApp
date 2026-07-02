@@ -1988,13 +1988,14 @@ openModal('modal-new');
         if (!amount) { preview.style.display='none'; return; }
 
         let cuotas;
-        if (frequency.startsWith('m')) {
-            cuotas = parseInt(frequency.substring(1));
-        } else {
-            if (!startDate || !endDate || endDate <= startDate) { preview.style.display='none'; return; }
-            const days = Math.round((new Date(endDate) - new Date(startDate)) / 86400000);
-            cuotas = frequency==='daily' ? days : frequency==='weekly' ? Math.ceil(days/7) : Math.ceil(days/30);
-        }
+if (frequency.startsWith('m')) {
+    cuotas = parseInt(frequency.substring(1));
+} else {
+    if (!startDate || !endDate || endDate <= startDate) { preview.style.display='none'; return; }
+    const days = Math.round((new Date(endDate) - new Date(startDate)) / 86400000);
+    // floor (no ceil): así la última cuota no cae después de la fecha de fin elegida
+    cuotas = frequency==='daily' ? days : frequency==='weekly' ? Math.floor(days/7) : Math.floor(days/30);
+}
 
         let cuotaAmt;
         if (tipoPrestamo === 'metodo') {

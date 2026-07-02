@@ -122,12 +122,14 @@ public class BorrowerController {
                         double cuotaFija = loan.getInstallmentAmount();
                         cuotasPagadas = cuotaFija > 0 ? Math.round(totalPagadoNormal / cuotaFija) : 0;
                     }
-                    // La próxima cuota es startDate + cuotasPagadas períodos
+                    // La próxima cuota es startDate + (cuotasPagadas + 1) períodos.
+// La cuota #1 vence UN período después del inicio (no el mismo día de creación).
+                    long proximoPeriodo = cuotasPagadas + 1;
                     String freq = loan.getFrequency() != null ? loan.getFrequency() : "daily";
                     LocalDate proxFecha = switch (freq) {
-                        case "weekly"  -> loan.getStartDate().plusWeeks(cuotasPagadas);
-                        case "monthly" -> loan.getStartDate().plusMonths(cuotasPagadas);
-                        default        -> loan.getStartDate().plusDays(cuotasPagadas);
+                        case "weekly"  -> loan.getStartDate().plusWeeks(proximoPeriodo);
+                        case "monthly" -> loan.getStartDate().plusMonths(proximoPeriodo);
+                        default        -> loan.getStartDate().plusDays(proximoPeriodo);
                     };
                     LocalDate endDate = loan.getEndDate();
                     if (endDate == null || !proxFecha.isAfter(endDate)) {
