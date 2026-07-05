@@ -4,6 +4,7 @@ import com.diariopay.model.Loan;
 import com.diariopay.model.Payment;
 import com.diariopay.repository.LoanRepository;
 import com.diariopay.repository.PaymentRepository;
+import com.diariopay.service.LoanStatusService;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -18,6 +19,7 @@ class PaymentController {
 
     @Autowired private PaymentRepository paymentRepo;
     @Autowired private LoanRepository    loanRepo;
+    @Autowired private LoanStatusService loanStatusService;
 
     @PostMapping
     public ResponseEntity<?> addPayment(@RequestBody Map<String, Object> body, HttpSession session) {
@@ -38,23 +40,17 @@ class PaymentController {
         p.setPaymentType((String) body.getOrDefault("paymentType", "normal"));
         paymentRepo.save(p);
 
-        // Solo los pagos de capital/normal cuentan para marcar como pagado
+        // Recalculamos el estado real del préstamo (active | overdue | paid)
+        // en base a las cuotas que ya quedaron pagadas, no solo si ya se
+        // terminó de pagar. Así, si el cliente se pone al día, el préstamo
+        // sale de mora automáticamente en vez de quedarse "overdue" para siempre.
         List<Payment> payments = paymentRepo.findByLoanIdAndArchivadoFalse(loanId);
-        double paidCapital = payments.stream()
-                .filter(pay -> "capital".equals(pay.getPaymentType()) || "normal".equals(pay.getPaymentType()))
-                .filter(pay -> pay.getAmount() > 0)
-                .mapToDouble(Payment::getAmount).sum();
-
-        double total;
-        if ("grande".equals(loan.getLoanType())) {
-            total = loan.getAmount(); // solo capital
-        } else if ("metodo".equals(loan.getLoanType())) {
-            total = loan.getAmount(); // cuota fija cubre todo
-        } else {
-            total = loan.getAmount() + (loan.getAmount() * loan.getInterest() / 100);
-        }
-        if (paidCapital >= total) {
-            loan.setStatus("paid");
+        String nuevoEstado = loanStatusService.calcularEstadoActual(loan, payments);
+        if (!nuevoEstado.equals(loan.getStatus())) {
+            loan.setStatus(nuevoEstado);
+            if ("active".equals(nuevoEstado)) {
+                loan.setMoraNotificada(false);
+            }
             loanRepo.save(loan);
         }
         return ResponseEntity.ok(Map.of("ok", true));

@@ -7,6 +7,7 @@ import com.diariopay.repository.LoanRepository;
 import com.diariopay.repository.PaymentRepository;
 import com.diariopay.repository.UserRepository;
 import com.diariopay.service.WhatsAppService;
+import com.diariopay.service.LoanStatusService;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -26,41 +27,56 @@ public class LoanController {
     @Autowired private UserRepository    userRepo;
     @Autowired private WhatsAppService   whatsAppService;
     @Autowired private MoraScheduler     moraScheduler;
+    @Autowired private LoanStatusService loanStatusService;
 
-    // ─── Detecta mora en tiempo real y envía WhatsApp con nombre del prestamista
+    // ─── Detecta mora en tiempo real (y también saca de mora si ya está al día)
+    // y envía WhatsApp con nombre del prestamista solo cuando entra en mora.
     private void detectarMoraEnTiempoReal(List<Loan> prestamos) {
-        LocalDate hoy = LocalDate.now();
         for (Loan loan : prestamos) {
-            if ("active".equals(loan.getStatus())
-                    && loan.getEndDate() != null
-                    && !hoy.isBefore(loan.getEndDate())) {
+            if ("paid".equals(loan.getStatus())) continue;
 
-                loan.setStatus("overdue");
+            List<Payment> payments = paymentRepo.findByLoanIdAndArchivadoFalse(loan.getId());
+            String estadoAnterior = loan.getStatus();
+            String nuevoEstado    = loanStatusService.calcularEstadoActual(loan, payments);
+
+            if (nuevoEstado.equals(estadoAnterior)) continue;
+
+            loan.setStatus(nuevoEstado);
+
+            if ("active".equals(nuevoEstado)) {
+                // El cliente se puso al día: reseteamos el aviso para que, si
+                // vuelve a caer en mora más adelante, se le notifique de nuevo.
+                loan.setMoraNotificada(false);
                 loanRepo.save(loan);
+                System.out.println("✅ Préstamo de " + loan.getBorrower() + " vuelve a estar AL DÍA");
+                continue;
+            }
 
-                if (!loan.isMoraNotificada()
-                        && loan.getPhone() != null
-                        && !loan.getPhone().isBlank()) {
+            loanRepo.save(loan);
 
-                    // Obtener nombre real del prestamista
-                    String nombrePrestamista = userRepo.findById(loan.getUserId())
-                            .map(User::getName)
-                            .filter(n -> n != null && !n.isBlank())
-                            .orElse("DiarioPay");
+            if ("overdue".equals(nuevoEstado)
+                    && !loan.isMoraNotificada()
+                    && loan.getPhone() != null
+                    && !loan.getPhone().isBlank()) {
 
-                    try {
-                        whatsAppService.enviarMensajeMora(
-                                loan.getPhone(),
-                                loan.getBorrower(),
-                                loan.getAmount(),
-                                nombrePrestamista
-                        );
-                        loan.setMoraNotificada(true);
-                        loanRepo.save(loan);
-                        System.out.println("✅ Mora en tiempo real → WhatsApp enviado a " + loan.getBorrower() + " de parte de " + nombrePrestamista);
-                    } catch (Exception e) {
-                        System.err.println("❌ Error WhatsApp mora: " + e.getMessage());
-                    }
+                // Obtener nombre real del prestamista
+                String nombrePrestamista = userRepo.findById(loan.getUserId())
+                        .map(User::getName)
+                        .filter(n -> n != null && !n.isBlank())
+                        .orElse("DiarioPay");
+
+                try {
+                    whatsAppService.enviarMensajeMora(
+                            loan.getPhone(),
+                            loan.getBorrower(),
+                            loan.getAmount(),
+                            nombrePrestamista
+                    );
+                    loan.setMoraNotificada(true);
+                    loanRepo.save(loan);
+                    System.out.println("✅ Mora en tiempo real → WhatsApp enviado a " + loan.getBorrower() + " de parte de " + nombrePrestamista);
+                } catch (Exception e) {
+                    System.err.println("❌ Error WhatsApp mora: " + e.getMessage());
                 }
             }
         }
