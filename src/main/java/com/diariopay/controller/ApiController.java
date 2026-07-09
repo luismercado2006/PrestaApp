@@ -9,7 +9,9 @@ import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.*;
 
 // ─── Payments ────────────────────────────────────────────────────────────────
@@ -38,6 +40,10 @@ class PaymentController {
         p.setAmount(toDouble(body.get("amount")));
         p.setNote((String) body.getOrDefault("note", ""));
         p.setPaymentType((String) body.getOrDefault("paymentType", "normal"));
+        // Fecha del pago: si el front envía "date" (yyyy-MM-dd) usamos esa fecha
+        // (con la hora actual, para no perder el orden cronológico dentro del
+        // mismo día); si no la envía, o llega inválida, usamos el momento actual.
+        p.setDate(resolvePaymentDate(body.get("date")));
         paymentRepo.save(p);
 
         // Recalculamos el estado real del préstamo (active | overdue | paid)
@@ -64,6 +70,24 @@ class PaymentController {
 
     private String toString(Object v) {
         return v == null ? null : v.toString();
+    }
+
+    /**
+     * Convierte la fecha elegida por el usuario (String "yyyy-MM-dd") en un
+     * LocalDateTime. Se conserva la hora actual para que, si se registran
+     * varios pagos el mismo día, mantengan su orden real de creación.
+     * Si no llega fecha, o llega en un formato inválido, se usa "ahora".
+     */
+    private LocalDateTime resolvePaymentDate(Object rawDate) {
+        if (rawDate == null) return LocalDateTime.now();
+        String value = rawDate.toString().trim();
+        if (value.isEmpty()) return LocalDateTime.now();
+        try {
+            LocalDate fecha = LocalDate.parse(value); // espera "yyyy-MM-dd"
+            return fecha.atTime(LocalTime.now());
+        } catch (Exception e) {
+            return LocalDateTime.now();
+        }
     }
 }
 

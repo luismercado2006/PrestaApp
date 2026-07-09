@@ -54,6 +54,10 @@ public class LoanStatusService {
         double totalAPagar;
         if ("grande".equals(loan.getLoanType()) || "metodo".equals(loan.getLoanType())) {
             totalAPagar = loan.getAmount(); // solo capital
+        } else if ("extra".equals(loan.getLoanType())) {
+            // Extra: interés fijo total = monto * interés% * meses, ya repartido
+            // en installmentAmount * totalInstallments al crear/renovar el préstamo.
+            totalAPagar = loan.getInstallmentAmount() * (loan.getTotalInstallments() > 0 ? loan.getTotalInstallments() : 1);
         } else {
             totalAPagar = loan.getAmount() + (loan.getAmount() * loan.getInterest() / 100);
         }
@@ -97,9 +101,10 @@ public class LoanStatusService {
     private LocalDate calcularFechaCuota(LocalDate start, String freq, int numeroCuota) {
         String f = freq != null ? freq : "daily";
         return switch (f) {
-            case "monthly" -> start.plusMonths(numeroCuota);
-            case "weekly"  -> start.plusWeeks(numeroCuota);
-            default        -> start.plusDays(numeroCuota);
+            case "monthly"  -> start.plusMonths(numeroCuota);
+            case "weekly"   -> start.plusWeeks(numeroCuota);
+            case "biweekly" -> start.plusDays(numeroCuota * 15L);
+            default         -> start.plusDays(numeroCuota);
         };
     }
 }

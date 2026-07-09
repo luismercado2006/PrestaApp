@@ -143,6 +143,7 @@
         .loan-icon.normal{background:var(--blue-l)}
         .loan-icon.grande{background:#fff7ed}
         .loan-icon.metodo{background:#f0fdf4}
+        .loan-icon.extra{background:#fae8ff}
         .loan-label{font-size:13px;font-weight:600;color:var(--gray-600)}
         .loan-date{font-size:12px;color:var(--gray-400);margin-top:2px}
 
@@ -505,9 +506,9 @@
     function renderLoanCard(loan) {
       const statusLabel = { active: 'Al día', paid: 'Pagado', overdue: 'En mora' };
       const statusIcon  = { active: '✅', paid: '🏁', overdue: '⚠️' };
-      const typeIcon    = { normal: '💵', grande: '💎', metodo: '📋' };
-      const typeLabel   = { normal: 'Préstamo normal', grande: 'Préstamo grande', metodo: 'Método' };
-      const freqLabel   = { daily: 'Diario', weekly: 'Semanal', monthly: 'Mensual' };
+      const typeIcon    = { normal: '💵', grande: '💎', metodo: '📋', extra: '⭐' };
+      const typeLabel   = { normal: 'Préstamo normal', grande: 'Préstamo grande', metodo: 'Método', extra: 'Préstamo Extra' };
+      const freqLabel   = { daily: 'Diario', weekly: 'Semanal', biweekly: 'Quincenal', monthly: 'Mensual' };
 
       const st = loan.status;
       const lt = loan.loanType;

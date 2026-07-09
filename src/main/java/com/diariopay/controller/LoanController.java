@@ -130,9 +130,48 @@ public class LoanController {
         loan.setDueDate(endDate.atStartOfDay());
         loan.setCreatedAt(startDate.atStartOfDay());
 
-        long daysBetween = ChronoUnit.DAYS.between(startDate, endDate);
         String freq     = loan.getFrequency();
         String loanType = loan.getLoanType();
+
+        // ─── PRÉSTAMO EXTRA ──────────────────────────────────────────────
+        // Interés fijo total = monto * interés% * meses (no compuesto).
+        // Ese total se reparte entre las cuotas según la frecuencia elegida.
+        if ("extra".equals(loanType)) {
+            int months = toInt(body.getOrDefault("months", 1));
+            if (months < 1) months = 1;
+            if (months > 12) months = 12;
+            loan.setMonths(months);
+
+            LocalDate calculatedEnd = startDate.plusMonths(months);
+            loan.setEndDate(calculatedEnd);
+            loan.setDueDate(calculatedEnd.atStartOfDay());
+
+            long dias = ChronoUnit.DAYS.between(startDate, calculatedEnd);
+            int totalInstallmentsExtra = switch (freq) {
+                case "weekly"   -> (int) Math.floor(dias / 7.0);
+                case "biweekly" -> (int) Math.floor(dias / 15.0);
+                case "monthly"  -> months;
+                default         -> (int) dias; // daily
+            };
+            if (totalInstallmentsExtra < 1) totalInstallmentsExtra = 1;
+
+            double totalInteres = loan.getAmount() * (loan.getInterest() / 100.0) * months;
+            double totalAPagarExtra = loan.getAmount() + totalInteres;
+            double installmentAmountExtra = totalAPagarExtra / totalInstallmentsExtra;
+
+            loan.setTotalInstallments(totalInstallmentsExtra);
+            loan.setInstallmentAmount(installmentAmountExtra);
+
+            loanRepo.save(loan);
+            return ResponseEntity.ok(Map.of(
+                    "ok", true,
+                    "id", loan.getId(),
+                    "totalInstallments", totalInstallmentsExtra,
+                    "installmentAmount", installmentAmountExtra
+            ));
+        }
+
+        long daysBetween = ChronoUnit.DAYS.between(startDate, endDate);
 
         int totalInstallments;
         if ("metodo".equals(loanType) && body.containsKey("numMonths")) {
@@ -216,6 +255,7 @@ public class LoanController {
         resp.put("startDate",         loan.getStartDate());
         resp.put("endDate",           loan.getEndDate());
         resp.put("loanType",          loan.getLoanType() != null ? loan.getLoanType() : "normal");
+        resp.put("months",            loan.getMonths());
         resp.put("renovado",          loan.isRenovado());
         return ResponseEntity.ok(resp);
     }
@@ -301,6 +341,7 @@ public class LoanController {
         snap.setTotalInstallments(loan.getTotalInstallments());
         snap.setInstallmentAmount(loan.getInstallmentAmount());
         snap.setMoraNotificada(loan.isMoraNotificada());
+        snap.setMonths(loan.getMonths());
         loan.setSnapshotAnterior(snap);
 
         List<Payment> pagosActuales = paymentRepo.findByLoanIdAndArchivadoFalse(id);
@@ -316,6 +357,48 @@ public class LoanController {
         String freq = body.containsKey("frequency")
                 ? (String) body.get("frequency")
                 : (loan.getFrequency() != null ? loan.getFrequency() : "daily");
+
+        // ─── RENOVACIÓN DE PRÉSTAMO EXTRA ─────────────────────────────────
+        if ("extra".equals(loanType)) {
+            int months = toInt(body.getOrDefault("months", loan.getMonths() > 0 ? loan.getMonths() : 1));
+            if (months < 1) months = 1;
+            if (months > 12) months = 12;
+
+            LocalDate nuevaFechaFinExtra = hoy.plusMonths(months);
+            long dias = ChronoUnit.DAYS.between(hoy, nuevaFechaFinExtra);
+            int totalInstallmentsExtra = switch (freq) {
+                case "weekly"   -> (int) Math.floor(dias / 7.0);
+                case "biweekly" -> (int) Math.floor(dias / 15.0);
+                case "monthly"  -> months;
+                default         -> (int) dias;
+            };
+            if (totalInstallmentsExtra < 1) totalInstallmentsExtra = 1;
+
+            double totalInteresExtra = nuevoMonto * (nuevoPorcentaje / 100.0) * months;
+            double installmentAmountExtra = (nuevoMonto + totalInteresExtra) / totalInstallmentsExtra;
+
+            loan.setAmount(nuevoMonto);
+            loan.setInterest(nuevoPorcentaje);
+            loan.setStartDate(hoy);
+            loan.setEndDate(nuevaFechaFinExtra);
+            loan.setFrequency(freq);
+            loan.setMonths(months);
+            loan.setCreatedAt(hoy.atStartOfDay());
+            loan.setDueDate(nuevaFechaFinExtra.atStartOfDay());
+            loan.setTotalInstallments(totalInstallmentsExtra);
+            loan.setInstallmentAmount(installmentAmountExtra);
+            loan.setStatus("active");
+            loan.setMoraNotificada(false);
+            loan.setRenovado(true);
+
+            loanRepo.save(loan);
+
+            return ResponseEntity.ok(Map.of(
+                    "ok", true,
+                    "totalInstallments", totalInstallmentsExtra,
+                    "installmentAmount", installmentAmountExtra
+            ));
+        }
 
         LocalDate nuevaFechaFin;
         if (body.containsKey("endDate")) {
@@ -418,6 +501,7 @@ public class LoanController {
         loan.setTotalInstallments(snap.getTotalInstallments());
         loan.setInstallmentAmount(snap.getInstallmentAmount());
         loan.setMoraNotificada(snap.isMoraNotificada());
+        loan.setMonths(snap.getMonths());
         loan.setRenovado(false);
         loan.setSnapshotAnterior(null);
 
@@ -466,9 +550,10 @@ public class LoanController {
             if (loan.getStartDate() != null && !hoy.isBefore(loan.getStartDate())) {
                 String freq = loan.getFrequency() != null ? loan.getFrequency() : "daily";
                 boolean aplica = switch (freq) {
-                    case "weekly"  -> loan.getStartDate().until(hoy).getDays() % 7 == 0;
-                    case "monthly" -> loan.getStartDate().getDayOfMonth() == hoy.getDayOfMonth();
-                    default        -> true;
+                    case "weekly"   -> loan.getStartDate().until(hoy).getDays() % 7 == 0;
+                    case "biweekly" -> ChronoUnit.DAYS.between(loan.getStartDate(), hoy) % 15 == 0;
+                    case "monthly"  -> loan.getStartDate().getDayOfMonth() == hoy.getDayOfMonth();
+                    default         -> true;
                 };
                 if (aplica) {
                     cuotaHoy = loan.getInstallmentAmount();

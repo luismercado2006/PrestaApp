@@ -84,6 +84,10 @@ public class BorrowerController {
             } else if ("metodo".equals(loan.getLoanType())) {
                 // Metodo (amortización francesa): cuota fija x número de cuotas
                 totalAPagar = loan.getInstallmentAmount() * loan.getTotalInstallments();
+            } else if ("extra".equals(loan.getLoanType())) {
+                // Extra: interés fijo total (monto * interés% * meses) ya repartido
+                // entre las cuotas al crear/renovar el préstamo.
+                totalAPagar = loan.getInstallmentAmount() * loan.getTotalInstallments();
             } else {
                 // Normal: capital + interés simple
                 totalAPagar = loan.getAmount() + (loan.getAmount() * loan.getInterest() / 100);
@@ -127,9 +131,10 @@ public class BorrowerController {
                     long proximoPeriodo = cuotasPagadas + 1;
                     String freq = loan.getFrequency() != null ? loan.getFrequency() : "daily";
                     LocalDate proxFecha = switch (freq) {
-                        case "weekly"  -> loan.getStartDate().plusWeeks(proximoPeriodo);
-                        case "monthly" -> loan.getStartDate().plusMonths(proximoPeriodo);
-                        default        -> loan.getStartDate().plusDays(proximoPeriodo);
+                        case "weekly"   -> loan.getStartDate().plusWeeks(proximoPeriodo);
+                        case "biweekly" -> loan.getStartDate().plusDays(proximoPeriodo * 15L);
+                        case "monthly"  -> loan.getStartDate().plusMonths(proximoPeriodo);
+                        default         -> loan.getStartDate().plusDays(proximoPeriodo);
                     };
                     LocalDate endDate = loan.getEndDate();
                     if (endDate == null || !proxFecha.isAfter(endDate)) {

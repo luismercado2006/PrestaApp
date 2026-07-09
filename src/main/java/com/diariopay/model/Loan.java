@@ -16,9 +16,10 @@ public class Loan {
     private String borrower;
     private double amount;
     private double interest;
-    private String frequency;   // daily | weekly | monthly
-    private String loanType;     // normal | grande
+    private String frequency;   // daily | weekly | biweekly | monthly
+    private String loanType;     // normal | grande | metodo | extra
     private String status;      // active | paid | overdue
+    private int months;         // plazo en meses (solo usado por loanType = "extra")
     private String notes;
     private LocalDateTime createdAt;
     private LocalDateTime dueDate;
@@ -47,5 +48,6 @@ public class Loan {
         private int totalInstallments;
         private double installmentAmount;
         private boolean moraNotificada;
+        private int months;
     }
 }
