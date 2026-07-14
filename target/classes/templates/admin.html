@@ -42,6 +42,7 @@
         .btn-desactivar{background:var(--red-l);color:var(--red)}
         .btn-automatico{background:var(--gray-100);color:var(--gray-600)}
         .btn-renovar{background:var(--blue-l);color:var(--blue)}
+        .btn-retroceder{background:var(--orange-l);color:var(--orange)}
         .empty{text-align:center;color:var(--gray-400);padding:40px 0;font-size:14px}
         .override-tag{font-size:10.5px;color:var(--gray-400);margin-top:6px}
     </style>
@@ -122,6 +123,7 @@
                     <button class="btn-a btn-activar" onclick="accion('${u.id}','activar')">✓ Activar</button>
                     <button class="btn-a btn-desactivar" onclick="accion('${u.id}','desactivar')">✕ Desactivar</button>
                     <button class="btn-a btn-renovar" onclick="accion('${u.id}','renovar')">↻ Renovar 1 mes</button>
+                    <button class="btn-a btn-retroceder" onclick="accion('${u.id}','retroceder')">⏪ Retroceder 1 mes</button>
                     <button class="btn-a btn-automatico" onclick="accion('${u.id}','automatico')">⟲ Automático</button>
                 </div>
                 <div class="override-tag">Control manual: ${u.override}</div>

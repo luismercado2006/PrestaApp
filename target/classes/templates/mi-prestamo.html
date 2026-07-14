@@ -146,6 +146,7 @@
         .loan-icon.extra{background:#fae8ff}
         .loan-label{font-size:13px;font-weight:600;color:var(--gray-600)}
         .loan-date{font-size:12px;color:var(--gray-400);margin-top:2px}
+        .loan-empresa{font-size:12px;color:var(--gray-500);margin-top:2px;font-weight:600}
 
         .status-badge{
           padding:5px 12px;border-radius:20px;font-size:12px;font-weight:700;
@@ -555,6 +556,7 @@
               <div>
                 <div class="loan-label">${typeLabel[lt] || lt}</div>
                 <div class="loan-date">Desde ${formatDateShort(loan.startDate)} · Hasta ${formatDateShort(loan.endDate)}</div>
+                ${loan.empresa ? `<div class="loan-empresa">🏢 Empresa: ${loan.empresa}</div>` : ''}
               </div>
             </div>
             <span class="status-badge ${st}">${statusIcon[st]} ${statusLabel[st] || st}</span>
