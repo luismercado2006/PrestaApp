@@ -18,4 +18,9 @@ public class Payment {
     private String paymentType; // capital | interest | normal
     private LocalDateTime date = LocalDateTime.now();
     private boolean archivado = false;
+
+    // Posición manual dentro del historial de pagos (0 = primero / más arriba).
+    // Si es null, el pago no ha sido reordenado manualmente y el orden se
+    // calcula automáticamente por fecha (más reciente primero).
+    private Integer sortOrder;
 }

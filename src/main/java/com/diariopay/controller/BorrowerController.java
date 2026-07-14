@@ -3,9 +3,11 @@ package com.diariopay.controller;
 import com.diariopay.model.Loan;
 import com.diariopay.model.Payment;
 import com.diariopay.model.PaymentProof;
+import com.diariopay.model.User;
 import com.diariopay.repository.LoanRepository;
 import com.diariopay.repository.PaymentProofRepository;
 import com.diariopay.repository.PaymentRepository;
+import com.diariopay.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -25,6 +27,16 @@ public class BorrowerController {
     @Autowired private LoanRepository    loanRepo;
     @Autowired private PaymentRepository paymentRepo;
     @Autowired private PaymentProofRepository proofRepo;
+    @Autowired private UserRepository    userRepo;
+
+    /** Nombre de la empresa/prestamista dueño de la cuenta que creó el préstamo. */
+    private String obtenerNombrePrestamista(String userId) {
+        if (userId == null) return "DiarioPay";
+        return userRepo.findById(userId)
+                .map(User::getName)
+                .filter(n -> n != null && !n.isBlank())
+                .orElse("DiarioPay");
+    }
 
     /**
      * GET /public/borrower/{phone}
@@ -67,9 +79,10 @@ public class BorrowerController {
             // Solo abonos a capital/normal (excluye intereses) — para "grande" esto
             // es lo que realmente reduce la deuda; para normal/método coincide con paidTotal
             // salvo que haya pagos de tipo "interest" registrados aparte.
+            // Incluye devoluciones (montos negativos) para que reduzcan el
+            // capital pagado real, igual que en LoanStatusService.
             double paidCapital = payments.stream()
                     .filter(p -> "capital".equals(p.getPaymentType()) || "normal".equals(p.getPaymentType()))
-                    .filter(p -> p.getAmount() > 0)
                     .mapToDouble(Payment::getAmount).sum();
 
             // Base de progreso: en préstamo grande el avance es sobre CAPITAL (los intereses
@@ -120,23 +133,33 @@ public class BorrowerController {
                                 .filter(p -> "capital".equals(p.getPaymentType()) && p.getAmount() > 0)
                                 .count();
                     } else {
+                        // Incluye devoluciones (monto negativo) para que reduzcan
+                        // las cuotas contadas como pagadas.
                         double totalPagadoNormal = payments.stream()
-                                .filter(p -> "normal".equals(p.getPaymentType()) && p.getAmount() > 0)
+                                .filter(p -> "normal".equals(p.getPaymentType()))
                                 .mapToDouble(Payment::getAmount).sum();
                         double cuotaFija = loan.getInstallmentAmount();
-                        cuotasPagadas = cuotaFija > 0 ? Math.round(totalPagadoNormal / cuotaFija) : 0;
+                        cuotasPagadas = cuotaFija > 0 ? Math.max(0, Math.round(totalPagadoNormal / cuotaFija)) : 0;
                     }
                     // La próxima cuota es startDate + (cuotasPagadas + 1) períodos.
 // La cuota #1 vence UN período después del inicio (no el mismo día de creación).
                     long proximoPeriodo = cuotasPagadas + 1;
+                    int totalInstallments = loan.getTotalInstallments() > 0 ? loan.getTotalInstallments() : 1;
                     String freq = loan.getFrequency() != null ? loan.getFrequency() : "daily";
-                    LocalDate proxFecha = switch (freq) {
-                        case "weekly"   -> loan.getStartDate().plusWeeks(proximoPeriodo);
-                        case "biweekly" -> loan.getStartDate().plusDays(proximoPeriodo * 15L);
-                        case "monthly"  -> loan.getStartDate().plusMonths(proximoPeriodo);
-                        default         -> loan.getStartDate().plusDays(proximoPeriodo);
-                    };
                     LocalDate endDate = loan.getEndDate();
+                    LocalDate proxFecha;
+                    if (proximoPeriodo >= totalInstallments && endDate != null) {
+                        // La última cuota siempre vence el mismo día que "Vence" (endDate),
+                        // sin importar el intervalo usado para las cuotas anteriores.
+                        proxFecha = endDate;
+                    } else {
+                        proxFecha = switch (freq) {
+                            case "weekly"   -> loan.getStartDate().plusDays(proximoPeriodo * (long) loan.getWeeklyIntervalDaysOrDefault());
+                            case "biweekly" -> loan.getStartDate().plusDays(proximoPeriodo * 15L);
+                            case "monthly"  -> loan.getStartDate().plusMonths(proximoPeriodo);
+                            default         -> loan.getStartDate().plusDays(proximoPeriodo);
+                        };
+                    }
                     if (endDate == null || !proxFecha.isAfter(endDate)) {
                         long diasRestantes = ChronoUnit.DAYS.between(hoy, proxFecha);
                         String[] meses = {"ene","feb","mar","abr","may","jun","jul","ago","sep","oct","nov","dic"};
@@ -148,12 +171,17 @@ public class BorrowerController {
                 }
             }
 
-            // Últimos 5 pagos (más recientes primero)
+            // Todos los pagos (más recientes primero). Si el prestamista
+            // reordenó manualmente el historial desde el panel, respetamos
+            // ese orden; si no, se ordena automáticamente por fecha.
+            boolean ordenManual = payments.stream().anyMatch(p -> p.getSortOrder() != null);
             List<Map<String, Object>> ultimosPagos = payments.stream()
-                    .sorted(Comparator.comparing(
-                            p -> p.getDate() != null ? p.getDate() : java.time.LocalDateTime.MIN,
+                    .sorted(ordenManual
+                            ? Comparator.comparing(
+                            (Payment p) -> p.getSortOrder() != null ? p.getSortOrder() : Integer.MAX_VALUE)
+                            : Comparator.comparing(
+                            (Payment p) -> p.getDate() != null ? p.getDate() : java.time.LocalDateTime.MIN,
                             Comparator.reverseOrder()))
-                    .limit(5)
                     .map(p -> {
                         Map<String, Object> pm = new LinkedHashMap<>();
                         pm.put("amount",      p.getAmount());
@@ -167,6 +195,7 @@ public class BorrowerController {
             Map<String, Object> item = new LinkedHashMap<>();
             item.put("id",                 loan.getId());
             item.put("borrower",           loan.getBorrower());
+            item.put("empresa",            obtenerNombrePrestamista(loan.getUserId()));
             item.put("amount",             loan.getAmount());
             item.put("interest",           loan.getInterest());
             item.put("frequency",          loan.getFrequency());
@@ -200,11 +229,13 @@ public class BorrowerController {
                         .filter(p -> "capital".equals(p.getPaymentType()) && p.getAmount() > 0)
                         .count();
             } else {
+                // Incluye devoluciones (monto negativo) para que reduzcan
+                // las cuotas contadas como pagadas.
                 double totalPagadoNormal = payments.stream()
-                        .filter(p -> "normal".equals(p.getPaymentType()) && p.getAmount() > 0)
+                        .filter(p -> "normal".equals(p.getPaymentType()))
                         .mapToDouble(Payment::getAmount).sum();
                 double cuotaFija = loan.getInstallmentAmount();
-                cuotasPagadasInt = cuotaFija > 0 ? (int) Math.round(totalPagadoNormal / cuotaFija) : 0;
+                cuotasPagadasInt = cuotaFija > 0 ? (int) Math.max(0, Math.round(totalPagadoNormal / cuotaFija)) : 0;
             }
             item.put("cuotasPagadas", cuotasPagadasInt);
             item.put("proximaCuota",       proximaCuota);

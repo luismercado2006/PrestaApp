@@ -10,16 +10,16 @@
         *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
         :root{
           --green:#16a34a;--green-l:#dcfce7;--blue:#1d4ed8;--blue-l:#eff6ff;--red:#dc2626;
-          --gray-50:#f9fafb;--gray-100:#f3f4f6;--gray-200:#e5e7eb;
-          --gray-400:#9ca3af;--gray-600:#4b5563;--gray-700:#374151;
+          --gray-50:#f9fafb;--gray-100:#f3f4f6;--gray-200:#e5e7eb;--gray-300:#d1d5db;
+          --gray-400:#9ca3af;--gray-500:#6b7280;--gray-600:#4b5563;--gray-700:#374151;
           --gray-800:#1f2937;--white:#ffffff;
         }
 
         /* ── MODO OSCURO ── */
         body.dark-mode {
           --green:#39ff14;--green-l:#003300;--blue:#00cfff;--blue-l:#001a2e;--red:#ff3c3c;
-          --gray-50:#0d0d0d;--gray-100:#1a1a1a;--gray-200:#2a2a2a;
-          --gray-400:#888888;--gray-600:#bbbbbb;--gray-700:#dddddd;
+          --gray-50:#0d0d0d;--gray-100:#1a1a1a;--gray-200:#2a2a2a;--gray-300:#444444;
+          --gray-400:#888888;--gray-500:#999999;--gray-600:#bbbbbb;--gray-700:#dddddd;
           --gray-800:#f0f0f0;--white:#111111;
           background:#0d0d0d;
         }
@@ -334,9 +334,20 @@
         .btn-delete{background:#fef2f2;color:var(--red);border:none;border-radius:14px;padding:14px;font-family:inherit;font-size:14px;font-weight:700;cursor:pointer}
         .btn-refund{background:#fef3c7;color:#92400e;border:none;border-radius:14px;padding:14px;font-family:inherit;font-size:14px;font-weight:700;cursor:pointer}
         .pay-section-title{font-size:14px;font-weight:700;color:var(--gray-800);margin-bottom:10px}
+        .pay-section-title-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+        .pay-section-title-row .pay-section-title{margin-bottom:0}
+        .btn-reorder-pagos{background:var(--gray-100);color:var(--gray-800);border:none;border-radius:20px;padding:7px 14px;font-family:inherit;font-size:12px;font-weight:700;cursor:pointer;display:inline-flex;align-items:center;gap:5px;white-space:nowrap}
+        #reorder-pagos-actions{display:none;gap:8px;margin:0 0 10px}
+        .btn-reorder-save{flex:1;background:var(--green);color:#fff;border:none;border-radius:10px;padding:11px;font-family:inherit;font-size:13px;font-weight:700;cursor:pointer}
+        .btn-reorder-cancel{flex:1;background:var(--gray-100);color:var(--gray-800);border:none;border-radius:10px;padding:11px;font-family:inherit;font-size:13px;font-weight:700;cursor:pointer}
         .pay-item{display:flex;justify-content:space-between;align-items:center;padding:12px 16px;background:var(--white);border-radius:12px;margin-bottom:8px;border:1px solid var(--gray-100)}
         .pay-item .pay-date{font-size:13px;color:var(--gray-400)}
         .pay-item .pay-amt{font-size:14px;font-weight:700;color:var(--green)}
+        .pay-item-reorder{background:#f0fdf9;border-color:#bbf7d0}
+        .pay-reorder-controls{display:flex;align-items:center;gap:8px}
+        .pay-move-btns{display:flex;flex-direction:column;gap:3px}
+        .pay-move-btn{background:var(--gray-100);border:none;border-radius:6px;width:26px;height:22px;font-size:11px;line-height:1;cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--gray-800)}
+        .pay-move-btn:disabled{opacity:.3;cursor:default}
 
         .fab{position:fixed;bottom:80px;right:20px;width:56px;height:56px;background:var(--green);color:var(--white);border-radius:50%;border:none;font-size:26px;display:flex;align-items:center;justify-content:center;cursor:pointer;box-shadow:0 4px 16px rgba(22,163,74,.45);z-index:90}
         .bottom-nav{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:480px;background:var(--white);border-top:1px solid var(--gray-200);display:flex;padding:8px 0;z-index:80}
@@ -449,6 +460,10 @@
         <div class="stat-card"><div class="label">Por cobrar</div><div class="value red" id="s-pending">–</div></div>
         <div class="stat-card"><div class="label">Préstamos activos</div><div class="value dark" id="s-active">–</div></div>
     </div>
+    <div class="stats-grid">
+        <div class="stat-card"><div class="label">Total (capital + interés)</div><div class="value red" id="s-saldo-interes">–</div></div>
+        <div class="stat-card"><div class="label">Interés del mes</div><div class="value green" id="s-interes-mes">–</div></div>
+    </div>
     <div class="chart-card">
         <h3>Cobros últimos 7 días</h3>
         <div class="chart-wrap" id="chart-wrap"></div>
@@ -497,7 +512,10 @@
                 <button type="button" class="d-phone-edit-btn" id="d-phone-edit-btn" onclick="openEditPhone()">Editar número</button>
             </div>
         </div>
-        <span class="badge" id="d-badge">–</span>
+        <span style="display:flex;flex-direction:column;align-items:flex-end;gap:4px">
+            <span class="badge" id="d-badge">–</span>
+            <span id="d-badge-ruta" style="display:none;font-size:11px;font-weight:600;color:var(--gray-400)">📍 <span id="d-badge-ruta-text"></span></span>
+        </span>
     </div>
     <div class="amounts-grid">
         <div class="amt-card"><div class="alabel">Prestado</div><div class="avalue blue" id="d-principal">–</div></div>
@@ -585,7 +603,14 @@
         <button class="btn-refund" onclick="abrirOpcionesRenovacion()" id="btn-renovar" style="background:#0a3d2e;color:#22e8a0">♻ Renovación de crédito</button>
 
     </div>
-    <div class="pay-section-title">Historial de pagos</div>
+    <div class="pay-section-title-row">
+        <div class="pay-section-title">Historial de pagos</div>
+        <button type="button" class="btn-reorder-pagos" id="btn-reorder-pagos" onclick="toggleReorderPagos()">🔀 Reordenar</button>
+    </div>
+    <div id="reorder-pagos-actions">
+        <button type="button" class="btn-reorder-save" onclick="guardarOrdenPagos()">✔ Guardar orden</button>
+        <button type="button" class="btn-reorder-cancel" onclick="cancelarReordenPagos()">✕ Cancelar</button>
+    </div>
     <div id="d-payments-list"></div>
 </div>
 
@@ -627,6 +652,23 @@
         <button onclick="volverARutas()" style="background:none;border:none;color:var(--blue);font-size:14px;font-weight:700;cursor:pointer;padding:0 0 12px 0;display:flex;align-items:center;gap:6px">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:18px;height:18px"><polyline points="15 18 9 12 15 6"/></svg>Volver a Rutas
         </button>
+        <div style="display:flex;gap:8px;margin-bottom:12px">
+            <select id="ruta-filtro-mes" onchange="cambiarMesRuta()" style="flex:1;padding:10px 12px;border-radius:12px;border:1px solid var(--gray-200,#33353a);background:var(--white);color:var(--gray-800);font-weight:700;font-size:13px">
+                <option value="1">Enero</option>
+                <option value="2">Febrero</option>
+                <option value="3">Marzo</option>
+                <option value="4">Abril</option>
+                <option value="5">Mayo</option>
+                <option value="6">Junio</option>
+                <option value="7">Julio</option>
+                <option value="8">Agosto</option>
+                <option value="9">Septiembre</option>
+                <option value="10">Octubre</option>
+                <option value="11">Noviembre</option>
+                <option value="12">Diciembre</option>
+            </select>
+            <select id="ruta-filtro-anio" onchange="cambiarMesRuta()" style="width:90px;padding:10px 12px;border-radius:12px;border:1px solid var(--gray-200,#33353a);background:var(--white);color:var(--gray-800);font-weight:700;font-size:13px"></select>
+        </div>
         <div id="ruta-detalle-content"></div>
     </div>
 </div>
@@ -758,6 +800,13 @@
                 <option value="12">1 año (12 meses)</option>
             </select>
         </div>
+        <div class="form-group" id="f-cuotas-semanales-group" style="display:none">
+            <label>Cuotas por mes (cobro semanal)</label>
+            <select id="f-cuotas-semanales">
+                <option value="4">4 cuotas (aprox. cada 7 días)</option>
+                <option value="5">5 cuotas (aprox. cada 6 días)</option>
+            </select>
+        </div>
         <div id="f-preview" style="display:none;background:#f0f4ff;border-radius:10px;padding:10px 14px;font-size:13px;margin-top:4px;color:#1a56db">
             <span id="prev-cuotas">–</span> cuotas de <strong id="prev-monto">–</strong>
             <div id="f-preview-extra-total" style="display:none;margin-top:4px;font-size:12px;color:#1a56db">Total a pagar: <strong id="prev-total">–</strong> (interés total: <strong id="prev-interes">–</strong>)</div>
@@ -767,7 +816,7 @@
             <select id="f-frequency">
                 <option value="daily"  class="opt-normal opt-grande opt-extra">Diario</option>
                 <option value="weekly" class="opt-normal opt-grande opt-extra">Semanal</option>
-                <option value="biweekly" class="opt-extra" style="display:none">Quincenal</option>
+                <option value="biweekly" class="opt-normal opt-grande opt-extra">Quincenal</option>
                 <option value="monthly" class="opt-normal opt-grande opt-extra">Mensual</option>
                 <option value="m1"  class="opt-metodo" style="display:none">1 mes</option>
                 <option value="m2"  class="opt-metodo" style="display:none">2 meses</option>
@@ -870,13 +919,22 @@
 
         <!-- Solo para Normal y Grande -->
         <div id="renovar-fields-normal-grande">
+            <div class="form-group"><label>Fecha de inicio</label><input type="date" id="renovar-startDate"></div>
             <div class="form-group"><label>Fecha de fin</label><input type="date" id="renovar-endDate"></div>
             <div class="form-group">
                 <label>Frecuencia de cobro</label>
                 <select id="renovar-frequency">
                     <option value="daily">Diario</option>
                     <option value="weekly">Semanal</option>
+                    <option value="biweekly">Quincenal</option>
                     <option value="monthly">Mensual</option>
+                </select>
+            </div>
+            <div class="form-group" id="renovar-cuotas-semanales-group" style="display:none">
+                <label>Cuotas por mes (cobro semanal)</label>
+                <select id="renovar-cuotas-semanales">
+                    <option value="4">4 cuotas (aprox. cada 7 días)</option>
+                    <option value="5">5 cuotas (aprox. cada 6 días)</option>
                 </select>
             </div>
         </div>
@@ -904,6 +962,7 @@
 
         <!-- Solo para Extra -->
         <div id="renovar-fields-extra" style="display:none">
+            <div class="form-group"><label>Fecha de inicio</label><input type="date" id="renovar-extra-startDate"></div>
             <div class="form-group">
                 <label>Meses de cobro (plazo)</label>
                 <select id="renovar-extra-meses">
@@ -928,6 +987,13 @@
                     <option value="weekly">Semanal</option>
                     <option value="biweekly">Quincenal</option>
                     <option value="monthly">Mensual</option>
+                </select>
+            </div>
+            <div class="form-group" id="renovar-extra-cuotas-semanales-group" style="display:none">
+                <label>Cuotas por mes (cobro semanal)</label>
+                <select id="renovar-extra-cuotas-semanales">
+                    <option value="4">4 cuotas (aprox. cada 7 días)</option>
+                    <option value="5">5 cuotas (aprox. cada 6 días)</option>
                 </select>
             </div>
         </div>
@@ -1280,6 +1346,8 @@ function startNotifPolling() {
         document.getElementById('s-collected').textContent   = fmt(d.totalCollected);
         document.getElementById('s-pending').textContent     = fmt(d.pending);
         document.getElementById('s-active').textContent      = d.activeLoans;
+        document.getElementById('s-saldo-interes').textContent = fmt(d.saldoTotalConInteres);
+        document.getElementById('s-interes-mes').textContent   = fmt(d.interesMesActual);
         document.getElementById('s-completed').textContent   = d.completed;
         document.getElementById('s-overdue').textContent     = d.overdue;
         document.getElementById('s-today').textContent       = fmt(d.todayCollected);
@@ -1448,7 +1516,13 @@ function startNotifPolling() {
             total     = cuota * numCuotas;
             paid      = l.paidTotal || 0;
             remaining = Math.max(total - paid, 0);
-            const paidCuotas = Math.floor(paid / (cuota || 1));
+            // En "extra", cada pago registrado (aunque sea parcial, sin cubrir
+            // el valor completo de la cuota) cuenta como una cuota atendida y
+            // avanza a la cuota/fecha siguiente. Por eso contamos pagos, no
+            // dividimos el monto pagado entre el valor de la cuota.
+            const paidCuotas = (l.payments || [])
+                .filter(p => (p.paymentType === 'capital' || p.paymentType === 'normal') && p.amount > 0)
+                .length;
             pct = Math.min(paid / Math.max(total, 1) * 100, 100);
             currentCuota = cuota;
 
@@ -1470,16 +1544,24 @@ function startNotifPolling() {
                 nextDueEl.textContent = 'Todas pagadas ✓';
                 nextDueEl.style.color = 'var(--green)';
             } else {
-                const nextDate = new Date(startD);
-                if (l.frequency==='monthly')       nextDate.setMonth(nextDate.getMonth() + paidCuotas + 1);
-                else if (l.frequency==='weekly')   nextDate.setDate(nextDate.getDate() + 7*(paidCuotas+1));
-                else if (l.frequency==='biweekly') nextDate.setDate(nextDate.getDate() + 15*(paidCuotas+1));
-                else                                nextDate.setDate(nextDate.getDate() + paidCuotas + 1);
-                nextDueEl.textContent = 'Cuota ' + (paidCuotas+1) + ' · ' + fmtDate(nextDate.toISOString());
-                nextDueEl.style.color = nextDate < today ? 'var(--red)' : 'var(--green)';
-                if (nextDate < today && l.status === 'active') {
-                    await fetch('/api/loans/' + id, {method:'PUT',headers:csrfHeaders(),body:JSON.stringify({status:'overdue'})});
+                let nextDate;
+                if (paidCuotas + 1 >= numCuotas && l.endDate) {
+                    // La última cuota siempre vence el mismo día que "Vence" (endDate).
+                    nextDate = new Date(l.endDate); nextDate.setUTCHours(0,0,0,0);
+                } else {
+                    nextDate = new Date(startD);
+                    if (l.frequency==='monthly')       nextDate.setMonth(nextDate.getMonth() + paidCuotas + 1);
+                    else if (l.frequency==='weekly')   nextDate.setDate(nextDate.getDate() + (l.weeklyIntervalDays || 7)*(paidCuotas+1));
+                    else if (l.frequency==='biweekly') nextDate.setDate(nextDate.getDate() + 15*(paidCuotas+1));
+                    else                                nextDate.setDate(nextDate.getDate() + paidCuotas + 1);
                 }
+                nextDueEl.textContent = 'Cuota ' + (paidCuotas+1) + ' · ' + fmtDate(nextDate.toISOString());
+                // Usamos el estado ya calculado por el backend (l.status), que
+                // sabe si hubo un pago -aunque sea parcial- registrado después de
+                // la fecha de la cuota vencida y reactivó el crédito. Antes se
+                // recalculaba aquí solo comparando fechas, lo que forzaba de
+                // nuevo 'overdue' aunque el préstamo ya se hubiera puesto al día.
+                nextDueEl.style.color = (l.status === 'overdue') ? 'var(--red)' : 'var(--green)';
             }
         } else {
             /* Normal */
@@ -1496,7 +1578,7 @@ function startNotifPolling() {
             pct = Math.min(paid / Math.max(total, 1) * 100, 100);
             currentCuota = cuota;
 
-            const freqName = l.frequency==='weekly'?'Semanal':l.frequency==='monthly'?'Mensual':'Diario';
+            const freqName = l.frequency==='weekly'?'Semanal':l.frequency==='biweekly'?'Quincenal':l.frequency==='monthly'?'Mensual':'Diario';
             document.getElementById('cuota-banner-normal').style.display = 'block';
             document.getElementById('cuota-banner-metodo').style.display = 'none';
             document.getElementById('d-cuota').textContent    = fmt(cuota);
@@ -1514,10 +1596,17 @@ function startNotifPolling() {
                 nextDueEl.textContent = 'Todas pagadas ✓';
                 nextDueEl.style.color = 'var(--green)';
             } else {
-                const nextDate = new Date(startD);
-                if (l.frequency==='monthly')      nextDate.setMonth(nextDate.getMonth() + paidCuotas + 1);
-                else if (l.frequency==='weekly')  nextDate.setDate(nextDate.getDate() + 7*(paidCuotas+1));
-                else                               nextDate.setDate(nextDate.getDate() + paidCuotas + 1);
+                let nextDate;
+                if (paidCuotas + 1 >= numCuotas && l.endDate) {
+                    // La última cuota siempre vence el mismo día que "Vence" (endDate).
+                    nextDate = new Date(l.endDate); nextDate.setUTCHours(0,0,0,0);
+                } else {
+                    nextDate = new Date(startD);
+                    if (l.frequency==='monthly')      nextDate.setMonth(nextDate.getMonth() + paidCuotas + 1);
+                    else if (l.frequency==='weekly')  nextDate.setDate(nextDate.getDate() + (l.weeklyIntervalDays || 7)*(paidCuotas+1));
+                    else if (l.frequency==='biweekly') nextDate.setDate(nextDate.getDate() + 15*(paidCuotas+1));
+                    else                               nextDate.setDate(nextDate.getDate() + paidCuotas + 1);
+                }
                 nextDueEl.textContent = 'Cuota ' + (paidCuotas+1) + ' · ' + fmtDate(nextDate.toISOString());
                 nextDueEl.style.color = nextDate < today ? 'var(--red)' : 'var(--green)';
                 if (nextDate < today && l.status === 'active') {
@@ -1531,6 +1620,14 @@ function startNotifPolling() {
         const badge    = document.getElementById('d-badge');
         badge.textContent = badgeMap[l.status] || l.status;
         badge.className   = 'badge ' + (l.status || 'active');
+
+        const rutaEl = document.getElementById('d-badge-ruta');
+        if (l.ruta && l.ruta.trim()) {
+            document.getElementById('d-badge-ruta-text').textContent = l.ruta;
+            rutaEl.style.display = 'flex';
+        } else {
+            rutaEl.style.display = 'none';
+        }
 
         document.getElementById('d-name-text').textContent     = l.borrower;
         document.getElementById('d-badge-renovado').style.display = l.renovado ? 'inline-block' : 'none';
@@ -1552,19 +1649,89 @@ function startNotifPolling() {
         document.getElementById('d-due').textContent           = fmtDate(l.dueDate);
         document.getElementById('d-interest').textContent      = (l.interest || 0) + '% mensual';
 
-        /* Historial pagos */
-        const payList = document.getElementById('d-payments-list');
-        payList.innerHTML = !l.payments?.length
-            ? '<div style="color:var(--gray-400);font-size:13px;padding:10px 0;text-align:center">Sin pagos registrados</div>'
-            : l.payments.slice().reverse().map(p =>
-                `<div class="pay-item">
-                  <div><div class="pay-date">${fmtDate(p.date)}</div><div style="font-size:11px;color:var(--gray-400)">${p.note||''}</div></div>
-                  <span class="pay-amt" style="${p.amount<0?'color:#e53e3e':''}">${p.amount<0?'− '+fmt(Math.abs(p.amount)):fmt(p.amount)}</span>
-                </div>`).join('');
+        /* Historial pagos (el backend ya los entrega en el orden correcto:
+           orden manual si el usuario reordenó, o por fecha si no) */
+        reorderMode = false;
+        reorderPaymentsData = [];
+        document.getElementById('btn-reorder-pagos').style.display = 'inline-flex';
+        document.getElementById('reorder-pagos-actions').style.display = 'none';
+        renderPaymentsList();
 
         document.getElementById('page-title').textContent = l.borrower;
         const from = document.getElementById('page-prestamos').classList.contains('active') ? 'prestamos' : 'inicio';
         navTo('detalle', from);
+    }
+
+    /* ─── HISTORIAL DE PAGOS / REORDENAR ────────────────────────── */
+    let reorderMode = false;
+    let reorderPaymentsData = [];
+
+    function renderPaymentsList() {
+        const payList = document.getElementById('d-payments-list');
+        const list = reorderMode ? reorderPaymentsData : (currentLoanData?.payments || []);
+        if (!list.length) {
+            payList.innerHTML = '<div style="color:var(--gray-400);font-size:13px;padding:10px 0;text-align:center">Sin pagos registrados</div>';
+            return;
+        }
+        payList.innerHTML = list.map((p, idx) => `
+            <div class="pay-item${reorderMode ? ' pay-item-reorder' : ''}">
+              <div><div class="pay-date">${fmtDate(p.date)}</div><div style="font-size:11px;color:var(--gray-400)">${p.note||''}</div></div>
+              ${reorderMode ? `
+              <div class="pay-reorder-controls">
+                <span class="pay-amt" style="${p.amount<0?'color:#e53e3e':''}">${p.amount<0?'− '+fmt(Math.abs(p.amount)):fmt(p.amount)}</span>
+                <div class="pay-move-btns">
+                  <button type="button" class="pay-move-btn" onclick="movePago(${idx},-1)" ${idx===0?'disabled':''} aria-label="Subir">▲</button>
+                  <button type="button" class="pay-move-btn" onclick="movePago(${idx},1)" ${idx===list.length-1?'disabled':''} aria-label="Bajar">▼</button>
+                </div>
+              </div>` : `
+              <span class="pay-amt" style="${p.amount<0?'color:#e53e3e':''}">${p.amount<0?'− '+fmt(Math.abs(p.amount)):fmt(p.amount)}</span>`}
+            </div>`).join('');
+    }
+
+    function toggleReorderPagos() {
+        if (!currentLoanData || !(currentLoanData.payments || []).length) return;
+        reorderMode = true;
+        reorderPaymentsData = currentLoanData.payments.map(p => ({...p}));
+        document.getElementById('btn-reorder-pagos').style.display = 'none';
+        document.getElementById('reorder-pagos-actions').style.display = 'flex';
+        renderPaymentsList();
+    }
+
+    function movePago(idx, dir) {
+        const newIdx = idx + dir;
+        if (newIdx < 0 || newIdx >= reorderPaymentsData.length) return;
+        const tmp = reorderPaymentsData[idx];
+        reorderPaymentsData[idx] = reorderPaymentsData[newIdx];
+        reorderPaymentsData[newIdx] = tmp;
+        renderPaymentsList();
+    }
+
+    function cancelarReordenPagos() {
+        reorderMode = false;
+        reorderPaymentsData = [];
+        document.getElementById('btn-reorder-pagos').style.display = 'inline-flex';
+        document.getElementById('reorder-pagos-actions').style.display = 'none';
+        renderPaymentsList();
+    }
+
+    async function guardarOrdenPagos() {
+        try {
+            const order = reorderPaymentsData.map(p => p.id);
+            const res = await fetch('/api/payments/reorder', {
+                method: 'PUT',
+                headers: csrfHeaders(),
+                body: JSON.stringify({ loanId: currentLoanId, order })
+            });
+            if (!res.ok) throw new Error('No se pudo guardar el orden');
+            currentLoanData.payments = reorderPaymentsData;
+            reorderMode = false;
+            reorderPaymentsData = [];
+            document.getElementById('btn-reorder-pagos').style.display = 'inline-flex';
+            document.getElementById('reorder-pagos-actions').style.display = 'none';
+            renderPaymentsList();
+        } catch (e) {
+            alert('No se pudo guardar el nuevo orden. Intenta de nuevo.');
+        }
     }
 
     /* ─── MODAL PAGO ─────────────────────────────────────────── */
@@ -1750,11 +1917,17 @@ const intMes = (saldoCapital * (l.interest||0)) / 100;
             if (pagados >= total2) {
                 nuevoStatus = 'paid';
             } else {
-                const nextDate = new Date(startD);
-                if (l.frequency==='monthly')       nextDate.setMonth(nextDate.getMonth() + pagados + 1);
-                else if (l.frequency==='weekly')   nextDate.setDate(nextDate.getDate() + 7*(pagados+1));
-                else if (l.frequency==='biweekly') nextDate.setDate(nextDate.getDate() + 15*(pagados+1));
-                else                                nextDate.setDate(nextDate.getDate() + pagados + 1);
+                let nextDate;
+                if (pagados + 1 >= total2 && l.endDate) {
+                    // La última cuota siempre vence el mismo día que "Vence" (endDate).
+                    nextDate = new Date(l.endDate);
+                } else {
+                    nextDate = new Date(startD);
+                    if (l.frequency==='monthly')       nextDate.setMonth(nextDate.getMonth() + pagados + 1);
+                    else if (l.frequency==='weekly')   nextDate.setDate(nextDate.getDate() + (l.weeklyIntervalDays || 7)*(pagados+1));
+                    else if (l.frequency==='biweekly') nextDate.setDate(nextDate.getDate() + 15*(pagados+1));
+                    else                                nextDate.setDate(nextDate.getDate() + pagados + 1);
+                }
                 nextDate.setHours(0,0,0,0);
                 nuevoStatus = nextDate < today ? 'overdue' : 'active';
             }
@@ -1848,11 +2021,18 @@ const intMes = (saldoCapital * (l.interest||0)) / 100;
     document.getElementById('renovar-fields-metodo').style.display        = isMetodo ? '' : 'none';
     document.getElementById('renovar-fields-extra').style.display         = isExtra ? '' : 'none';
 
+    const hoyStr = new Date().toISOString().split('T')[0];
+
     if (isExtra) {
+        document.getElementById('renovar-extra-startDate').value = hoyStr;
         document.getElementById('renovar-extra-meses').value     = l.months || '1';
         document.getElementById('renovar-extra-frequency').value = l.frequency || 'daily';
+        document.getElementById('renovar-extra-cuotas-semanales').value = '4';
+        toggleCuotasSemanalesRenovarExtra();
     } else if (!isMetodo) {
+        document.getElementById('renovar-startDate').value = hoyStr;
         document.getElementById('renovar-endDate').value  = '';
+        document.getElementById('renovar-cuotas-semanales').value = '4';
         const freqSel = document.getElementById('renovar-frequency');
 
         // NUEVO: en Préstamo Grande, solo permitir Mensual
@@ -1860,11 +2040,24 @@ const intMes = (saldoCapital * (l.interest||0)) / 100;
             opt.style.display = (isGrande && opt.value !== 'monthly') ? 'none' : '';
         });
         freqSel.value = isGrande ? 'monthly' : (l.frequency || 'daily');
+        toggleCuotasSemanalesRenovar();
     } else {
         document.getElementById('renovar-meses').value = l.totalInstallments || '1';
     }
     openModal('modal-renovar');
 }
+
+function toggleCuotasSemanalesRenovar() {
+    const freq = document.getElementById('renovar-frequency').value;
+    document.getElementById('renovar-cuotas-semanales-group').style.display = (freq === 'weekly') ? '' : 'none';
+}
+
+function toggleCuotasSemanalesRenovarExtra() {
+    const freq = document.getElementById('renovar-extra-frequency').value;
+    document.getElementById('renovar-extra-cuotas-semanales-group').style.display = (freq === 'weekly') ? '' : 'none';
+}
+document.getElementById('renovar-frequency').addEventListener('input', toggleCuotasSemanalesRenovar);
+document.getElementById('renovar-extra-frequency').addEventListener('input', toggleCuotasSemanalesRenovarExtra);
 
     async function confirmarRenovacion() {
     const amount   = parseFloat(document.getElementById('renovar-amount').value);
@@ -1876,7 +2069,7 @@ const intMes = (saldoCapital * (l.interest||0)) / 100;
     const isMetodo = l && l.loanType === 'metodo';
     const isExtra  = l && l.loanType === 'extra';
 
-    let endDate, frequency, totalInstallments, months;
+    let endDate, frequency, totalInstallments, months, startDate, cuotasSemanales = null;
 
     if (isMetodo) {
         const meses = parseInt(document.getElementById('renovar-meses').value);
@@ -1886,22 +2079,33 @@ const intMes = (saldoCapital * (l.interest||0)) / 100;
         frequency         = 'monthly';
         totalInstallments = meses;
     } else if (isExtra) {
+        startDate = document.getElementById('renovar-extra-startDate').value || new Date().toISOString().split('T')[0];
         months    = parseInt(document.getElementById('renovar-extra-meses').value) || 1;
         frequency = document.getElementById('renovar-extra-frequency').value;
-        const start = new Date();
+        if (frequency === 'weekly') {
+            cuotasSemanales = parseInt(document.getElementById('renovar-extra-cuotas-semanales').value) || 4;
+        }
+        const start = new Date(startDate + 'T00:00:00');
         start.setMonth(start.getMonth() + months);
         endDate = start.toISOString().split('T')[0];
     } else {
+        startDate = document.getElementById('renovar-startDate').value;
         endDate   = document.getElementById('renovar-endDate').value;
         frequency = document.getElementById('renovar-frequency').value;
+        if (frequency === 'weekly') {
+            cuotasSemanales = parseInt(document.getElementById('renovar-cuotas-semanales').value) || 4;
+        }
+        if (!startDate) return alert('Selecciona la fecha de inicio');
         if (!endDate) return alert('Selecciona la fecha de fin');
     }
 
     if (!confirm('¿Confirmas la renovación?\n\nMonto: $' + amount.toLocaleString('es-CO') + ' · Interés: ' + interest + '%')) return;
 
     const body = { amount, interest, endDate, frequency };
+    if (startDate) body.startDate = startDate;
     if (isMetodo) body.totalInstallments = totalInstallments;
     if (isExtra)  body.months = months;
+    if (cuotasSemanales) body.cuotasSemanales = cuotasSemanales;
 
     const res = await fetch('/api/loans/' + currentLoanId + '/renovar', {
         method: 'POST', headers: csrfHeaders(), body: JSON.stringify(body)
@@ -2055,9 +2259,14 @@ async function deleteLoan() {
     const sel  = document.getElementById('f-frequency');
     [btnN, btnG, btnM, btnE].forEach(b => { b.style.background='#fff'; b.style.color='var(--blue)'; });
 
-    sel.querySelectorAll('.opt-normal,.opt-grande').forEach(o => o.style.display = (tipo==='metodo'||tipo==='extra')?'none':'');
-    sel.querySelectorAll('.opt-metodo').forEach(o => o.style.display = tipo==='metodo'?'':'none');
-    sel.querySelectorAll('.opt-extra').forEach(o => o.style.display = tipo==='extra'?'':'none');
+    sel.querySelectorAll('option').forEach(o => {
+        const cls = o.classList;
+        let visible;
+        if (tipo === 'metodo')      visible = cls.contains('opt-metodo');
+        else if (tipo === 'extra')  visible = cls.contains('opt-extra');
+        else                        visible = cls.contains('opt-normal') || cls.contains('opt-grande');
+        o.style.display = visible ? '' : 'none';
+    });
 
     // NUEVO: en Préstamo Grande solo permitir Mensual
     if (tipo === 'grande') {
@@ -2073,7 +2282,14 @@ async function deleteLoan() {
     else if (tipo==='grande')  { btnG.style.background='var(--blue)'; btnG.style.color='#fff'; sel.value='monthly'; }
     else if (tipo==='extra')   { btnE.style.background='var(--blue)'; btnE.style.color='#fff'; sel.value='daily'; document.getElementById('f-extra-meses').value='1'; }
     else                       { btnM.style.background='var(--blue)'; btnM.style.color='#fff'; sel.value='m1'; }
+    toggleCuotasSemanales();
     calcPreview();
+}
+
+function toggleCuotasSemanales() {
+    const frequency = document.getElementById('f-frequency').value;
+    const grupo = document.getElementById('f-cuotas-semanales-group');
+    grupo.style.display = (frequency === 'weekly') ? '' : 'none';
 }
 
     const contactPickerSupported = ('contacts' in navigator) && ('ContactsManager' in window);
@@ -2110,6 +2326,7 @@ function openNewLoan() {
     initContactPickerButton();
     document.getElementById('f-startDate').value = new Date().toISOString().split('T')[0];
         document.getElementById('f-endDate').value   = '';
+        document.getElementById('f-cuotas-semanales').value = '4';
         document.getElementById('f-preview').style.display = 'none';
         setTipoPrestamo('normal');
 // Cargar sugerencias de rutas existentes
@@ -2140,8 +2357,9 @@ openModal('modal-new');
             const end   = new Date(start);
             end.setMonth(end.getMonth() + meses);
             const days  = Math.round((end - start) / 86400000);
+            const cuotasSemanales = parseInt(document.getElementById('f-cuotas-semanales').value) || 4;
             cuotas = frequency==='daily' ? days
-                   : frequency==='weekly' ? Math.floor(days/7)
+                   : frequency==='weekly' ? cuotasSemanales * meses
                    : frequency==='biweekly' ? Math.floor(days/15)
                    : meses; // monthly
             totalInteresExtra = amount * (interest/100) * meses;
@@ -2151,8 +2369,12 @@ openModal('modal-new');
         } else {
             if (!startDate || !endDate || endDate <= startDate) { preview.style.display='none'; return; }
             const days = Math.round((new Date(endDate) - new Date(startDate)) / 86400000);
+            const cuotasSemanales = parseInt(document.getElementById('f-cuotas-semanales').value) || 4;
             // floor (no ceil): así la última cuota no cae después de la fecha de fin elegida
-            cuotas = frequency==='daily' ? days : frequency==='weekly' ? Math.floor(days/7) : Math.floor(days/30);
+            cuotas = frequency==='daily' ? days
+                   : frequency==='weekly' ? cuotasSemanales
+                   : frequency==='biweekly' ? Math.floor(days/15)
+                   : Math.floor(days/30);
         }
 
         let cuotaAmt;
@@ -2177,8 +2399,9 @@ openModal('modal-new');
         }
         preview.style.display = 'block';
     }
-    ['f-amount','f-interest','f-startDate','f-endDate','f-frequency','f-extra-meses'].forEach(id =>
+    ['f-amount','f-interest','f-startDate','f-endDate','f-frequency','f-extra-meses','f-cuotas-semanales'].forEach(id =>
         document.getElementById(id).addEventListener('input', calcPreview));
+    document.getElementById('f-frequency').addEventListener('input', toggleCuotasSemanales);
 
     async function saveLoan() {
         const borrower  = document.getElementById('f-borrower').value.trim();
@@ -2223,6 +2446,9 @@ openModal('modal-new');
         ruta:      ruta
     };
     if (tipoPrestamo === 'extra') payload.months = extraMeses;
+    if (freqToSend === 'weekly') {
+        payload.cuotasSemanales = parseInt(document.getElementById('f-cuotas-semanales').value) || 4;
+    }
 
        const resp = await fetch('/api/loans', {method:'POST',headers:csrfHeaders(),
             body: JSON.stringify(payload)});
@@ -2334,16 +2560,52 @@ async function loadRutas() {
     }
 }
 
-async function verRuta(nombre) {
+let currentRutaNombre = null;
+const MESES_NOMBRE = ['','Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+
+/** Llena el select de años (2 años atrás hasta 2 años adelante del actual) si aún no tiene opciones. */
+function initSelectAnioRuta(anioSeleccionado) {
+    const sel = document.getElementById('ruta-filtro-anio');
+    if (!sel.dataset.init) {
+        const actual = new Date().getFullYear();
+        for (let y = actual - 2; y <= actual + 2; y++) {
+            const opt = document.createElement('option');
+            opt.value = y; opt.textContent = y;
+            sel.appendChild(opt);
+        }
+        sel.dataset.init = '1';
+    }
+    sel.value = anioSeleccionado;
+}
+
+async function verRuta(nombre, mes, anio) {
+    currentRutaNombre = nombre;
     document.getElementById('rutas-lista-view').style.display = 'none';
     const dv = document.getElementById('ruta-detalle-view');
     dv.style.display = '';
     const cont = document.getElementById('ruta-detalle-content');
     cont.innerHTML = '<p style="color:var(--gray-400);text-align:center;padding:20px">Cargando…</p>';
     try {
-        const d = await fetch('/api/loans/rutas/' + encodeURIComponent(nombre)).then(r=>r.json());
-        const freqLabel = f => f==='weekly'?'Semanal':f==='monthly'?'Mensual':'Diario';
+        const hoy = new Date();
+        const mesSel  = mes  || (hoy.getMonth() + 1);
+        const anioSel = anio || hoy.getFullYear();
+        document.getElementById('ruta-filtro-mes').value = mesSel;
+        initSelectAnioRuta(anioSel);
+
+        const qs = '?mes=' + mesSel + '&anio=' + anioSel;
+        const d = await fetch('/api/loans/rutas/' + encodeURIComponent(nombre) + qs).then(r=>r.json());
+        const freqLabel = f => f==='weekly'?'Semanal':f==='biweekly'?'Quincenal':f==='monthly'?'Mensual':'Diario';
         cont.innerHTML = `
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px">
+                <div style="background:var(--white);border-radius:14px;padding:12px 14px;box-shadow:0 1px 4px rgba(0,0,0,.07)">
+                    <div style="font-size:11px;color:var(--gray-500);margin-bottom:4px">Recaudado en ${MESES_NOMBRE[d.mesConsultado]} ${d.anioConsultado}</div>
+                    <div style="font-size:17px;font-weight:800;color:var(--gray-800)">${fmt(d.totalMes)}</div>
+                </div>
+                <div style="background:var(--white);border-radius:14px;padding:12px 14px;box-shadow:0 1px 4px rgba(0,0,0,.07)">
+                    <div style="font-size:11px;color:var(--gray-500);margin-bottom:4px">Total recaudado</div>
+                    <div style="font-size:17px;font-weight:800;color:var(--gray-800)">${fmt(d.totalRecaudado)}</div>
+                </div>
+            </div>
             <div style="background:var(--green-l);border-radius:16px;padding:16px 18px;margin-bottom:16px">
                 <div style="font-size:13px;color:var(--green);font-weight:700;margin-bottom:4px">📍 Ruta: ${d.ruta}</div>
                 <div style="font-size:12px;color:var(--gray-500);margin-bottom:8px">Total a recaudar hoy</div>
@@ -2378,7 +2640,15 @@ async function verRuta(nombre) {
     }
 }
 
+function cambiarMesRuta() {
+    if (!currentRutaNombre) return;
+    const mes  = parseInt(document.getElementById('ruta-filtro-mes').value, 10);
+    const anio = parseInt(document.getElementById('ruta-filtro-anio').value, 10);
+    verRuta(currentRutaNombre, mes, anio);
+}
+
 function volverARutas() {
+    currentRutaNombre = null;
     document.getElementById('ruta-detalle-view').style.display = 'none';
     document.getElementById('rutas-lista-view').style.display = '';
 }

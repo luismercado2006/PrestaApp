@@ -25,7 +25,7 @@ public class MoraScheduler {
     @Autowired private WhatsAppService   whatsAppService;
     @Autowired private LoanStatusService loanStatusService;
 
-    @Scheduled(cron = "0 35 20 * * *")
+    @Scheduled(cron = "0 35 20 * * *", zone = "America/Bogota")
     public void verificarPrestamosEnMora() {
 
         // 1. Recalcular el estado real (active | overdue | paid) de todos los

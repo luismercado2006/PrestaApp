@@ -62,6 +62,45 @@ class PaymentController {
         return ResponseEntity.ok(Map.of("ok", true));
     }
 
+    /**
+     * Guarda el orden manual del historial de pagos de un préstamo.
+     * Body esperado: { "loanId": "...", "order": ["idPago1", "idPago2", ...] }
+     * El array "order" debe venir en el orden en que se quieren ver los pagos
+     * (el primero de la lista queda arriba del todo en el historial).
+     */
+    @PutMapping("/reorder")
+    public ResponseEntity<?> reorderPayments(@RequestBody Map<String, Object> body, HttpSession session) {
+        String uid = (String) session.getAttribute("userId");
+        if (uid == null) return ResponseEntity.status(401).body("Unauthorized");
+
+        String loanId = toString(body.get("loanId"));
+        if (loanId == null) return ResponseEntity.badRequest().body("loanId es requerido");
+
+        Optional<Loan> opt = loanRepo.findById(loanId);
+        if (opt.isEmpty() || !opt.get().getUserId().equals(uid))
+            return ResponseEntity.status(404).body("Loan not found");
+
+        Object rawOrder = body.get("order");
+        if (!(rawOrder instanceof List<?> orderList))
+            return ResponseEntity.badRequest().body("order debe ser una lista de IDs de pagos");
+
+        int index = 0;
+        for (Object idObj : orderList) {
+            String paymentId = toString(idObj);
+            if (paymentId == null) { index++; continue; }
+            Optional<Payment> pOpt = paymentRepo.findById(paymentId);
+            if (pOpt.isPresent()
+                    && loanId.equals(pOpt.get().getLoanId())
+                    && uid.equals(pOpt.get().getUserId())) {
+                Payment p = pOpt.get();
+                p.setSortOrder(index);
+                paymentRepo.save(p);
+            }
+            index++;
+        }
+        return ResponseEntity.ok(Map.of("ok", true));
+    }
+
     private double toDouble(Object v) {
         if (v == null) return 0;
         if (v instanceof Number n) return n.doubleValue();
@@ -133,17 +172,130 @@ class StatsController {
             chart.add(Map.of("label", dayLabel(dayStart, i), "value", val));
         }
 
+        // ─── Total de plata (capital + interés) que falta por cobrar en TODOS
+        // los préstamos activos/en mora, y total de interés que se gana este
+        // mes en curso. Se recalculan en vivo en cada carga con los pagos
+        // registrados hasta el momento, así que bajan solos cuando pagan y
+        // el interés del mes "se renueva" automáticamente al cambiar de mes.
+        List<Loan> loansNoPagados = loanRepo.findByUserId(uid).stream()
+                .filter(l -> !"paid".equals(l.getStatus()))
+                .toList();
+
+        double saldoTotalConInteres = 0;
+        double interesMesActual     = 0;
+        for (Loan loan : loansNoPagados) {
+            List<Payment> pagosPrestamo = paymentRepo.findByLoanIdAndArchivadoFalse(loan.getId());
+            saldoTotalConInteres += calcularSaldoConInteres(loan, pagosPrestamo);
+            interesMesActual     += calcularInteresMes(loan, pagosPrestamo);
+        }
+
         Map<String, Object> resp = new LinkedHashMap<>();
-        resp.put("totalLoaned",    totalLoaned);
-        resp.put("totalCollected", totalCollected);
-        resp.put("pending",        pending);
-        resp.put("activeLoans",    (long) activeLoans.size());
-        resp.put("completed",      completed);
-        resp.put("overdue",        overdue);
-        resp.put("todayCollected", todayCollected);
-        resp.put("todayPayments",  (long) todayPay.size());
-        resp.put("chart",          chart);
+        resp.put("totalLoaned",          totalLoaned);
+        resp.put("totalCollected",       totalCollected);
+        resp.put("pending",              pending);
+        resp.put("activeLoans",          (long) activeLoans.size());
+        resp.put("completed",            completed);
+        resp.put("overdue",              overdue);
+        resp.put("todayCollected",       todayCollected);
+        resp.put("todayPayments",        (long) todayPay.size());
+        resp.put("chart",                chart);
+        resp.put("saldoTotalConInteres", saldoTotalConInteres);
+        resp.put("interesMesActual",     interesMesActual);
         return ResponseEntity.ok(resp);
+    }
+
+    /**
+     * Cuánta plata falta por cobrar de un préstamo, incluyendo el interés
+     * (no solo el capital). Usa la misma fórmula que la pantalla de detalle
+     * para cada tipo de préstamo, así que coincide con lo que ve el usuario
+     * ahí. Baja automáticamente a medida que se registran pagos.
+     */
+    private double calcularSaldoConInteres(Loan loan, List<Payment> pagos) {
+        double paidTotal = pagos.stream().mapToDouble(Payment::getAmount).sum();
+        String tipo = loan.getLoanType() != null ? loan.getLoanType() : "normal";
+
+        switch (tipo) {
+            case "grande": {
+                // Revolvente: no tiene un "total" fijo (el interés se cobra
+                // mes a mes sobre el saldo). Lo que realmente se adeuda ahora
+                // es el capital pendiente más el interés del ciclo actual.
+                double paidCapital = pagos.stream()
+                        .filter(p -> "capital".equals(p.getPaymentType()) || "normal".equals(p.getPaymentType()))
+                        .filter(p -> p.getAmount() > 0)
+                        .mapToDouble(Payment::getAmount).sum();
+                double saldoCapital = Math.max(loan.getAmount() - paidCapital, 0);
+                double intMes = saldoCapital * loan.getInterest() / 100.0;
+                return saldoCapital + intMes;
+            }
+            case "metodo": {
+                double P = loan.getAmount();
+                double r = loan.getInterest() / 100.0;
+                int n = loan.getTotalInstallments() > 0 ? loan.getTotalInstallments() : 1;
+                double cuota = calcCuotaFija(P, r, n);
+                double total = cuota * n;
+                return Math.max(total - paidTotal, 0);
+            }
+            case "extra": {
+                int n = loan.getTotalInstallments() > 0 ? loan.getTotalInstallments() : 1;
+                double total = loan.getInstallmentAmount() * n;
+                return Math.max(total - paidTotal, 0);
+            }
+            default: {
+                double total = loan.getAmount() + (loan.getAmount() * loan.getInterest() / 100.0);
+                return Math.max(total - paidTotal, 0);
+            }
+        }
+    }
+
+    /**
+     * Interés que corresponde al mes/ciclo actual de un préstamo (no
+     * acumulado histórico). Como se recalcula en cada carga a partir del
+     * estado actual del préstamo (saldo pendiente, cuotas pagadas, etc.),
+     * automáticamente queda al día cuando entra un nuevo mes.
+     */
+    private double calcularInteresMes(Loan loan, List<Payment> pagos) {
+        String tipo = loan.getLoanType() != null ? loan.getLoanType() : "normal";
+
+        switch (tipo) {
+            case "grande": {
+                double paidCapital = pagos.stream()
+                        .filter(p -> "capital".equals(p.getPaymentType()) || "normal".equals(p.getPaymentType()))
+                        .filter(p -> p.getAmount() > 0)
+                        .mapToDouble(Payment::getAmount).sum();
+                double saldoCapital = Math.max(loan.getAmount() - paidCapital, 0);
+                return saldoCapital * loan.getInterest() / 100.0;
+            }
+            case "metodo": {
+                double P = loan.getAmount();
+                double r = loan.getInterest() / 100.0;
+                int n = loan.getTotalInstallments() > 0 ? loan.getTotalInstallments() : 1;
+                int cuotasPagadas = (int) pagos.stream()
+                        .filter(p -> "capital".equals(p.getPaymentType()) && p.getAmount() > 0)
+                        .count();
+                double cuota = calcCuotaFija(P, r, n);
+                double saldo = P;
+                for (int i = 0; i < cuotasPagadas; i++) {
+                    double intMes = saldo * r;
+                    double capMes = cuota - intMes;
+                    saldo = Math.max(saldo - capMes, 0);
+                }
+                return saldo * r;
+            }
+            case "extra": {
+                int meses = Math.max(loan.getMonths(), 1);
+                double totalInteres = loan.getAmount() * (loan.getInterest() / 100.0) * meses;
+                return totalInteres / meses;
+            }
+            default: {
+                // Interés mensual "plano" sobre el capital del préstamo.
+                return loan.getAmount() * loan.getInterest() / 100.0;
+            }
+        }
+    }
+
+    private double calcCuotaFija(double P, double r, int n) {
+        if (r == 0) return P / n;
+        return P * r / (1 - Math.pow(1 + r, -n));
     }
 
     private String dayLabel(LocalDateTime day, int daysAgo) {

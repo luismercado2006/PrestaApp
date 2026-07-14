@@ -46,9 +46,12 @@ public class LoanStatusService {
         if (loan == null) return "active";
         if ("paid".equals(loan.getStatus())) return "paid"; // una vez pagado, no se reabre solo
 
+        // Incluye TANTO abonos (monto positivo) como devoluciones/reversas
+        // (monto negativo, ej: "Devolución cobro de más") para que una
+        // devolución realmente reduzca el capital pagado y las cuotas
+        // contadas como pagadas, en vez de ser ignorada.
         double paidCapital = payments.stream()
                 .filter(p -> "capital".equals(p.getPaymentType()) || "normal".equals(p.getPaymentType()))
-                .filter(p -> p.getAmount() > 0)
                 .mapToDouble(Payment::getAmount).sum();
 
         double totalAPagar;
@@ -85,24 +88,50 @@ public class LoanStatusService {
             cuotasPagadas = (int) payments.stream()
                     .filter(p -> "capital".equals(p.getPaymentType()) && p.getAmount() > 0)
                     .count();
+        } else if ("extra".equals(loan.getLoanType())) {
+            // Extra: cada pago registrado (aunque sea parcial, sin cubrir el
+            // valor completo de la cuota) cuenta como una cuota atendida y
+            // avanza a la fecha de la siguiente cuota. El monto realmente
+            // pagado se sigue verificando aparte (paidCapital >= totalAPagar,
+            // más arriba) para decidir si el préstamo ya quedó saldado.
+            cuotasPagadas = (int) payments.stream()
+                    .filter(p -> ("capital".equals(p.getPaymentType()) || "normal".equals(p.getPaymentType())) && p.getAmount() > 0)
+                    .count();
         } else {
             double cuota = loan.getInstallmentAmount() > 0 ? loan.getInstallmentAmount() : 1;
-            cuotasPagadas = (int) Math.floor(paidCapital / cuota);
+            cuotasPagadas = (int) Math.max(0, Math.floor(paidCapital / cuota));
         }
-        if (cuotasPagadas >= totalInstallments) return "paid";
+        if (cuotasPagadas >= totalInstallments) {
+            // Para "extra" el número de pagos puede alcanzar totalInstallments
+            // con pagos parciales, sin que el monto total esté cubierto. Ese
+            // caso ya se descartó arriba (paidCapital >= totalAPagar), así que
+            // aquí NO marcamos "paid" de más; seguimos usando endDate como
+            // fecha límite de la cuota final (ver más abajo).
+            if (!"extra".equals(loan.getLoanType())) return "paid";
+        }
 
         LocalDate start = loan.getStartDate() != null ? loan.getStartDate() : LocalDate.now();
-        LocalDate proximaFecha = calcularFechaCuota(start, loan.getFrequency(), cuotasPagadas + 1);
+        int numeroCuota = cuotasPagadas + 1;
+        LocalDate proximaFecha;
+        if (numeroCuota >= totalInstallments && loan.getEndDate() != null) {
+            // La última cuota siempre vence el mismo día que "Vence" (endDate),
+            // sin importar el intervalo usado para las cuotas anteriores.
+            proximaFecha = loan.getEndDate();
+        } else {
+            proximaFecha = calcularFechaCuota(start, loan.getFrequency(), numeroCuota, loan.getWeeklyIntervalDaysOrDefault());
+        }
         LocalDate hoy = LocalDate.now();
 
-        return hoy.isAfter(proximaFecha) ? "overdue" : "active";
+        if (!hoy.isAfter(proximaFecha)) return "active";
+
+        return "overdue";
     }
 
-    private LocalDate calcularFechaCuota(LocalDate start, String freq, int numeroCuota) {
+    private LocalDate calcularFechaCuota(LocalDate start, String freq, int numeroCuota, int weeklyIntervalDays) {
         String f = freq != null ? freq : "daily";
         return switch (f) {
             case "monthly"  -> start.plusMonths(numeroCuota);
-            case "weekly"   -> start.plusWeeks(numeroCuota);
+            case "weekly"   -> start.plusDays(numeroCuota * (long) weeklyIntervalDays);
             case "biweekly" -> start.plusDays(numeroCuota * 15L);
             default         -> start.plusDays(numeroCuota);
         };

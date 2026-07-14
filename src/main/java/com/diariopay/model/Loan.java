@@ -30,9 +30,20 @@ public class Loan {
     private boolean moraNotificada = false;
     private String ruta;  // nombre de la ruta (opcional), ej: "Santa Rosa"
 
+    // Solo aplica cuando frequency = "weekly": cuántos días hay entre una cuota
+    // y la siguiente. Si el usuario elige "5 cuotas en el mes" en vez de las
+    // clásicas 4, el intervalo se acorta (ej: 6 días) para que las 5 quepan
+    // dentro del mes sin pasarse de la fecha de fin. Si es null, se usa el
+    // comportamiento clásico de 7 días (préstamos creados antes de este cambio).
+    private Integer weeklyIntervalDays;
+
     // ─── RENOVACIÓN DE CRÉDITO ──────────────────────────────────
     private boolean renovado = false;
     private RenovacionSnapshot snapshotAnterior;
+
+    public int getWeeklyIntervalDaysOrDefault() {
+        return (weeklyIntervalDays != null && weeklyIntervalDays > 0) ? weeklyIntervalDays : 7;
+    }
 
     @lombok.Data
     public static class RenovacionSnapshot {
@@ -49,5 +60,6 @@ public class Loan {
         private double installmentAmount;
         private boolean moraNotificada;
         private int months;
+        private Integer weeklyIntervalDays;
     }
 }

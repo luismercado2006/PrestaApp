@@ -103,6 +103,21 @@ public class AdminController {
         return ResponseEntity.ok(Map.of("ok", true, "nuevaFecha", nuevaFecha));
     }
 
+    // ── API: retroceder 1 mes la fecha de vencimiento ──
+    @PostMapping("/api/admin/users/{id}/retroceder")
+    @ResponseBody
+    public ResponseEntity<?> retroceder(@PathVariable String id) {
+        Optional<User> opt = userRepo.findById(id);
+        if (opt.isEmpty()) return ResponseEntity.status(404).body("Usuario no encontrado");
+        User u = opt.get();
+        LocalDateTime base = u.getEffectivePremiumExpiresAt();
+        LocalDateTime nuevaFecha = base.minusMonths(1);
+        u.setPremiumExpiresAt(nuevaFecha);
+        u.setPremiumOverride(null); // modo automático: si queda vencida, se bloquea sola
+        userRepo.save(u);
+        return ResponseEntity.ok(Map.of("ok", true, "nuevaFecha", nuevaFecha));
+    }
+
     private ResponseEntity<?> setOverride(String id, boolean value) {
         Optional<User> opt = userRepo.findById(id);
         if (opt.isEmpty()) return ResponseEntity.status(404).body("Usuario no encontrado");

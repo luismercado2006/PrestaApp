@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.*;
 import com.diariopay.scheduler.MoraScheduler;
 
 import java.time.LocalDate;
+import java.time.YearMonth;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
 
@@ -147,12 +148,25 @@ public class LoanController {
             loan.setDueDate(calculatedEnd.atStartOfDay());
 
             long dias = ChronoUnit.DAYS.between(startDate, calculatedEnd);
-            int totalInstallmentsExtra = switch (freq) {
-                case "weekly"   -> (int) Math.floor(dias / 7.0);
-                case "biweekly" -> (int) Math.floor(dias / 15.0);
-                case "monthly"  -> months;
-                default         -> (int) dias; // daily
-            };
+
+            Integer cuotasSemanalesExtra = body.containsKey("cuotasSemanales")
+                    ? toInt(body.get("cuotasSemanales")) : null;
+            Integer weeklyIntervalDaysExtra = null;
+            int totalInstallmentsExtra;
+            if ("weekly".equals(freq) && cuotasSemanalesExtra != null && cuotasSemanalesExtra > 0) {
+                // El usuario eligió 4 o 5 cuotas por mes: el total de cuotas es
+                // esa cantidad multiplicada por los meses del préstamo.
+                int n = cuotasSemanalesExtra >= 5 ? 5 : 4;
+                totalInstallmentsExtra = n * months;
+                weeklyIntervalDaysExtra = (int) Math.max(1, Math.floor(dias / (double) totalInstallmentsExtra));
+            } else {
+                totalInstallmentsExtra = switch (freq) {
+                    case "weekly"   -> (int) Math.floor(dias / 7.0);
+                    case "biweekly" -> (int) Math.floor(dias / 15.0);
+                    case "monthly"  -> months;
+                    default         -> (int) dias; // daily
+                };
+            }
             if (totalInstallmentsExtra < 1) totalInstallmentsExtra = 1;
 
             double totalInteres = loan.getAmount() * (loan.getInterest() / 100.0) * months;
@@ -161,6 +175,7 @@ public class LoanController {
 
             loan.setTotalInstallments(totalInstallmentsExtra);
             loan.setInstallmentAmount(installmentAmountExtra);
+            loan.setWeeklyIntervalDays(weeklyIntervalDaysExtra);
 
             loanRepo.save(loan);
             return ResponseEntity.ok(Map.of(
@@ -174,15 +189,26 @@ public class LoanController {
         long daysBetween = ChronoUnit.DAYS.between(startDate, endDate);
 
         int totalInstallments;
+        Integer weeklyIntervalDays = null;
+        Integer cuotasSemanales = body.containsKey("cuotasSemanales")
+                ? toInt(body.get("cuotasSemanales")) : null;
         if ("metodo".equals(loanType) && body.containsKey("numMonths")) {
             totalInstallments = toInt(body.get("numMonths"));
+        } else if ("weekly".equals(freq) && cuotasSemanales != null && cuotasSemanales > 0) {
+            // El usuario eligió 4 o 5 cuotas dentro del mes en vez de la cadencia
+            // clásica de 7 días: el intervalo se ajusta para que todas las cuotas
+            // caigan dentro del período elegido sin pasarse de la fecha de fin.
+            int n = cuotasSemanales >= 5 ? 5 : 4;
+            weeklyIntervalDays = (int) Math.max(1, Math.floor(daysBetween / (double) n));
+            totalInstallments = n;
         } else {
             // floor (no ceil): así la última cuota (start + n*periodo) nunca cae
             // después de la fecha de fin que el usuario eligió.
             totalInstallments = switch (freq) {
-                case "weekly"  -> (int) Math.floor(daysBetween / 7.0);
-                case "monthly" -> (int) Math.round(daysBetween / 30.4375);
-                default        -> (int) daysBetween;
+                case "weekly"   -> (int) Math.floor(daysBetween / 7.0);
+                case "biweekly" -> (int) Math.floor(daysBetween / 15.0);
+                case "monthly"  -> (int) Math.round(daysBetween / 30.4375);
+                default         -> (int) daysBetween;
             };
         }
         if (totalInstallments < 1) totalInstallments = 1;
@@ -204,6 +230,7 @@ public class LoanController {
         }
         loan.setTotalInstallments(totalInstallments);
         loan.setInstallmentAmount(installmentAmount);
+        loan.setWeeklyIntervalDays(weeklyIntervalDays);
 
         loanRepo.save(loan);
         return ResponseEntity.ok(Map.of(
@@ -226,14 +253,15 @@ public class LoanController {
         Loan loan = opt.get();
         detectarMoraEnTiempoReal(List.of(loan));
 
-        List<Payment> payments = paymentRepo.findByLoanIdAndArchivadoFalse(id);
+        List<Payment> payments = ordenarPagos(paymentRepo.findByLoanIdAndArchivadoFalse(id));
         double paidTotal    = payments.stream().mapToDouble(Payment::getAmount).sum();
         double paidInterest = payments.stream()
                 .filter(p -> "interest".equals(p.getPaymentType()))
                 .mapToDouble(Payment::getAmount).sum();
+        // Incluye devoluciones (montos negativos) para que reduzcan el
+        // capital pagado real, igual que en LoanStatusService.
         double paidCapital = payments.stream()
                 .filter(p -> "capital".equals(p.getPaymentType()) || "normal".equals(p.getPaymentType()))
-                .filter(p -> p.getAmount() > 0)
                 .mapToDouble(Payment::getAmount).sum();
         Map<String, Object> resp = new LinkedHashMap<>();
         resp.put("id",                loan.getId());
@@ -252,11 +280,13 @@ public class LoanController {
         resp.put("paidCapital",       paidCapital);
         resp.put("totalInstallments", loan.getTotalInstallments());
         resp.put("installmentAmount", loan.getInstallmentAmount());
+        resp.put("weeklyIntervalDays", loan.getWeeklyIntervalDaysOrDefault());
         resp.put("startDate",         loan.getStartDate());
         resp.put("endDate",           loan.getEndDate());
         resp.put("loanType",          loan.getLoanType() != null ? loan.getLoanType() : "normal");
         resp.put("months",            loan.getMonths());
         resp.put("renovado",          loan.isRenovado());
+        resp.put("ruta",              loan.getRuta());
         return ResponseEntity.ok(resp);
     }
 
@@ -342,6 +372,7 @@ public class LoanController {
         snap.setInstallmentAmount(loan.getInstallmentAmount());
         snap.setMoraNotificada(loan.isMoraNotificada());
         snap.setMonths(loan.getMonths());
+        snap.setWeeklyIntervalDays(loan.getWeeklyIntervalDays());
         loan.setSnapshotAnterior(snap);
 
         List<Payment> pagosActuales = paymentRepo.findByLoanIdAndArchivadoFalse(id);
@@ -350,7 +381,11 @@ public class LoanController {
             paymentRepo.save(p);
         }
 
-        LocalDate hoy = LocalDate.now();
+        // Fecha de inicio de la renovación: si el usuario elige una, se usa esa;
+        // si no viene (frontend viejo/cacheado), se usa hoy como antes.
+        LocalDate hoy = body.containsKey("startDate") && body.get("startDate") != null
+                ? LocalDate.parse((String) body.get("startDate"))
+                : LocalDate.now();
         String loanType = loan.getLoanType() != null ? loan.getLoanType() : "normal";
 
 // Leer nuevos campos del frontend si vienen, si no usar los del préstamo original
@@ -366,12 +401,23 @@ public class LoanController {
 
             LocalDate nuevaFechaFinExtra = hoy.plusMonths(months);
             long dias = ChronoUnit.DAYS.between(hoy, nuevaFechaFinExtra);
-            int totalInstallmentsExtra = switch (freq) {
-                case "weekly"   -> (int) Math.floor(dias / 7.0);
-                case "biweekly" -> (int) Math.floor(dias / 15.0);
-                case "monthly"  -> months;
-                default         -> (int) dias;
-            };
+
+            Integer cuotasSemanalesExtra = body.containsKey("cuotasSemanales")
+                    ? toInt(body.get("cuotasSemanales")) : null;
+            Integer weeklyIntervalDaysExtra = null;
+            int totalInstallmentsExtra;
+            if ("weekly".equals(freq) && cuotasSemanalesExtra != null && cuotasSemanalesExtra > 0) {
+                int n = cuotasSemanalesExtra >= 5 ? 5 : 4;
+                totalInstallmentsExtra = n * months;
+                weeklyIntervalDaysExtra = (int) Math.max(1, Math.floor(dias / (double) totalInstallmentsExtra));
+            } else {
+                totalInstallmentsExtra = switch (freq) {
+                    case "weekly"   -> (int) Math.floor(dias / 7.0);
+                    case "biweekly" -> (int) Math.floor(dias / 15.0);
+                    case "monthly"  -> months;
+                    default         -> (int) dias;
+                };
+            }
             if (totalInstallmentsExtra < 1) totalInstallmentsExtra = 1;
 
             double totalInteresExtra = nuevoMonto * (nuevoPorcentaje / 100.0) * months;
@@ -387,6 +433,7 @@ public class LoanController {
             loan.setDueDate(nuevaFechaFinExtra.atStartOfDay());
             loan.setTotalInstallments(totalInstallmentsExtra);
             loan.setInstallmentAmount(installmentAmountExtra);
+            loan.setWeeklyIntervalDays(weeklyIntervalDaysExtra);
             loan.setStatus("active");
             loan.setMoraNotificada(false);
             loan.setRenovado(true);
@@ -412,18 +459,27 @@ public class LoanController {
         }
 
         int totalInstallments;
+        Integer weeklyIntervalDays = null;
+        Integer cuotasSemanales = body.containsKey("cuotasSemanales")
+                ? toInt(body.get("cuotasSemanales")) : null;
         if ("metodo".equals(loanType)) {
             totalInstallments = body.containsKey("totalInstallments")
                     ? toInt(body.get("totalInstallments"))
                     : (loan.getTotalInstallments() > 0 ? loan.getTotalInstallments() : 1);
+        } else if ("weekly".equals(freq) && cuotasSemanales != null && cuotasSemanales > 0) {
+            long dias = ChronoUnit.DAYS.between(hoy, nuevaFechaFin);
+            int n = cuotasSemanales >= 5 ? 5 : 4;
+            weeklyIntervalDays = (int) Math.max(1, Math.floor(dias / (double) n));
+            totalInstallments = n;
         } else {
             long dias = ChronoUnit.DAYS.between(hoy, nuevaFechaFin);
             // floor (no ceil): consistente con la creación, evita que la última cuota
             // caiga después de la nueva fecha de fin.
             totalInstallments = switch (freq) {
-                case "weekly"  -> (int) Math.floor(dias / 7.0);
-                case "monthly" -> (int) Math.round(dias / 30.4375);
-                default        -> (int) dias;
+                case "weekly"   -> (int) Math.floor(dias / 7.0);
+                case "biweekly" -> (int) Math.floor(dias / 15.0);
+                case "monthly"  -> (int) Math.round(dias / 30.4375);
+                default         -> (int) dias;
             };
         }
         if (totalInstallments < 1) totalInstallments = 1;
@@ -450,6 +506,7 @@ public class LoanController {
         loan.setDueDate(nuevaFechaFin.atStartOfDay());
         loan.setTotalInstallments(totalInstallments);
         loan.setInstallmentAmount(installmentAmount);
+        loan.setWeeklyIntervalDays(weeklyIntervalDays);
         loan.setStatus("active");
         loan.setMoraNotificada(false);
         loan.setRenovado(true);
@@ -502,6 +559,7 @@ public class LoanController {
         loan.setInstallmentAmount(snap.getInstallmentAmount());
         loan.setMoraNotificada(snap.isMoraNotificada());
         loan.setMonths(snap.getMonths());
+        loan.setWeeklyIntervalDays(snap.getWeeklyIntervalDays());
         loan.setRenovado(false);
         loan.setSnapshotAnterior(null);
 
@@ -530,9 +588,17 @@ public class LoanController {
         return ResponseEntity.ok(rutas);
     }
 
-    /** Préstamos activos de una ruta específica con cuota diaria de hoy */
+    /**
+     * Préstamos activos de una ruta específica con cuota diaria de hoy.
+     * "mes" (1-12) y "anio" son opcionales: permiten consultar el recaudo
+     * ("totalMes") de un mes distinto al actual. Si no vienen, se usa el
+     * mes/año de hoy (comportamiento original).
+     */
     @GetMapping("/rutas/{nombre}")
-    public ResponseEntity<?> getPrestamosPorRuta(@PathVariable String nombre, HttpSession session) {
+    public ResponseEntity<?> getPrestamosPorRuta(@PathVariable String nombre,
+                                                 @RequestParam(required = false) Integer mes,
+                                                 @RequestParam(required = false) Integer anio,
+                                                 HttpSession session) {
         String uid = (String) session.getAttribute("userId");
         if (uid == null) return ResponseEntity.status(401).body("Unauthorized");
 
@@ -540,19 +606,45 @@ public class LoanController {
         detectarMoraEnTiempoReal(loans);
 
         LocalDate hoy = LocalDate.now();
+        int mesSeleccionado  = (mes  != null && mes  >= 1 && mes <= 12) ? mes  : hoy.getMonthValue();
+        int anioSeleccionado = (anio != null && anio >  0)              ? anio : hoy.getYear();
+        YearMonth mesConsultado = YearMonth.of(anioSeleccionado, mesSeleccionado);
         double totalHoy = 0;
+        double totalMes = 0;
+        double totalRecaudado = 0;
         List<Map<String, Object>> resultado = new ArrayList<>();
 
         for (Loan loan : loans) {
+            // Pagos de este préstamo: se toman en cuenta para los totales de la ruta
+            // (todos los préstamos, sin importar su estado: activos, en mora o ya pagados)
+            // y también para el detalle individual (que solo lista activos/mora).
+            List<com.diariopay.model.Payment> pagosLoan = paymentRepo.findByLoanIdAndArchivadoFalse(loan.getId());
+            double pagadoLoan = 0;
+            for (com.diariopay.model.Payment p : pagosLoan) {
+                pagadoLoan += p.getAmount();
+                totalRecaudado += p.getAmount();
+                if (p.getDate() != null && YearMonth.from(p.getDate()).equals(mesConsultado)) {
+                    totalMes += p.getAmount();
+                }
+            }
+
             if (!"active".equals(loan.getStatus()) && !"overdue".equals(loan.getStatus())) continue;
 
             double cuotaHoy = 0;
             if (loan.getStartDate() != null && !hoy.isBefore(loan.getStartDate())) {
                 String freq = loan.getFrequency() != null ? loan.getFrequency() : "daily";
+                long diasTranscurridos = ChronoUnit.DAYS.between(loan.getStartDate(), hoy);
                 boolean aplica = switch (freq) {
-                    case "weekly"   -> loan.getStartDate().until(hoy).getDays() % 7 == 0;
-                    case "biweekly" -> ChronoUnit.DAYS.between(loan.getStartDate(), hoy) % 15 == 0;
-                    case "monthly"  -> loan.getStartDate().getDayOfMonth() == hoy.getDayOfMonth();
+                    // > 0 para no contar el día de creación como si ya tocara cuota
+                    case "weekly"   -> diasTranscurridos > 0 && diasTranscurridos % loan.getWeeklyIntervalDaysOrDefault() == 0;
+                    case "biweekly" -> diasTranscurridos > 0 && diasTranscurridos % 15 == 0;
+                    case "monthly"  -> {
+                        // Si el préstamo arranca el 29/30/31 y el mes actual no tiene
+                        // ese día (ej: febrero), la cuota cae en el último día del mes.
+                        int diaInicio = loan.getStartDate().getDayOfMonth();
+                        int diaEsperado = Math.min(diaInicio, hoy.lengthOfMonth());
+                        yield diasTranscurridos > 0 && hoy.getDayOfMonth() == diaEsperado;
+                    }
                     default         -> true;
                 };
                 if (aplica) {
@@ -560,9 +652,6 @@ public class LoanController {
                     totalHoy += cuotaHoy;
                 }
             }
-
-            List<com.diariopay.model.Payment> pagos = paymentRepo.findByLoanIdAndArchivadoFalse(loan.getId());
-            double pagado = pagos.stream().mapToDouble(com.diariopay.model.Payment::getAmount).sum();
 
             Map<String, Object> item = new LinkedHashMap<>();
             item.put("id",                loan.getId());
@@ -576,15 +665,41 @@ public class LoanController {
             item.put("endDate",           loan.getEndDate());
             item.put("installmentAmount", loan.getInstallmentAmount());
             item.put("cuotaHoy",          cuotaHoy);
-            item.put("pagado",            pagado);
+            item.put("pagado",            pagadoLoan);
             resultado.add(item);
         }
 
         Map<String, Object> resp = new LinkedHashMap<>();
-        resp.put("ruta",      nombre);
-        resp.put("prestamos", resultado);
-        resp.put("totalHoy",  totalHoy);
+        resp.put("ruta",              nombre);
+        resp.put("prestamos",         resultado);
+        resp.put("totalHoy",          totalHoy);
+        resp.put("totalMes",          totalMes);
+        resp.put("totalRecaudado",    totalRecaudado);
+        resp.put("mesConsultado",     mesSeleccionado);
+        resp.put("anioConsultado",    anioSeleccionado);
         return ResponseEntity.ok(resp);
+    }
+
+    /**
+     * Ordena el historial de pagos para mostrarlo (el primero de la lista
+     * queda arriba del todo). Si el usuario ya reordenó manualmente algún
+     * pago del préstamo (sortOrder != null), se respeta ese orden manual.
+     * Si no, se ordena automáticamente por fecha, del más reciente al más
+     * antiguo (comportamiento por defecto).
+     */
+    private List<Payment> ordenarPagos(List<Payment> payments) {
+        boolean tieneOrdenManual = payments.stream().anyMatch(p -> p.getSortOrder() != null);
+        if (tieneOrdenManual) {
+            return payments.stream()
+                    .sorted(Comparator.comparing(
+                            (Payment p) -> p.getSortOrder() != null ? p.getSortOrder() : Integer.MAX_VALUE))
+                    .toList();
+        }
+        return payments.stream()
+                .sorted(Comparator.comparing(
+                        (Payment p) -> p.getDate() != null ? p.getDate() : java.time.LocalDateTime.MIN,
+                        Comparator.reverseOrder()))
+                .toList();
     }
 
     private double toDouble(Object v) {
