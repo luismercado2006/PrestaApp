@@ -39,6 +39,22 @@ public class BorrowerController {
     }
 
     /**
+     * Fecha de vencimiento de la cuota número "i" (1-indexada) de un préstamo
+     * "extra", usando la misma lógica que el panel de administración: la
+     * última cuota siempre vence el mismo día que endDate.
+     */
+    private LocalDate fechaCuotaExtra(LocalDate start, String freq, int i,
+                                      int weeklyIntervalDays, int totalInstallments, LocalDate endDate) {
+        if (i >= totalInstallments && endDate != null) return endDate;
+        return switch (freq != null ? freq : "daily") {
+            case "weekly"   -> start.plusDays(i * (long) weeklyIntervalDays);
+            case "biweekly" -> start.plusDays(i * 15L);
+            case "monthly"  -> start.plusMonths(i);
+            default         -> start.plusDays(i);
+        };
+    }
+
+    /**
      * GET /public/borrower/{phone}
      * Devuelve todos los préstamos activos/en mora/pagados asociados al teléfono.
      */
@@ -239,6 +255,51 @@ public class BorrowerController {
             }
             item.put("cuotasPagadas", cuotasPagadasInt);
             item.put("proximaCuota",       proximaCuota);
+
+            // ─── Interés de mora (aplica a préstamo "extra" y "grande") ─────
+            // Misma fórmula que el panel de administración: el % de interés
+            // del préstamo es una tasa MENSUAL (ej: 20% cada mes, por eso 2
+            // meses acumulan 40%). Por eso la tasa diaria siempre se calcula
+            // dividiendo entre 30 (días de un mes), sin importar cuántos
+            // meses dure el plazo, y se aplica al capital por cada día de
+            // atraso.
+            double moraMonto = 0;
+            long moraDias = 0;
+            if ("extra".equals(loan.getLoanType()) && loan.getStartDate() != null) {
+                int totalInstEx = loan.getTotalInstallments() > 0 ? loan.getTotalInstallments() : 1;
+                LocalDate endDateEx = loan.getEndDate();
+                int wDays = loan.getWeeklyIntervalDaysOrDefault();
+
+                long cuotasEsperadas = 0;
+                for (int i = 1; i <= totalInstEx; i++) {
+                    LocalDate fechaI = fechaCuotaExtra(loan.getStartDate(), loan.getFrequency(), i, wDays, totalInstEx, endDateEx);
+                    if (!fechaI.isAfter(hoy)) cuotasEsperadas = i; else break;
+                }
+                long cuotasEnMora = Math.max(cuotasEsperadas - cuotasPagadasInt, 0);
+                if (cuotasEnMora > 0) {
+                    LocalDate fechaVieja = fechaCuotaExtra(loan.getStartDate(), loan.getFrequency(),
+                            (int) cuotasPagadasInt + 1, wDays, totalInstEx, endDateEx);
+                    moraDias = Math.max(ChronoUnit.DAYS.between(fechaVieja, hoy), 0);
+                }
+
+                double tasaDiariaMora = loan.getInterest() / 100.0 / 30.0;
+                moraMonto = loan.getAmount() * tasaDiariaMora * moraDias;
+            } else if (isGrande && loan.getEndDate() != null) {
+                // "Grande": el crédito solo tiene una fecha de vencimiento
+                // (mensual), así que la mora se mide contra endDate y se
+                // aplica sobre el saldo de capital pendiente, no sobre el
+                // monto original.
+                LocalDate endDateGr = loan.getEndDate();
+                if (hoy.isAfter(endDateGr)) {
+                    moraDias = ChronoUnit.DAYS.between(endDateGr, hoy);
+                    double saldoCapitalGr = Math.max(loan.getAmount() - paidCapital, 0);
+                    double tasaDiariaMoraG = loan.getInterest() / 100.0 / 30.0;
+                    moraMonto = saldoCapitalGr * tasaDiariaMoraG * moraDias;
+                }
+            }
+            item.put("moraMonto", Math.round(moraMonto));
+            item.put("moraDias", moraDias);
+
             item.put("ultimosPagos",       ultimosPagos);
             item.put("renovado",           loan.isRenovado());
             resultado.add(item);

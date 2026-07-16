@@ -305,6 +305,16 @@ public class LoanController {
         if (body.containsKey("status"))  loan.setStatus((String) body.get("status"));
         if (body.containsKey("notes"))   loan.setNotes((String) body.get("notes"));
         if (body.containsKey("amount"))  loan.setAmount(toDouble(body.get("amount")));
+        if (body.containsKey("borrower")) {
+            String newName = (String) body.get("borrower");
+            if (newName == null || newName.isBlank()) {
+                return ResponseEntity.badRequest().body(Map.of(
+                        "ok", false,
+                        "error", "El nombre es obligatorio"
+                ));
+            }
+            loan.setBorrower(newName.trim());
+        }
         if (body.containsKey("phone")) {
             String newPhone = (String) body.get("phone");
             if (newPhone == null || newPhone.isBlank()) {

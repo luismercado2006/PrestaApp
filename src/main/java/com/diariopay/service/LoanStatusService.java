@@ -94,9 +94,18 @@ public class LoanStatusService {
             // avanza a la fecha de la siguiente cuota. El monto realmente
             // pagado se sigue verificando aparte (paidCapital >= totalAPagar,
             // más arriba) para decidir si el préstamo ya quedó saldado.
-            cuotasPagadas = (int) payments.stream()
+            //
+            // Si se registra una devolución (monto negativo) que revierte un
+            // pago, esa cuota debe dejar de contarse como atendida; por eso
+            // restamos la cantidad de devoluciones de la cantidad de pagos
+            // positivos, en vez de solo ignorar los montos negativos.
+            long cuotasPositivas = payments.stream()
                     .filter(p -> ("capital".equals(p.getPaymentType()) || "normal".equals(p.getPaymentType())) && p.getAmount() > 0)
                     .count();
+            long cuotasRevertidas = payments.stream()
+                    .filter(p -> ("capital".equals(p.getPaymentType()) || "normal".equals(p.getPaymentType())) && p.getAmount() < 0)
+                    .count();
+            cuotasPagadas = (int) Math.max(cuotasPositivas - cuotasRevertidas, 0);
         } else {
             double cuota = loan.getInstallmentAmount() > 0 ? loan.getInstallmentAmount() : 1;
             cuotasPagadas = (int) Math.max(0, Math.floor(paidCapital / cuota));

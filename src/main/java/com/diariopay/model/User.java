@@ -43,10 +43,31 @@ public class User {
     private LocalDateTime premiumExpiresAt;
     private Boolean premiumOverride;
 
+    /* ── PRUEBA GRATUITA CORTA (solo cuentas nuevas) ──
+       pruebaExpiraEn: límite del acceso automático de prueba para cuentas creadas
+       DESPUÉS de este cambio (2 días desde el registro). Al vencer, la cuenta
+       queda bloqueada automáticamente aunque premiumExpiresAt (el "mes completo")
+       siga corriendo desde la fecha de creación sin verse afectado.
+
+       Si el dueño paga, el admin simplemente presiona "Activar" en el panel
+       (premiumOverride = true) y la cuenta queda activa; el mes contratado sigue
+       contando desde el día en que se creó la cuenta (premiumExpiresAt no cambia).
+
+       Las cuentas registradas ANTES de este cambio no tienen este campo (queda
+       null), por lo que conservan el comportamiento clásico: 1 mes completo de
+       acceso automático, sin bloqueo a los 2 días. No requieren ninguna migración.
+    */
+    private LocalDateTime pruebaExpiraEn;
+
     public boolean isPremiumActive() {
         if (premiumOverride != null) {
             return premiumOverride;
         }
+        if (pruebaExpiraEn != null) {
+            // Cuenta nueva (post-cambio): solo acceso automático durante la prueba corta.
+            return LocalDateTime.now().isBefore(pruebaExpiraEn);
+        }
+        // Cuenta antigua (sin pruebaExpiraEn): comportamiento clásico, 1 mes automático.
         return LocalDateTime.now().isBefore(getEffectivePremiumExpiresAt());
     }
 

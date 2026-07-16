@@ -68,6 +68,7 @@ public class AuthController {
         user.setPassword(encoder.encode(password));
         user.setName(name);
         user.setPremiumExpiresAt(java.time.LocalDateTime.now().plusMonths(1));
+        user.setPruebaExpiraEn(java.time.LocalDateTime.now().plusDays(2));
         userRepo.save(user);
         return Map.of("ok", true);
     }

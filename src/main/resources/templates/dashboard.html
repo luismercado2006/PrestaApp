@@ -52,6 +52,10 @@
         body.dark-mode .badge.overdue{background:#2a0000;color:#ff3c3c}
         body.dark-mode .filter-tab{background:#1a1a1a;border-color:#2a2a2a;color:#bbbbbb}
         body.dark-mode .filter-tab.active{background:#39ff14;border-color:#39ff14;color:#000}
+        body.dark-mode .search-toggle-btn{background:#1a1a1a;border-color:#2a2a2a;color:#bbbbbb}
+        body.dark-mode .search-toggle-btn.active{background:#39ff14;border-color:#39ff14;color:#000}
+        body.dark-mode .loan-search-box{background:#1a1a1a;border-color:#2a2a2a;color:#888888}
+        body.dark-mode .loan-search-box input{color:#f0f0f0}
         body.dark-mode .loan-item.grande{background:#1a1a1a !important;border-color:#2a2a2a !important;border-left-color:#ff9f00 !important}
         body.dark-mode .loan-item.grande .amount{color:#ff9f00 !important}
         body.dark-mode .loan-item.metodo{background:#1a1a1a !important;border-color:#2a2a2a !important;border-left-color:#00ff9f !important}
@@ -219,6 +223,22 @@
           font-weight:600;border:1.5px solid var(--gray-200);background:var(--white);
           color:var(--gray-600);cursor:pointer;transition:all .15s}
         .filter-tab.active{background:var(--green);border-color:var(--green);color:var(--white)}
+        .filter-row{display:flex;align-items:center;gap:8px;margin-bottom:16px}
+        .filter-row .filter-tabs{margin-bottom:0;flex:1;min-width:0}
+        .search-toggle-btn{flex-shrink:0;width:34px;height:34px;border-radius:50%;
+          border:1.5px solid var(--gray-200);background:var(--white);color:var(--gray-600);
+          display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all .15s}
+        .search-toggle-btn.active{background:var(--green);border-color:var(--green);color:var(--white)}
+        .loan-search-box{display:none;align-items:center;gap:8px;background:var(--white);
+          border:1.5px solid var(--gray-200);border-radius:12px;padding:9px 12px;
+          margin:-8px 0 16px;color:var(--gray-400)}
+        .loan-search-box.open{display:flex}
+        .loan-search-box:focus-within{border-color:var(--green)}
+        .loan-search-box input{flex:1;min-width:0;border:none;outline:none;font-family:inherit;
+          font-size:14px;color:var(--gray-800);background:transparent}
+        .loan-search-clear{display:none;cursor:pointer;font-size:13px;color:var(--gray-400);
+          flex-shrink:0;padding:2px}
+        .loan-search-clear.visible{display:block}
         .loan-item{background:var(--white);border-radius:14px;padding:14px 16px;margin-bottom:10px;
           border:1px solid var(--gray-100);border-left:4px solid var(--blue) !important;display:flex;align-items:center;justify-content:space-between;cursor:pointer;gap:10px;}
         .loan-info .borrower{font-size:15px;font-weight:700;color:var(--gray-800)}
@@ -493,11 +513,21 @@
 
 <!-- MIS PRÉSTAMOS -->
 <div class="page" id="page-prestamos">
-    <div class="filter-tabs">
-        <div class="filter-tab active" onclick="filterLoans('active',this)">Activos</div>
-        <div class="filter-tab" onclick="filterLoans('paid',this)">Pagados</div>
-        <div class="filter-tab" onclick="filterLoans('overdue',this)">En mora</div>
-        <div class="filter-tab" onclick="filterLoans('all',this)">Todos</div>
+    <div class="filter-row">
+        <div class="filter-tabs">
+            <div class="filter-tab active" onclick="filterLoans('active',this)">Activos</div>
+            <div class="filter-tab" onclick="filterLoans('paid',this)">Pagados</div>
+            <div class="filter-tab" onclick="filterLoans('overdue',this)">En mora</div>
+            <div class="filter-tab" onclick="filterLoans('all',this)">Todos</div>
+        </div>
+        <button class="search-toggle-btn" id="search-toggle-btn" onclick="toggleLoanSearch()" aria-label="Buscar cliente">
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+        </button>
+    </div>
+    <div class="loan-search-box" id="loan-search-box">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+        <input type="text" id="loan-search-input" placeholder="Buscar cliente por nombre..." oninput="onLoanSearchInput()">
+        <span class="loan-search-clear" id="loan-search-clear" onclick="clearLoanSearch()">✕</span>
     </div>
     <div id="loans-list"><div class="empty-loans">Cargando...</div></div>
 </div>
@@ -506,7 +536,11 @@
 <div class="page" id="page-detalle">
     <div class="detail-header-card">
         <div>
-            <div class="d-name" id="d-name"><span id="d-name-text">–</span> <span id="d-badge-renovado" style="display:none;font-size:11px;font-weight:700;color:#16a34a;background:#dcfce7;border-radius:6px;padding:2px 8px;vertical-align:middle;margin-left:6px">Renovado</span></div>
+            <div class="d-name" id="d-name">
+                <span id="d-name-text">–</span>
+                <button type="button" class="d-phone-edit-btn" id="d-name-edit-btn" onclick="openEditName()" style="margin-left:6px">Editar nombre</button>
+                <span id="d-badge-renovado" style="display:none;font-size:11px;font-weight:700;color:#16a34a;background:#dcfce7;border-radius:6px;padding:2px 8px;vertical-align:middle;margin-left:6px">Renovado</span>
+            </div>
             <div class="d-phone-row">
                 <span class="d-phone" id="d-notes-display">–</span>
                 <button type="button" class="d-phone-edit-btn" id="d-phone-edit-btn" onclick="openEditPhone()">Editar número</button>
@@ -522,6 +556,10 @@
         <div class="amt-card"><div class="alabel">Total con interés</div><div class="avalue dark" id="d-total">–</div></div>
         <div class="amt-card"><div class="alabel">Cobrado</div><div class="avalue green" id="d-paid">–</div></div>
         <div class="amt-card"><div class="alabel">Por cobrar</div><div class="avalue red" id="d-remaining">–</div></div>
+    </div>
+    <div class="amounts-grid" id="mora-grid" style="display:none">
+        <div class="amt-card"><div class="alabel">Debe por mora</div><div class="avalue red" id="d-mora-monto">–</div></div>
+        <div class="amt-card"><div class="alabel">Días de mora</div><div class="avalue red" id="d-mora-dias">–</div></div>
     </div>
     <div class="progress-card">
         <div class="progress-header">
@@ -862,6 +900,22 @@
     </div>
 </div>
 
+<!-- MODAL: EDITAR NOMBRE -->
+<div class="modal-bg" id="modal-edit-name">
+    <div class="modal">
+        <div class="modal-handle"></div>
+        <h2>Editar nombre</h2>
+        <div class="form-group">
+            <label>Nombre <span style="color:#e53e3e">*</span></label>
+            <input type="text" id="f-edit-name" placeholder="Ej: Juan Pérez">
+        </div>
+        <div class="modal-actions">
+            <button class="btn btn-cancel" onclick="closeModal('modal-edit-name')">Cancelar</button>
+            <button class="btn btn-save" onclick="saveEditName()">Guardar</button>
+        </div>
+    </div>
+</div>
+
 <!-- MODAL: DEVOLUCIÓN -->
 <div class="modal-bg" id="modal-refund">
     <div class="modal">
@@ -1183,6 +1237,19 @@ function startNotifPolling() {
 }
     const fmt     = n => '$ ' + Math.round(n).toLocaleString('es-CO');
     const fmtDate = s => s ? new Date(s).toLocaleDateString('es-CO') : '–';
+    // Convierte una fecha (string "YYYY-MM-DD", con o sin hora, o un Date)
+    // en un Date a medianoche LOCAL, sin pasar por UTC. Esto evita el
+    // desfase de zona horaria que ocurre al usar setUTCHours(0,0,0,0) y
+    // luego compararlo contra "today" en hora local: en zonas con offset
+    // negativo (ej. Colombia, UTC-5) esa mezcla puede correr la fecha un
+    // día hacia atrás o esconder hasta ~medio día de mora real.
+    const parseLocalDate = (input) => {
+        if (!input) return null;
+        if (input instanceof Date) return new Date(input.getFullYear(), input.getMonth(), input.getDate());
+        const datePart = String(input).split('T')[0];
+        const [y, m, d] = datePart.split('-').map(Number);
+        return new Date(y, m - 1, d);
+    };
     const nombreEmpresa = document.querySelector('#page-inicio h2 span')?.textContent || 'PrestaApp';
 
     let currentLoanId   = null;
@@ -1190,6 +1257,7 @@ function startNotifPolling() {
     let currentLoanData = null;
     let allLoans        = [];
     let currentFilter   = 'active';
+    let loanSearchQuery = '';
     let prevPage        = 'prestamos';
 
     /* ─── AMORTIZACIÓN FRANCESA ─────────────────────────────── */
@@ -1377,12 +1445,45 @@ function startNotifPolling() {
         renderLoans(status);
     }
 
+    function toggleLoanSearch() {
+        const box = document.getElementById('loan-search-box');
+        const btn = document.getElementById('search-toggle-btn');
+        const isOpen = box.classList.toggle('open');
+        btn.classList.toggle('active', isOpen);
+        if (isOpen) {
+            document.getElementById('loan-search-input').focus();
+        } else {
+            clearLoanSearch();
+        }
+    }
+
+    function onLoanSearchInput() {
+        const input = document.getElementById('loan-search-input');
+        loanSearchQuery = (input.value || '').trim().toLowerCase();
+        document.getElementById('loan-search-clear').classList.toggle('visible', loanSearchQuery.length > 0);
+        renderLoans(currentFilter);
+    }
+
+    function clearLoanSearch() {
+        loanSearchQuery = '';
+        const input = document.getElementById('loan-search-input');
+        if (input) input.value = '';
+        const clearBtn = document.getElementById('loan-search-clear');
+        if (clearBtn) clearBtn.classList.remove('visible');
+        renderLoans(currentFilter);
+    }
+
     function renderLoans(status) {
         const el       = document.getElementById('loans-list');
-        const filtered = status === 'all' ? allLoans : allLoans.filter(l => l.status === status);
+        let filtered = status === 'all' ? allLoans : allLoans.filter(l => l.status === status);
+        if (loanSearchQuery) {
+            filtered = filtered.filter(l => (l.borrower || '').toLowerCase().includes(loanSearchQuery));
+        }
         if (!filtered.length) {
             const msgs = {active:'Sin préstamos activos',paid:'Sin préstamos pagados',overdue:'Sin préstamos en mora',all:'Sin préstamos registrados'};
-            el.innerHTML = `<div class="empty-loans">${msgs[status]||'Sin resultados'}<br><small>Toca + para agregar uno</small></div>`;
+            el.innerHTML = loanSearchQuery
+                ? `<div class="empty-loans">Sin resultados para "${loanSearchQuery}"</div>`
+                : `<div class="empty-loans">${msgs[status]||'Sin resultados'}<br><small>Toca + para agregar uno</small></div>`;
             return;
         }
         const tipoLabel = l => l.loanType==='grande'?'Préstamo Grande':l.loanType==='metodo'?'Préstamo Método':l.loanType==='extra'?'Préstamo Extra':'Préstamo Normal';
@@ -1412,6 +1513,10 @@ function startNotifPolling() {
         const isGrande = l.loanType === 'grande';
         const isMetodo = l.loanType === 'metodo';
         const isExtra  = l.loanType === 'extra';
+
+        // Por defecto ocultamos las tarjetas de mora; solo se muestran para
+        // "Préstamo Extra" y "Préstamo Grande".
+        document.getElementById('mora-grid').style.display = 'none';
 
         let principal, total, paid, remaining, cuota, numCuotas, pct;
 
@@ -1455,7 +1560,7 @@ function startNotifPolling() {
                 cuotasPagadas + '/' + n + ' cuotas (' + Math.round(pct) + '%)';
 
             /* Fecha próxima cuota */
-            const startD   = new Date(l.startDate || l.createdAt);
+            const startD   = parseLocalDate(l.startDate || l.createdAt);
             const nextDate = new Date(startD);
             nextDate.setMonth(nextDate.getMonth() + cuotasPagadas + 1);
             const today = new Date(); today.setHours(0,0,0,0);
@@ -1496,7 +1601,7 @@ function startNotifPolling() {
             document.getElementById('d-freq').textContent      = 'Mensual';
             document.getElementById('d-progress-label').textContent = Math.round(pct) + '%';
 
-            const endDate   = new Date(l.endDate || l.dueDate); endDate.setUTCHours(0,0,0,0);
+            const endDate   = parseLocalDate(l.endDate || l.dueDate);
             const today     = new Date(); today.setHours(0,0,0,0);
             const nextDueEl = document.getElementById('d-next-due');
             nextDueEl.textContent = 'Próximo pago · ' + fmtDate(endDate.toISOString());
@@ -1504,6 +1609,20 @@ function startNotifPolling() {
             if (endDate < today && l.status === 'active') {
                 await fetch('/api/loans/' + id, {method:'PUT',headers:csrfHeaders(),body:JSON.stringify({status:'overdue'})});
             }
+
+            // Interés de mora en "Préstamo Grande": misma fórmula que en
+            // "Préstamo Extra" (tasa diaria = interés% / 30, aplicada al
+            // capital), pero aquí sobre el saldo de capital pendiente
+            // (saldoCapital) y comparando contra endDate, ya que el
+            // "grande" solo tiene una fecha de vencimiento (mensual), no
+            // varias cuotas espaciadas.
+            const moraDiasGrande  = endDate < today ? Math.round((today - endDate) / 86400000) : 0;
+            const tasaDiariaMoraG = interestRate / 100 / 30;
+            const moraMontoGrande = saldoCapital * tasaDiariaMoraG * moraDiasGrande;
+
+            document.getElementById('mora-grid').style.display = 'grid';
+            document.getElementById('d-mora-monto').textContent = fmt(moraMontoGrande);
+            document.getElementById('d-mora-dias').textContent  = moraDiasGrande + (moraDiasGrande === 1 ? ' día' : ' días');
 
         } else if (isExtra) {
             /* Extra: interés fijo total = monto * interés% * meses, ya repartido
@@ -1520,9 +1639,14 @@ function startNotifPolling() {
             // el valor completo de la cuota) cuenta como una cuota atendida y
             // avanza a la cuota/fecha siguiente. Por eso contamos pagos, no
             // dividimos el monto pagado entre el valor de la cuota.
-            const paidCuotas = (l.payments || [])
-                .filter(p => (p.paymentType === 'capital' || p.paymentType === 'normal') && p.amount > 0)
-                .length;
+            // Si se registra una devolución (monto negativo) que revierte un
+            // pago, esa cuota debe dejar de contarse como atendida: restamos
+            // la cantidad de devoluciones de la cantidad de pagos positivos.
+            const qualifyingExtra = (l.payments || [])
+                .filter(p => p.paymentType === 'capital' || p.paymentType === 'normal');
+            const cuotasPositivas  = qualifyingExtra.filter(p => p.amount > 0).length;
+            const cuotasRevertidas = qualifyingExtra.filter(p => p.amount < 0).length;
+            const paidCuotas = Math.max(cuotasPositivas - cuotasRevertidas, 0);
             pct = Math.min(paid / Math.max(total, 1) * 100, 100);
             currentCuota = cuota;
 
@@ -1537,8 +1661,46 @@ function startNotifPolling() {
             document.getElementById('d-freq').textContent      = freqName;
             document.getElementById('d-progress-label').textContent = paidCuotas + '/' + numCuotas + ' cuotas (' + Math.round(pct) + '%)';
 
-            const startD = new Date(l.startDate || l.createdAt); startD.setUTCHours(0,0,0,0);
+            const startD = parseLocalDate(l.startDate || l.createdAt);
             const today  = new Date(); today.setHours(0,0,0,0);
+
+            // Fecha de vencimiento de la cuota número "i" (1-indexada), misma
+            // lógica usada abajo para "Próxima cuota".
+            const fechaCuota = (i) => {
+                if (i >= numCuotas && l.endDate) {
+                    return parseLocalDate(l.endDate);
+                }
+                const d = new Date(startD);
+                if (l.frequency==='monthly')       d.setMonth(d.getMonth() + i);
+                else if (l.frequency==='weekly')   d.setDate(d.getDate() + (l.weeklyIntervalDays || 7) * i);
+                else if (l.frequency==='biweekly') d.setDate(d.getDate() + 15 * i);
+                else                                d.setDate(d.getDate() + i);
+                return d;
+            };
+
+            // Cuotas que ya deberían haberse pagado a la fecha de hoy.
+            let cuotasEsperadas = 0;
+            for (let i = 1; i <= numCuotas; i++) {
+                if (fechaCuota(i) <= today) cuotasEsperadas = i; else break;
+            }
+            const cuotasEnMora = Math.max(cuotasEsperadas - paidCuotas, 0);
+            const moraDias     = cuotasEnMora > 0
+                ? Math.max(Math.round((today - fechaCuota(paidCuotas + 1)) / 86400000), 0)
+                : 0;
+            // Interés de mora: el % de interés del préstamo (l.interest) es una
+            // tasa MENSUAL (ej: 20% cada mes, por eso 2 meses acumulan 40%).
+            // Por eso la tasa diaria siempre se calcula dividiendo entre 30
+            // (los días de un mes), sin importar cuántos meses dure el plazo.
+            // Esa tasa diaria se aplica al capital prestado por cada día de
+            // atraso. Al recalcularse siempre con la fecha de hoy, este monto
+            // va aumentando automáticamente día a día mientras dure la mora.
+            const tasaDiariaMora = (l.interest || 0) / 100 / 30;
+            const moraMonto      = principal * tasaDiariaMora * moraDias;
+
+            document.getElementById('mora-grid').style.display = 'grid';
+            document.getElementById('d-mora-monto').textContent = fmt(moraMonto);
+            document.getElementById('d-mora-dias').textContent  = moraDias + (moraDias === 1 ? ' día' : ' días');
+
             const nextDueEl = document.getElementById('d-next-due');
             if (paidCuotas >= numCuotas) {
                 nextDueEl.textContent = 'Todas pagadas ✓';
@@ -1547,7 +1709,7 @@ function startNotifPolling() {
                 let nextDate;
                 if (paidCuotas + 1 >= numCuotas && l.endDate) {
                     // La última cuota siempre vence el mismo día que "Vence" (endDate).
-                    nextDate = new Date(l.endDate); nextDate.setUTCHours(0,0,0,0);
+                    nextDate = parseLocalDate(l.endDate);
                 } else {
                     nextDate = new Date(startD);
                     if (l.frequency==='monthly')       nextDate.setMonth(nextDate.getMonth() + paidCuotas + 1);
@@ -1589,7 +1751,7 @@ function startNotifPolling() {
             document.getElementById('d-freq').textContent      = freqName;
             document.getElementById('d-progress-label').textContent = paidCuotas + '/' + numCuotas + ' cuotas (' + Math.round(pct) + '%)';
 
-            const startD = new Date(l.startDate || l.createdAt); startD.setUTCHours(0,0,0,0);
+            const startD = parseLocalDate(l.startDate || l.createdAt);
             const today  = new Date(); today.setHours(0,0,0,0);
             const nextDueEl = document.getElementById('d-next-due');
             if (paidCuotas >= numCuotas) {
@@ -1599,7 +1761,7 @@ function startNotifPolling() {
                 let nextDate;
                 if (paidCuotas + 1 >= numCuotas && l.endDate) {
                     // La última cuota siempre vence el mismo día que "Vence" (endDate).
-                    nextDate = new Date(l.endDate); nextDate.setUTCHours(0,0,0,0);
+                    nextDate = parseLocalDate(l.endDate);
                 } else {
                     nextDate = new Date(startD);
                     if (l.frequency==='monthly')      nextDate.setMonth(nextDate.getMonth() + paidCuotas + 1);
@@ -1911,7 +2073,7 @@ const intMes = (saldoCapital * (l.interest||0)) / 100;
             const total2   = l.totalInstallments || 1;
             const cuota2   = l.installmentAmount || 1;
             const pagados  = Math.floor((l.paidTotal || 0) / cuota2);
-            const startD   = new Date(l.startDate || l.createdAt);
+            const startD   = parseLocalDate(l.startDate || l.createdAt);
             const today    = new Date(); today.setHours(0,0,0,0);
             let nuevoStatus;
             if (pagados >= total2) {
@@ -1920,7 +2082,7 @@ const intMes = (saldoCapital * (l.interest||0)) / 100;
                 let nextDate;
                 if (pagados + 1 >= total2 && l.endDate) {
                     // La última cuota siempre vence el mismo día que "Vence" (endDate).
-                    nextDate = new Date(l.endDate);
+                    nextDate = parseLocalDate(l.endDate);
                 } else {
                     nextDate = new Date(startD);
                     if (l.frequency==='monthly')       nextDate.setMonth(nextDate.getMonth() + pagados + 1);
@@ -2499,6 +2661,29 @@ openModal('modal-new');
             return;
         }
         closeModal('modal-edit-phone');
+        await openDetail(currentLoanId);
+        if (document.getElementById('page-prestamos').classList.contains('active')) loadLoans();
+    }
+
+    /* ─── EDITAR NOMBRE DEL PRESTATARIO ──────────────────────── */
+    function openEditName() {
+        document.getElementById('f-edit-name').value = (currentLoanData && currentLoanData.borrower) || '';
+        openModal('modal-edit-name');
+    }
+
+    async function saveEditName() {
+        const nombre = document.getElementById('f-edit-name').value.trim();
+        if (!nombre) { alert('El nombre es obligatorio'); return; }
+        const resp = await fetch('/api/loans/' + currentLoanId, {
+            method: 'PUT', headers: csrfHeaders(),
+            body: JSON.stringify({ borrower: nombre })
+        });
+        if (!resp.ok) {
+            const err = await resp.json().catch(() => ({}));
+            alert(err.error || 'No se pudo guardar el nombre');
+            return;
+        }
+        closeModal('modal-edit-name');
         await openDetail(currentLoanId);
         if (document.getElementById('page-prestamos').classList.contains('active')) loadLoans();
     }

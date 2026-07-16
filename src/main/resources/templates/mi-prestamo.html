@@ -604,6 +604,15 @@
               <div class="info-lbl">Frecuencia</div>
               <div class="info-val">${freqLabel[loan.frequency] || loan.frequency}</div>
             </div>
+            ${(lt === 'extra' || lt === 'grande') ? `
+            <div class="info-item">
+              <div class="info-lbl">Debe por mora</div>
+              <div class="info-val red">${formatMoney(loan.moraMonto)}</div>
+            </div>
+            <div class="info-item">
+              <div class="info-lbl">Días de mora</div>
+              <div class="info-val red">${loan.moraDias || 0} día${loan.moraDias === 1 ? '' : 's'}</div>
+            </div>` : ''}
             ${loan.proximaCuota ? `
             <div class="info-item" style="grid-column:1/-1">
               <div class="info-lbl">Próxima cuota</div>

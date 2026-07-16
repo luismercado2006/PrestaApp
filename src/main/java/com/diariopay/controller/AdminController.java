@@ -49,6 +49,8 @@ public class AdminController {
             m.put("daysLeft", daysLeft);
             m.put("active", u.isPremiumActive());
             m.put("override", u.getPremiumOverride() == null ? "auto" : (u.getPremiumOverride() ? "activado" : "desactivado"));
+            m.put("enPrueba", u.getPruebaExpiraEn() != null);
+            m.put("pruebaExpiraEn", u.getPruebaExpiraEn());
             result.add(m);
         }
         // Vencidos/bloqueados primero, para que el admin los vea rápido
