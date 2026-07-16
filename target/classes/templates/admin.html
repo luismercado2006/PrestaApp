@@ -10,6 +10,7 @@
         *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
         :root{
           --green:#16a34a;--green-l:#dcfce7;--blue:#1d4ed8;--blue-l:#eff6ff;--red:#dc2626;--red-l:#fef2f2;
+          --orange:#c2410c;--orange-l:#ffedd5;
           --gray-50:#f9fafb;--gray-100:#f3f4f6;--gray-200:#e5e7eb;
           --gray-400:#9ca3af;--gray-600:#4b5563;--gray-700:#374151;--gray-800:#1f2937;--white:#ffffff;
         }
@@ -34,6 +35,8 @@
         .badge{font-size:11px;font-weight:700;padding:3px 10px;border-radius:20px;white-space:nowrap}
         .badge.active{background:var(--green-l);color:var(--green)}
         .badge.locked{background:var(--red-l);color:var(--red)}
+        .badge.trial{background:var(--blue-l);color:var(--blue);margin-left:6px}
+        .badge.legacy{background:var(--gray-100);color:var(--gray-600);margin-left:6px}
         .uc-info{display:flex;flex-wrap:wrap;gap:14px;font-size:12.5px;color:var(--gray-600);margin-bottom:12px}
         .uc-info b{color:var(--gray-800)}
         .uc-actions{display:flex;flex-wrap:wrap;gap:8px}
@@ -118,6 +121,11 @@
                     <span>Registro: <b>${fmtDate(u.createdAt)}</b></span>
                     <span>Vence: <b>${fmtDate(u.expiresAt)}</b></span>
                     <span>${dias}</span>
+                </div>
+                <div class="uc-info">
+                    ${u.enPrueba
+                        ? `<span class="badge trial">🕑 Prueba 2 días · vence ${fmtDate(u.pruebaExpiraEn)}</span>`
+                        : `<span class="badge legacy">📅 Mes automático</span>`}
                 </div>
                 <div class="uc-actions">
                     <button class="btn-a btn-activar" onclick="accion('${u.id}','activar')">✓ Activar</button>
