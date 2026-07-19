@@ -334,6 +334,42 @@ public class LoanController {
         return ResponseEntity.ok(Map.of("ok", true));
     }
 
+    // ─── "Paso": adelanta un día el cronograma de un préstamo DIARIO ──────
+    // No registra ningún pago; simplemente corre startDate y endDate un día
+    // hacia adelante, de modo que la cuota que hoy aparecía vencida (o por
+    // cobrar hoy) pasa a vencer mañana, y todas las cuotas siguientes se
+    // recalculan automáticamente en el frontend a partir de la nueva fecha.
+    @PostMapping("/{id}/paso")
+    public ResponseEntity<?> pasarDia(@PathVariable String id, HttpSession session) {
+        String uid = (String) session.getAttribute("userId");
+        if (uid == null) return ResponseEntity.status(401).body("Unauthorized");
+
+        Optional<Loan> opt = loanRepo.findById(id);
+        if (opt.isEmpty() || !opt.get().getUserId().equals(uid))
+            return ResponseEntity.status(404).body("Not found");
+
+        Loan loan = opt.get();
+        if (!"daily".equals(loan.getFrequency())) {
+            return ResponseEntity.badRequest().body(Map.of(
+                    "ok", false,
+                    "error", "El botón de paso solo aplica a préstamos con cobro diario"
+            ));
+        }
+
+        // Solo se adelanta startDate: la fecha de vencimiento del préstamo
+        // (endDate / "Vence") NUNCA se mueve. La última cuota, sea cual sea,
+        // siempre sigue cayendo en endDate (así lo maneja ya el frontend).
+        LocalDate nuevoStart = loan.getStartDate().plusDays(1);
+        loan.setStartDate(nuevoStart);
+
+        loanRepo.save(loan);
+        return ResponseEntity.ok(Map.of(
+                "ok", true,
+                "startDate", nuevoStart.toString(),
+                "endDate", loan.getEndDate().toString()
+        ));
+    }
+
     @DeleteMapping("/{id}")
     public ResponseEntity<?> deleteLoan(@PathVariable String id, HttpSession session) {
         String uid = (String) session.getAttribute("userId");

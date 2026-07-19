@@ -3,6 +3,7 @@ package com.diariopay.controller;
 import com.diariopay.model.User;
 import com.diariopay.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
@@ -73,5 +74,80 @@ public class AuthController {
         return Map.of("ok", true);
     }
 
+    // ─── MI CUENTA ──────────────────────────────────────────────────────
+    // Nota de seguridad: la contraseña se guarda con hash (BCrypt) y nunca
+    // se puede recuperar en texto plano, así que este endpoint jamás la
+    // devuelve. El campo "hasPassword" solo le dice al frontend que ya hay
+    // una contraseña configurada, para mostrar puntos de relleno en vez del
+    // valor real.
+    @GetMapping("/api/account")
+    @ResponseBody
+    public ResponseEntity<?> getAccount(jakarta.servlet.http.HttpSession session) {
+        String uid = (String) session.getAttribute("userId");
+        if (uid == null) return ResponseEntity.status(401).body("Unauthorized");
+
+        Optional<User> opt = userRepo.findById(uid);
+        if (opt.isEmpty()) return ResponseEntity.status(404).body("Not found");
+
+        User user = opt.get();
+        return ResponseEntity.ok(Map.of(
+                "name", user.getName() != null ? user.getName() : "",
+                "username", user.getUsername() != null ? user.getUsername() : "",
+                "hasPassword", user.getPassword() != null && !user.getPassword().isBlank()
+        ));
+    }
+
+    @PutMapping("/api/account")
+    @ResponseBody
+    public ResponseEntity<?> updateAccount(@RequestBody Map<String, String> body,
+                                           jakarta.servlet.http.HttpSession session) {
+        String uid = (String) session.getAttribute("userId");
+        if (uid == null) return ResponseEntity.status(401).body("Unauthorized");
+
+        Optional<User> opt = userRepo.findById(uid);
+        if (opt.isEmpty()) return ResponseEntity.status(404).body("Not found");
+
+        User user = opt.get();
+
+        String newName = body.getOrDefault("name", "").trim();
+        if (newName.isBlank()) {
+            return ResponseEntity.badRequest().body(Map.of("ok", false, "error", "El nombre es obligatorio"));
+        }
+
+        String newUsername = body.getOrDefault("username", "").trim().toLowerCase();
+        if (newUsername.isBlank()) {
+            return ResponseEntity.badRequest().body(Map.of("ok", false, "error", "El usuario es obligatorio"));
+        }
+        boolean usernameChanged = !newUsername.equals(user.getUsername());
+        if (usernameChanged && userRepo.existsByUsername(newUsername)) {
+            return ResponseEntity.badRequest().body(Map.of("ok", false, "error", "Ese usuario ya está en uso"));
+        }
+
+        String newPassword = body.get("password");
+        if (newPassword != null && !newPassword.isBlank()) {
+            if (newPassword.length() < 4) {
+                return ResponseEntity.badRequest().body(Map.of("ok", false, "error", "La contraseña debe tener al menos 4 caracteres"));
+            }
+            user.setPassword(encoder.encode(newPassword));
+        }
+
+        user.setName(newName);
+        user.setUsername(newUsername);
+        userRepo.save(user);
+
+        // Si el usuario cambió, la sesión de Spring Security quedó apuntando
+        // al username anterior: cerramos sesión y le pedimos volver a
+        // iniciar sesión con el nuevo usuario para evitar inconsistencias.
+        if (usernameChanged) {
+            session.invalidate();
+        }
+
+        return ResponseEntity.ok(Map.of(
+                "ok", true,
+                "name", newName,
+                "username", newUsername,
+                "requireRelogin", usernameChanged
+        ));
+    }
 
 }

@@ -105,6 +105,11 @@
         .config-row-icon.dark{background:#1f2937;color:#f9fafb}
         .config-row-text .crt{font-size:15px;font-weight:600;color:var(--gray-800)}
         .config-row-text .crs{font-size:12px;color:var(--gray-400);margin-top:2px}
+        .caja-modo-switch{display:flex;gap:6px;background:var(--gray-100,#f0f0f0);border-radius:14px;padding:5px;margin-bottom:16px}
+        .caja-modo-btn{flex:1;border:none;background:transparent;color:var(--gray-400);font-family:inherit;font-size:13px;font-weight:700;padding:10px 6px;border-radius:10px;cursor:pointer}
+        .caja-modo-btn.active{background:var(--white);color:var(--gray-800);box-shadow:0 1px 3px rgba(0,0,0,.08)}
+        body.dark-mode .caja-modo-switch{background:#1a1a1a}
+        body.dark-mode .caja-modo-btn.active{background:#2a2a2a;color:#39ff14}
 
         /* Toggle switch */
         .toggle-wrap{position:relative;width:50px;height:28px}
@@ -412,11 +417,17 @@
         <div class="drawer-item" id="menu-prestamos" onclick="navTo('prestamos')">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>Mis Préstamos
         </div>
+        <div class="drawer-item" id="menu-cuenta" onclick="navTo('cuenta')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>Mi cuenta
+        </div>
         <div class="drawer-item" id="menu-configuracion" onclick="navTo('configuracion')">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>Configuración
         </div>
         <div class="drawer-item" id="menu-rutas" onclick="navTo('rutas')">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12h18M3 6l9-3 9 3M3 18l9 3 9-3"/></svg>Rutas
+        </div>
+        <div class="drawer-item" id="menu-gastos" onclick="navTo('gastos')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="20" height="12" rx="2"/><circle cx="12" cy="13" r="2.5"/><path d="M6 7V6a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v1"/></svg>Gastos
         </div>
         <div class="drawer-item" id="menu-premium" onclick="navTo('premium')">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l2.6 6.6L21 9.3l-5 4.6 1.4 6.9L12 17.3 6.6 20.8 8 13.9 3 9.3l6.4-.7z"/></svg>
@@ -636,6 +647,7 @@
             Registrar pago
         </button>
         <button class="btn-refund" onclick="openRefundModal()" id="btn-refund">↩ Devolución</button>
+        <button class="btn-refund" onclick="pasarDia()" id="btn-paso" style="display:none;background:#eef2ff;color:#3730a3">⏭ Paso</button>
         <button class="btn-delete" onclick="deleteLoan()">🗑 Eliminar préstamo</button>
         <button class="btn-refund" onclick="verFactura()" id="btn-factura" style="background:#1a1a2e;color:#00cfff">🧾 Ver factura</button>
         <button class="btn-refund" onclick="abrirOpcionesRenovacion()" id="btn-renovar" style="background:#0a3d2e;color:#22e8a0">♻ Renovación de crédito</button>
@@ -650,6 +662,59 @@
         <button type="button" class="btn-reorder-cancel" onclick="cancelarReordenPagos()">✕ Cancelar</button>
     </div>
     <div id="d-payments-list"></div>
+</div>
+
+<!-- CONFIGURACIÓN -->
+<!-- MI CUENTA -->
+<div class="page" id="page-cuenta">
+    <div class="greeting" style="margin-bottom:20px">
+        <h2>Mi cuenta</h2>
+        <p>Tus datos de acceso</p>
+    </div>
+
+    <div class="config-section">
+        <div class="config-section-title">Datos personales</div>
+        <div class="config-item" style="padding:16px">
+            <div class="form-group">
+                <label>Nombre</label>
+                <input type="text" id="cuenta-name" placeholder="Tu nombre">
+            </div>
+            <div class="form-group" style="margin-bottom:0">
+                <label>Usuario</label>
+                <input type="text" id="cuenta-username" placeholder="usuario" autocapitalize="off" autocomplete="off">
+            </div>
+        </div>
+    </div>
+
+    <div class="config-section">
+        <div class="config-section-title">Contraseña</div>
+        <div class="config-item" style="padding:16px">
+            <div class="form-group" style="margin-bottom:6px">
+                <label>Nueva contraseña</label>
+                <div style="position:relative">
+                    <input type="password" id="cuenta-password" placeholder="••••••••" autocomplete="new-password" style="padding-right:44px">
+                    <button type="button" onclick="toggleCuentaPassword()" id="cuenta-password-eye"
+                            style="position:absolute;right:4px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;padding:8px;color:var(--gray-400)"
+                            aria-label="Mostrar u ocultar contraseña">
+                        <svg id="cuenta-eye-open" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:20px;height:20px">
+                            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>
+                        </svg>
+                        <svg id="cuenta-eye-closed" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:20px;height:20px;display:none">
+                            <path d="M17.94 17.94A10.94 10.94 0 0 1 12 20c-7 0-11-8-11-8a18.6 18.6 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/>
+                            <line x1="1" y1="1" x2="23" y2="23"/>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+            <p style="font-size:12px;color:var(--gray-400);margin-top:2px">
+                Por seguridad no podemos mostrarte tu contraseña actual (se guarda cifrada). Escribe una nueva solo si quieres cambiarla; si la dejas vacía, no se modifica.
+            </p>
+        </div>
+    </div>
+
+    <div id="cuenta-error" style="display:none;background:#fef2f2;color:var(--red);border-radius:12px;padding:12px 14px;font-size:13px;font-weight:600;margin-bottom:14px"></div>
+
+    <button class="btn-register" onclick="guardarCuenta()" id="cuenta-save-btn">Guardar cambios</button>
 </div>
 
 <!-- CONFIGURACIÓN -->
@@ -708,6 +773,72 @@
             <select id="ruta-filtro-anio" onchange="cambiarMesRuta()" style="width:90px;padding:10px 12px;border-radius:12px;border:1px solid var(--gray-200,#33353a);background:var(--white);color:var(--gray-800);font-weight:700;font-size:13px"></select>
         </div>
         <div id="ruta-detalle-content"></div>
+    </div>
+</div>
+
+<!-- GASTOS / CAJA -->
+<div class="page" id="page-gastos">
+    <div class="greeting" style="margin-bottom:20px">
+        <h2>Gastos</h2>
+        <p>Control de caja del día</p>
+    </div>
+
+    <div class="caja-modo-switch" id="caja-modo-switch">
+        <button type="button" class="caja-modo-btn active" data-modo="prestamos" onclick="elegirModoCaja('prestamos')">Con préstamos</button>
+        <button type="button" class="caja-modo-btn" data-modo="simple" onclick="elegirModoCaja('simple')">Caja simple</button>
+    </div>
+
+    <!-- SIN CAJA ABIERTA -->
+    <div id="caja-sin-abrir">
+        <div class="amt-card" style="margin-bottom:14px;text-align:center;padding:26px 14px">
+            <div class="alabel">Valor inicial de caja</div>
+            <input type="number" id="caja-monto-inicial" inputmode="numeric" placeholder="0"
+                   style="width:100%;border:none;outline:none;background:transparent;font-size:36px;font-weight:800;text-align:center;color:var(--gray-800);margin-top:6px">
+        </div>
+        <button class="btn-register" onclick="iniciarCaja()">▶ Iniciar caja</button>
+    </div>
+
+    <!-- CAJA ABIERTA -->
+    <div id="caja-abierta" style="display:none">
+        <div class="amt-card" style="margin-bottom:14px">
+            <div class="alabel">Valor inicial de caja (editable)</div>
+            <input type="number" id="caja-monto-inicial-edit" inputmode="numeric"
+                   style="width:100%;border:none;outline:none;background:transparent;font-size:20px;font-weight:800;color:var(--gray-800);margin-top:4px"
+                   onchange="editarMontoCaja(this.value)">
+        </div>
+
+        <div class="amt-card" style="margin-bottom:14px;text-align:center;padding:24px 14px;background:var(--green-l,#f0fdf4);border-color:var(--green)">
+            <div class="alabel">Quedó en caja</div>
+            <div class="avalue green" id="caja-monto-actual" style="font-size:34px;margin-top:4px">$ 0</div>
+        </div>
+
+        <div class="info-card" id="caja-detalle-card">
+            <div class="info-row"><span class="ikey">Pagos recibidos</span><span class="ival green" id="caja-pagos">$ 0</span></div>
+            <div class="info-row" id="caja-row-prestamos"><span class="ikey">Capital prestado activo</span><span class="ival" style="color:#e53e3e" id="caja-prestamos">$ 0</span></div>
+            <div class="info-row"><span class="ikey">Gastos extra</span><span class="ival" style="color:#e53e3e" id="caja-gastos-total">$ 0</span></div>
+            <div class="info-row"><span class="ikey">Plata en físico</span><span class="ival" id="caja-efectivo-fisico">Sin registrar</span></div>
+            <div class="info-row"><span class="ikey">Descuadre</span><span class="ival" id="caja-descuadre">–</span></div>
+            <div class="info-row"><span class="ikey">Caja iniciada</span><span class="ival" id="caja-iniciada-en">–</span></div>
+        </div>
+
+        <div class="action-btns">
+            <button class="btn-refund" onclick="abrirModalGastoExtra()">➖ Gasto extra</button>
+            <button class="btn-refund" onclick="abrirModalEfectivoFisico()" style="background:#eef2ff;color:#3730a3">💵 Plata en físico</button>
+            <button class="btn-register" style="background:#e53e3e" onclick="finalizarCaja()">■ Finalizar caja</button>
+        </div>
+
+        <div class="config-section" style="margin-top:18px">
+            <div class="config-section-title">Gastos extra registrados</div>
+            <div class="config-item" id="caja-gastos-lista"></div>
+        </div>
+    </div>
+
+    <!-- HISTORIAL DE CAJAS CERRADAS -->
+    <div class="config-section" style="margin-top:22px">
+        <div class="config-section-title">Historial de cajas</div>
+        <div class="config-item" id="caja-historial-lista">
+            <div style="padding:16px;color:var(--gray-400);font-size:13px">Cargando…</div>
+        </div>
     </div>
 </div>
 
@@ -930,6 +1061,62 @@
         <div class="modal-actions">
             <button class="btn btn-cancel" onclick="closeModal('modal-refund')">Cancelar</button>
             <button class="btn btn-save" style="background:#e53e3e" onclick="saveRefund()">✓ Confirmar devolución</button>
+        </div>
+    </div>
+</div>
+
+<!-- MODAL: DETALLE DE UNA CAJA DEL HISTORIAL -->
+<div class="modal-bg" id="modal-caja-detalle">
+    <div class="modal">
+        <div class="modal-handle"></div>
+        <h2 id="cd-titulo">Detalle de caja</h2>
+        <div class="info-card" style="margin-bottom:14px">
+            <div class="info-row"><span class="ikey">Modo</span><span class="ival" id="cd-modo">–</span></div>
+            <div class="info-row"><span class="ikey">Iniciada</span><span class="ival" id="cd-inicio">–</span></div>
+            <div class="info-row"><span class="ikey">Finalizada</span><span class="ival" id="cd-fin">–</span></div>
+            <div class="info-row"><span class="ikey">Valor inicial de caja</span><span class="ival" id="cd-inicial">–</span></div>
+            <div class="info-row"><span class="ikey">Pagos recibidos</span><span class="ival green" id="cd-pagos">–</span></div>
+            <div class="info-row" id="cd-row-prestamos"><span class="ikey">Capital prestado activo</span><span class="ival" style="color:#e53e3e" id="cd-prestamos">–</span></div>
+            <div class="info-row"><span class="ikey">Gastos extra</span><span class="ival" style="color:#e53e3e" id="cd-gastos-total">–</span></div>
+            <div class="info-row"><span class="ikey">Plata en físico</span><span class="ival" id="cd-efectivo-fisico">Sin registrar</span></div>
+            <div class="info-row"><span class="ikey">Descuadre</span><span class="ival" id="cd-descuadre">–</span></div>
+        </div>
+        <div class="amt-card" style="text-align:center;padding:18px 14px;margin-bottom:16px;background:var(--green-l,#f0fdf4);border-color:var(--green)">
+            <div class="alabel">Quedó en caja al cierre</div>
+            <div class="avalue green" id="cd-final" style="font-size:26px;margin-top:4px">–</div>
+        </div>
+        <div class="config-section-title" style="margin-bottom:8px">Gastos extra de ese día</div>
+        <div class="config-item" id="cd-gastos-lista" style="margin-bottom:6px"></div>
+        <div class="modal-actions">
+            <button class="btn btn-cancel" style="width:100%" onclick="closeModal('modal-caja-detalle')">Cerrar</button>
+        </div>
+    </div>
+</div>
+
+<!-- MODAL: PLATA EN FÍSICO (ARQUEO DE CAJA) -->
+<div class="modal-bg" id="modal-efectivo-fisico">
+    <div class="modal">
+        <div class="modal-handle"></div>
+        <h2>Registrar plata en físico</h2>
+        <p style="font-size:13px;color:var(--gray-400);margin:-4px 0 12px">Cuenta el efectivo que tienes en mano y regístralo aquí para comparar con lo que debería quedar en caja.</p>
+        <div class="form-group"><label>Monto contado ($)</label><input type="number" id="efectivo-fisico-monto" placeholder="0" inputmode="numeric"></div>
+        <div class="modal-actions">
+            <button class="btn btn-cancel" onclick="closeModal('modal-efectivo-fisico')">Cancelar</button>
+            <button class="btn btn-save" onclick="guardarEfectivoFisico()">✓ Registrar</button>
+        </div>
+    </div>
+</div>
+
+<!-- MODAL: GASTO EXTRA DE CAJA -->
+<div class="modal-bg" id="modal-gasto-extra">
+    <div class="modal">
+        <div class="modal-handle"></div>
+        <h2>Registrar gasto extra</h2>
+        <div class="form-group"><label>Monto ($)</label><input type="number" id="gasto-extra-monto" placeholder="0" inputmode="numeric"></div>
+        <div class="form-group"><label>Nota (opcional)</label><input type="text" id="gasto-extra-nota" placeholder="Ej: Gasolina, almuerzo…"></div>
+        <div class="modal-actions">
+            <button class="btn btn-cancel" onclick="closeModal('modal-gasto-extra')">Cancelar</button>
+            <button class="btn btn-save" style="background:#e53e3e" onclick="guardarGastoExtra()">✓ Registrar gasto</button>
         </div>
     </div>
 </div>
@@ -1250,6 +1437,23 @@ function startNotifPolling() {
         const [y, m, d] = datePart.split('-').map(Number);
         return new Date(y, m - 1, d);
     };
+    // Convierte un Date en "YYYY-MM-DD" usando los componentes LOCALES
+    // (año/mes/día del navegador), NO usar Date.toISOString() para esto:
+    // toISOString() siempre pasa por UTC, y en Colombia (UTC-5) eso hace
+    // que después de las 7:00 p.m. la fecha "de hoy" salga como la de
+    // MAÑANA (ej: 10:27 p.m. en Bogotá ya es 3:27 a.m. del día siguiente
+    // en UTC). Ese desfase causaba que pagos registrados en la noche
+    // quedaran fechados un día adelante y no se contaran en "Pagos
+    // recibidos" de la caja del día (que sí usa la hora real de Colombia
+    // en el backend), mientras que las devoluciones sí se contaban porque
+    // no mandan fecha y el backend usa la hora real del servidor.
+    const toLocalDateStr = (d) => {
+        if (!(d instanceof Date)) d = new Date(d);
+        const y = d.getFullYear();
+        const m = String(d.getMonth() + 1).padStart(2, '0');
+        const day = String(d.getDate()).padStart(2, '0');
+        return `${y}-${m}-${day}`;
+    };
     const nombreEmpresa = document.querySelector('#page-inicio h2 span')?.textContent || 'PrestaApp';
 
     let currentLoanId   = null;
@@ -1366,7 +1570,7 @@ function startNotifPolling() {
         document.querySelectorAll('.drawer-item').forEach(d => d.classList.remove('active'));
         const menuEl = document.getElementById('menu-' + page);
         if (menuEl) menuEl.classList.add('active');
-        const titles = { inicio:'PrestaApp', prestamos:'Mis Préstamos', detalle:'Detalle', configuracion:'Configuración', rutas:'Rutas', premium:'Premium' };
+        const titles = { inicio:'PrestaApp', prestamos:'Mis Préstamos', detalle:'Detalle', configuracion:'Configuración', cuenta:'Mi cuenta', rutas:'Rutas', gastos:'Gastos', premium:'Premium' };
         document.getElementById('page-title').textContent = titles[page] || 'PrestaApp';
         const backBtn = document.getElementById('back-btn');
         const menuBtn = document.getElementById('menu-toggle');
@@ -1395,6 +1599,18 @@ function startNotifPolling() {
         if (page === 'rutas' && !premiumLocked) {
     loadRutas();
 }
+        if (page === 'gastos' && !premiumLocked) {
+            backBtn.classList.add('visible');
+            menuBtn.style.visibility = 'visible';
+            fab.style.display = 'none';
+            loadCaja();
+        }
+        if (page === 'cuenta' && !premiumLocked) {
+            backBtn.classList.add('visible');
+            menuBtn.style.visibility = 'visible';
+            fab.style.display = 'none';
+            loadCuenta();
+        }
         if (page === 'premium') {
             renderPremiumPage();
         }
@@ -1811,6 +2027,11 @@ function startNotifPolling() {
         document.getElementById('d-due').textContent           = fmtDate(l.dueDate);
         document.getElementById('d-interest').textContent      = (l.interest || 0) + '% mensual';
 
+        // El botón "Paso" solo aplica a préstamos de cobro diario que sigan
+        // activos (no tiene sentido adelantar el cronograma de uno ya pagado).
+        document.getElementById('btn-paso').style.display =
+            (l.frequency === 'daily' && l.status !== 'paid') ? 'block' : 'none';
+
         /* Historial pagos (el backend ya los entrega en el orden correcto:
            orden manual si el usuario reordenó, o por fecha si no) */
         reorderMode = false;
@@ -1909,7 +2130,7 @@ function startNotifPolling() {
 
         // Fecha del pago: por defecto el día de hoy (el día en que se está
         // registrando el pago), pero el usuario puede elegir otra fecha.
-        document.getElementById('pay-date').value = new Date().toISOString().split('T')[0];
+        document.getElementById('pay-date').value = toLocalDateStr(new Date());
 
         document.getElementById('pay-suggested').textContent = fmt(currentCuota);
         document.getElementById('pay-normal-section').style.display = (!isGrande && !isMetodo) ? 'block' : 'none';
@@ -1999,7 +2220,7 @@ const intMes = (saldoCapital * (l.interest||0)) / 100;
         const isMetodo = currentLoanData && currentLoanData.loanType === 'metodo';
         // Fecha elegida en el modal (viene pre-seleccionada con hoy, pero es editable).
         // Si por algún motivo quedara vacía, se usa el día de hoy como respaldo.
-        const fechaPago = document.getElementById('pay-date').value || new Date().toISOString().split('T')[0];
+        const fechaPago = document.getElementById('pay-date').value || toLocalDateStr(new Date());
 
         if (isMetodo) {
             const l   = currentLoanData;
@@ -2060,7 +2281,7 @@ const intMes = (saldoCapital * (l.interest||0)) / 100;
     } else if (abonoInt >= interestMonth) {
         const newEndDate = new Date(loanActualizado.endDate || loanActualizado.dueDate);
         newEndDate.setMonth(newEndDate.getMonth() + 1);
-        const updateBody = { endDate: newEndDate.toISOString().split('T')[0], status: 'active' };
+        const updateBody = { endDate: toLocalDateStr(newEndDate), status: 'active' };
         await fetch('/api/loans/' + currentLoanId, {method:'PUT',headers:csrfHeaders(),body:JSON.stringify(updateBody)});
     }
 
@@ -2183,7 +2404,7 @@ const intMes = (saldoCapital * (l.interest||0)) / 100;
     document.getElementById('renovar-fields-metodo').style.display        = isMetodo ? '' : 'none';
     document.getElementById('renovar-fields-extra').style.display         = isExtra ? '' : 'none';
 
-    const hoyStr = new Date().toISOString().split('T')[0];
+    const hoyStr = toLocalDateStr(new Date());
 
     if (isExtra) {
         document.getElementById('renovar-extra-startDate').value = hoyStr;
@@ -2237,11 +2458,11 @@ document.getElementById('renovar-extra-frequency').addEventListener('input', tog
         const meses = parseInt(document.getElementById('renovar-meses').value);
         const start = new Date();
         start.setMonth(start.getMonth() + meses);
-        endDate           = start.toISOString().split('T')[0];
+        endDate           = toLocalDateStr(start);
         frequency         = 'monthly';
         totalInstallments = meses;
     } else if (isExtra) {
-        startDate = document.getElementById('renovar-extra-startDate').value || new Date().toISOString().split('T')[0];
+        startDate = document.getElementById('renovar-extra-startDate').value || toLocalDateStr(new Date());
         months    = parseInt(document.getElementById('renovar-extra-meses').value) || 1;
         frequency = document.getElementById('renovar-extra-frequency').value;
         if (frequency === 'weekly') {
@@ -2249,7 +2470,7 @@ document.getElementById('renovar-extra-frequency').addEventListener('input', tog
         }
         const start = new Date(startDate + 'T00:00:00');
         start.setMonth(start.getMonth() + months);
-        endDate = start.toISOString().split('T')[0];
+        endDate = toLocalDateStr(start);
     } else {
         startDate = document.getElementById('renovar-startDate').value;
         endDate   = document.getElementById('renovar-endDate').value;
@@ -2402,11 +2623,128 @@ win.document.close();
     form.submit();
 }
 
+/* ─── MI CUENTA ────────────────────────────────────────────────────── */
+async function loadCuenta() {
+    const err = document.getElementById('cuenta-error');
+    err.style.display = 'none';
+    try {
+        const res = await fetch('/api/account');
+        if (!res.ok) throw new Error('No se pudo cargar la cuenta');
+        const data = await res.json();
+        document.getElementById('cuenta-name').value = data.name || '';
+        document.getElementById('cuenta-username').value = data.username || '';
+        document.getElementById('cuenta-password').value = '';
+    } catch (e) {
+        err.textContent = 'No se pudieron cargar tus datos. Intenta de nuevo.';
+        err.style.display = 'block';
+    }
+}
+
+function toggleCuentaPassword() {
+    const input = document.getElementById('cuenta-password');
+    const open  = document.getElementById('cuenta-eye-open');
+    const closed = document.getElementById('cuenta-eye-closed');
+    const showing = input.type === 'text';
+    input.type = showing ? 'password' : 'text';
+    open.style.display   = showing ? 'block' : 'none';
+    closed.style.display = showing ? 'none'  : 'block';
+}
+
+async function guardarCuenta() {
+    const err = document.getElementById('cuenta-error');
+    err.style.display = 'none';
+
+    const name     = document.getElementById('cuenta-name').value.trim();
+    const username = document.getElementById('cuenta-username').value.trim();
+    const password = document.getElementById('cuenta-password').value;
+
+    if (!name) {
+        err.textContent = 'El nombre es obligatorio';
+        err.style.display = 'block';
+        return;
+    }
+    if (!username) {
+        err.textContent = 'El usuario es obligatorio';
+        err.style.display = 'block';
+        return;
+    }
+
+    const btn = document.getElementById('cuenta-save-btn');
+    btn.disabled = true;
+    const textoOriginal = btn.textContent;
+    btn.textContent = 'Guardando...';
+
+    try {
+        const body = { name, username };
+        if (password) body.password = password;
+
+        const res = await fetch('/api/account', {
+            method: 'PUT',
+            headers: csrfHeaders(),
+            body: JSON.stringify(body)
+        });
+        const data = await res.json().catch(() => ({}));
+
+        if (!res.ok || data.ok === false) {
+            err.textContent = data.error || 'No se pudieron guardar los cambios.';
+            err.style.display = 'block';
+            return;
+        }
+
+        document.getElementById('cuenta-password').value = '';
+        document.querySelector('.user-name').textContent = data.name;
+
+        if (data.requireRelogin) {
+            alert('Actualizaste tu usuario. Debes iniciar sesión de nuevo con tus nuevos datos.');
+            window.location.href = '/login';
+            return;
+        }
+
+        alert('Datos actualizados correctamente.');
+    } catch (e) {
+        err.textContent = 'Error de conexión al guardar los cambios.';
+        err.style.display = 'block';
+    } finally {
+        btn.disabled = false;
+        btn.textContent = textoOriginal;
+    }
+}
+
 async function deleteLoan() {
     if (!confirm('¿Eliminar este préstamo y todos sus pagos?')) return;
     await fetch('/api/loans/' + currentLoanId, {method:'DELETE', headers:csrfHeaders()});
     navTo('prestamos');
     loadStats();
+}
+
+/* ─── "Paso": adelanta un día el cronograma de un préstamo diario ────── */
+async function pasarDia() {
+    if (!currentLoanId) return;
+    if (!confirm('¿Pasar la cuota de hoy? La fecha de cobro avanzará un día y todas las cuotas se recalcularán.')) return;
+
+    const btn = document.getElementById('btn-paso');
+    btn.disabled = true;
+    const textoOriginal = btn.textContent;
+    btn.textContent = 'Procesando...';
+
+    try {
+        const res = await fetch('/api/loans/' + currentLoanId + '/paso', {
+            method: 'POST',
+            headers: csrfHeaders()
+        });
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok || data.ok === false) {
+            alert(data.error || 'No se pudo pasar la cuota. Intenta de nuevo.');
+            return;
+        }
+        await openDetail(currentLoanId);
+        loadStats();
+    } catch (e) {
+        alert('Error de conexión al pasar la cuota.');
+    } finally {
+        btn.disabled = false;
+        btn.textContent = textoOriginal;
+    }
 }
 
     /* ─── NUEVO PRÉSTAMO ─────────────────────────────────────── */
@@ -2486,7 +2824,7 @@ function openNewLoan() {
     tipoPrestamo = 'normal';
     ['f-borrower','f-phone','f-amount','f-interest','f-notes','f-ruta'].forEach(id => document.getElementById(id).value='');
     initContactPickerButton();
-    document.getElementById('f-startDate').value = new Date().toISOString().split('T')[0];
+    document.getElementById('f-startDate').value = toLocalDateStr(new Date());
         document.getElementById('f-endDate').value   = '';
         document.getElementById('f-cuotas-semanales').value = '4';
         document.getElementById('f-preview').style.display = 'none';
@@ -2576,7 +2914,7 @@ openModal('modal-new');
             const meses = parseInt(frequency.substring(1));
             const start = new Date(startDate + 'T00:00:00');
             start.setMonth(start.getMonth() + meses);
-            endDate = start.toISOString().split('T')[0];
+            endDate = toLocalDateStr(start);
         }
 
         let extraMeses = null;
@@ -2584,7 +2922,7 @@ openModal('modal-new');
             extraMeses = parseInt(document.getElementById('f-extra-meses').value) || 1;
             const start = new Date(startDate + 'T00:00:00');
             start.setMonth(start.getMonth() + extraMeses);
-            endDate = start.toISOString().split('T')[0];
+            endDate = toLocalDateStr(start);
         }
 
         if (!borrower || !amount)                                     return alert('Completa nombre y monto');
@@ -2837,6 +3175,280 @@ function volverARutas() {
     document.getElementById('ruta-detalle-view').style.display = 'none';
     document.getElementById('rutas-lista-view').style.display = '';
 }
+
+    /* ─── GASTOS / CAJA ─────────────────────────────────────────
+       Dos modos, elegibles arriba de la página mientras no hay caja abierta:
+         - "prestamos": lo que queda en caja baja con los préstamos que se
+            entregan y sube con los pagos que se cobran.
+         - "simple": lo que queda en caja solo sube con los pagos cobrados.
+       En ambos modos, "Gasto extra" resta directamente de lo que queda en caja. */
+    let cajaActual         = null;
+    let cajaModoSeleccionado = 'prestamos';
+    let cajaRefreshTimer   = null;
+
+    function elegirModoCaja(modo) {
+        if (cajaActual && cajaActual.abierta) return; // no se cambia con caja abierta
+        cajaModoSeleccionado = modo;
+        document.querySelectorAll('.caja-modo-btn').forEach(b => b.classList.toggle('active', b.dataset.modo === modo));
+    }
+
+    async function loadCaja() {
+        let d;
+        try { d = await (await fetch('/api/caja/actual')).json(); }
+        catch (e) { return; }
+
+        const switchEl = document.getElementById('caja-modo-switch');
+
+        if (!d.abierta) {
+            cajaActual = null;
+            document.getElementById('caja-sin-abrir').style.display = '';
+            document.getElementById('caja-abierta').style.display   = 'none';
+            switchEl.style.pointerEvents = '';
+            switchEl.style.opacity = '1';
+            document.querySelectorAll('.caja-modo-btn').forEach(b => b.classList.toggle('active', b.dataset.modo === cajaModoSeleccionado));
+        } else {
+            cajaActual = d;
+            cajaModoSeleccionado = d.modo;
+            document.querySelectorAll('.caja-modo-btn').forEach(b => b.classList.toggle('active', b.dataset.modo === d.modo));
+            switchEl.style.pointerEvents = 'none';
+            switchEl.style.opacity = '.5';
+            document.getElementById('caja-sin-abrir').style.display = 'none';
+            document.getElementById('caja-abierta').style.display   = '';
+            renderCaja(d);
+        }
+
+        cargarHistorialCaja();
+
+        if (!cajaRefreshTimer) {
+            cajaRefreshTimer = setInterval(() => {
+                if (document.getElementById('page-gastos').classList.contains('active')) loadCaja();
+            }, 20000);
+        }
+    }
+
+    function renderCaja(d) {
+        document.getElementById('caja-monto-inicial-edit').value = Math.round(d.montoInicial);
+        document.getElementById('caja-monto-actual').textContent = fmt(d.montoActual);
+        document.getElementById('caja-pagos').textContent        = fmt(d.pagosRecibidos);
+        document.getElementById('caja-prestamos').textContent    = fmt(d.prestamosOtorgados);
+        document.getElementById('caja-row-prestamos').style.display = d.modo === 'prestamos' ? '' : 'none';
+        document.getElementById('caja-gastos-total').textContent = fmt(d.gastosExtraTotal);
+
+        const efectivoEl = document.getElementById('caja-efectivo-fisico');
+        const descuadreEl = document.getElementById('caja-descuadre');
+        if (d.efectivoFisico === null || d.efectivoFisico === undefined) {
+            efectivoEl.textContent = 'Sin registrar';
+            efectivoEl.style.color = 'var(--gray-400)';
+            descuadreEl.textContent = '–';
+            descuadreEl.style.color = 'var(--gray-400)';
+        } else {
+            efectivoEl.textContent = fmt(d.efectivoFisico);
+            efectivoEl.style.color = '';
+            const desc = Math.round(d.descuadre);
+            if (desc === 0) {
+                descuadreEl.textContent = 'Cuadrado ✅';
+                descuadreEl.style.color = 'var(--green)';
+            } else if (desc > 0) {
+                descuadreEl.textContent = 'Falta ' + fmt(desc);
+                descuadreEl.style.color = '#e53e3e';
+            } else {
+                descuadreEl.textContent = 'Sobra ' + fmt(Math.abs(desc));
+                descuadreEl.style.color = '#e53e3e';
+            }
+        }
+
+        document.getElementById('caja-iniciada-en').textContent  = d.iniciadaEn ? new Date(d.iniciadaEn).toLocaleString('es-CO') : '–';
+
+        const lista = document.getElementById('caja-gastos-lista');
+        if (!d.gastosExtra || d.gastosExtra.length === 0) {
+            lista.innerHTML = '<div style="padding:16px;color:var(--gray-400);font-size:13px">Aún no has registrado gastos extra</div>';
+        } else {
+            lista.innerHTML = d.gastosExtra.slice().reverse().map(g => `
+                <div class="config-row">
+                    <div class="config-row-left">
+                        <div class="config-row-icon dark">💸</div>
+                        <div class="config-row-text">
+                            <div class="crt">${fmt(g.monto)}</div>
+                            <div class="crs">${g.nota ? g.nota + ' · ' : ''}${new Date(g.fecha).toLocaleString('es-CO')}</div>
+                        </div>
+                    </div>
+                    <button onclick="eliminarGastoExtra('${g.id}')" style="background:none;border:none;color:#e53e3e;font-size:18px;cursor:pointer">✕</button>
+                </div>`).join('');
+        }
+    }
+
+    async function iniciarCaja() {
+        const monto = parseFloat(document.getElementById('caja-monto-inicial').value) || 0;
+        const res = await fetch('/api/caja/iniciar', {
+            method: 'POST', headers: csrfHeaders(),
+            body: JSON.stringify({ modo: cajaModoSeleccionado, montoInicial: monto })
+        });
+        const d = await res.json();
+        if (!res.ok || d.ok === false) { alert(d.error || 'No se pudo iniciar la caja'); return; }
+        loadCaja();
+    }
+
+    async function editarMontoCaja(valor) {
+        if (!cajaActual) return;
+        const monto = parseFloat(valor) || 0;
+        await fetch('/api/caja/' + cajaActual.id + '/monto', {
+            method: 'PUT', headers: csrfHeaders(), body: JSON.stringify({ montoInicial: monto })
+        });
+        loadCaja();
+    }
+
+    function abrirModalEfectivoFisico() {
+        document.getElementById('efectivo-fisico-monto').value =
+            cajaActual && cajaActual.efectivoFisico != null ? Math.round(cajaActual.efectivoFisico) : '';
+        openModal('modal-efectivo-fisico');
+    }
+
+    async function guardarEfectivoFisico() {
+        if (!cajaActual) return;
+        const monto = parseFloat(document.getElementById('efectivo-fisico-monto').value);
+        if (isNaN(monto) || monto < 0) { alert('Ingresa un monto válido'); return; }
+        const res = await fetch('/api/caja/' + cajaActual.id + '/efectivo', {
+            method: 'PUT', headers: csrfHeaders(), body: JSON.stringify({ efectivoFisico: monto })
+        });
+        const d = await res.json();
+        if (!res.ok || d.ok === false) { alert(d.error || 'No se pudo registrar la plata en físico'); return; }
+        closeModal('modal-efectivo-fisico');
+        loadCaja();
+    }
+
+    function abrirModalGastoExtra() {
+        document.getElementById('gasto-extra-monto').value = '';
+        document.getElementById('gasto-extra-nota').value  = '';
+        openModal('modal-gasto-extra');
+    }
+
+    async function guardarGastoExtra() {
+        if (!cajaActual) return;
+        const monto = parseFloat(document.getElementById('gasto-extra-monto').value) || 0;
+        const nota  = document.getElementById('gasto-extra-nota').value.trim();
+        if (monto <= 0) { alert('Ingresa un monto válido'); return; }
+        const res = await fetch('/api/caja/' + cajaActual.id + '/gasto', {
+            method: 'POST', headers: csrfHeaders(), body: JSON.stringify({ monto, nota })
+        });
+        const d = await res.json();
+        if (!res.ok || d.ok === false) { alert(d.error || 'No se pudo registrar el gasto'); return; }
+        closeModal('modal-gasto-extra');
+        loadCaja();
+    }
+
+    async function eliminarGastoExtra(gastoId) {
+        if (!cajaActual) return;
+        if (!confirm('¿Eliminar este gasto extra?')) return;
+        await fetch('/api/caja/' + cajaActual.id + '/gasto/' + gastoId, { method: 'DELETE', headers: csrfHeaders() });
+        loadCaja();
+    }
+
+    async function finalizarCaja() {
+        if (!cajaActual) return;
+        if (!confirm('¿Finalizar la caja? Se guardará el cierre con el monto actual.')) return;
+        await fetch('/api/caja/' + cajaActual.id + '/finalizar', { method: 'POST', headers: csrfHeaders() });
+        loadCaja();
+    }
+
+    async function cargarHistorialCaja() {
+        const lista = document.getElementById('caja-historial-lista');
+        try {
+            const hist = await (await fetch('/api/caja/historial')).json();
+            if (!hist.length) {
+                lista.innerHTML = '<div style="padding:16px;color:var(--gray-400);font-size:13px">Aún no has cerrado ninguna caja</div>';
+                return;
+            }
+            lista.innerHTML = hist.map(s => `
+                <div class="config-row" style="cursor:pointer" onclick="verDetalleCaja('${s.id}')">
+                    <div class="config-row-left">
+                        <div class="config-row-icon dark">${s.modo === 'prestamos' ? '🏦' : '💰'}</div>
+                        <div class="config-row-text">
+                            <div class="crt">${fmt(s.montoFinal)}</div>
+                            <div class="crs">${new Date(s.iniciadaEn).toLocaleDateString('es-CO')} · ${s.modo === 'prestamos' ? 'Con préstamos' : 'Caja simple'}</div>
+                        </div>
+                    </div>
+                    <button onclick="event.stopPropagation(); eliminarCajaHistorial('${s.id}')" style="background:none;border:none;color:#e53e3e;font-size:18px;cursor:pointer;padding:4px 6px">🗑</button>
+                </div>`).join('');
+        } catch (e) {
+            lista.innerHTML = '<div style="padding:16px;color:var(--gray-400);font-size:13px">No se pudo cargar el historial</div>';
+        }
+    }
+
+    async function eliminarCajaHistorial(id) {
+        if (!confirm('¿Eliminar esta caja del historial? Esta acción no se puede deshacer.')) return;
+        try {
+            const res = await fetch('/api/caja/' + id, { method: 'DELETE', headers: csrfHeaders() });
+            const d = await res.json().catch(() => ({}));
+            if (!res.ok || d.ok === false) {
+                alert(d.error || 'No se pudo eliminar esta caja del historial');
+                return;
+            }
+            cargarHistorialCaja();
+        } catch (e) {
+            alert('Error de conexión al eliminar la caja');
+        }
+    }
+
+    async function verDetalleCaja(id) {
+        try {
+            const d = await (await fetch('/api/caja/' + id)).json();
+
+            document.getElementById('cd-titulo').textContent = 'Caja del ' + (d.iniciadaEn ? new Date(d.iniciadaEn).toLocaleDateString('es-CO') : '–');
+            document.getElementById('cd-modo').textContent    = d.modo === 'prestamos' ? 'Con préstamos' : 'Caja simple';
+            document.getElementById('cd-inicio').textContent  = d.iniciadaEn ? new Date(d.iniciadaEn).toLocaleString('es-CO') : '–';
+            document.getElementById('cd-fin').textContent     = d.finalizadaEn ? new Date(d.finalizadaEn).toLocaleString('es-CO') : '– (sigue abierta)';
+            document.getElementById('cd-inicial').textContent = fmt(d.montoInicial);
+            document.getElementById('cd-pagos').textContent   = fmt(d.pagosRecibidos);
+            document.getElementById('cd-prestamos').textContent = fmt(d.prestamosOtorgados);
+            document.getElementById('cd-row-prestamos').style.display = d.modo === 'prestamos' ? '' : 'none';
+            document.getElementById('cd-gastos-total').textContent = fmt(d.gastosExtraTotal);
+
+            const cdEfectivoEl = document.getElementById('cd-efectivo-fisico');
+            const cdDescuadreEl = document.getElementById('cd-descuadre');
+            if (d.efectivoFisico === null || d.efectivoFisico === undefined) {
+                cdEfectivoEl.textContent = 'Sin registrar';
+                cdEfectivoEl.style.color = 'var(--gray-400)';
+                cdDescuadreEl.textContent = '–';
+                cdDescuadreEl.style.color = 'var(--gray-400)';
+            } else {
+                cdEfectivoEl.textContent = fmt(d.efectivoFisico);
+                cdEfectivoEl.style.color = '';
+                const cdDesc = Math.round(d.descuadre);
+                if (cdDesc === 0) {
+                    cdDescuadreEl.textContent = 'Cuadrado ✅';
+                    cdDescuadreEl.style.color = 'var(--green)';
+                } else if (cdDesc > 0) {
+                    cdDescuadreEl.textContent = 'Falta ' + fmt(cdDesc);
+                    cdDescuadreEl.style.color = '#e53e3e';
+                } else {
+                    cdDescuadreEl.textContent = 'Sobra ' + fmt(Math.abs(cdDesc));
+                    cdDescuadreEl.style.color = '#e53e3e';
+                }
+            }
+
+            document.getElementById('cd-final').textContent   = fmt(d.abierta ? d.montoActual : d.montoFinal);
+
+            const lista = document.getElementById('cd-gastos-lista');
+            if (!d.gastosExtra || d.gastosExtra.length === 0) {
+                lista.innerHTML = '<div style="padding:14px;color:var(--gray-400);font-size:13px">No hubo gastos extra ese día</div>';
+            } else {
+                lista.innerHTML = d.gastosExtra.slice().reverse().map(g => `
+                    <div class="config-row">
+                        <div class="config-row-left">
+                            <div class="config-row-icon dark">💸</div>
+                            <div class="config-row-text">
+                                <div class="crt">${fmt(g.monto)}</div>
+                                <div class="crs">${g.nota ? g.nota + ' · ' : ''}${new Date(g.fecha).toLocaleString('es-CO')}</div>
+                            </div>
+                        </div>
+                    </div>`).join('');
+            }
+
+            openModal('modal-caja-detalle');
+        } catch (e) {
+            alert('No se pudo cargar el detalle de esa caja');
+        }
+    }
 
     /* ─── PREMIUM ───────────────────────────────────────────── */
     let premiumData = null;
