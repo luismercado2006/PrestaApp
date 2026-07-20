@@ -101,6 +101,7 @@ public class AdminController {
         LocalDateTime nuevaFecha = (base.isAfter(now) ? base : now).plusMonths(1);
         u.setPremiumExpiresAt(nuevaFecha);
         u.setPremiumOverride(null); // vuelve a modo automático, ahora con la nueva fecha
+        u.setPruebaExpiraEn(null);  // ya no es cuenta en prueba: pasó a mes pagado, no debe bloquearse por la prueba de 2 días
         userRepo.save(u);
         return ResponseEntity.ok(Map.of("ok", true, "nuevaFecha", nuevaFecha));
     }

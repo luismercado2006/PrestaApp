@@ -625,12 +625,20 @@ public class LoanController {
         if (uid == null) return ResponseEntity.status(401).body("Unauthorized");
 
         List<Loan> loans = loanRepo.findByUserIdConRuta(uid);
-        List<String> rutas = loans.stream()
+        List<String> rutas = new ArrayList<>(loans.stream()
                 .map(Loan::getRuta)
                 .filter(r -> r != null && !r.isBlank())
                 .distinct()
                 .sorted()
-                .toList();
+                .toList());
+
+        // "Sin ruta": agrupa los préstamos que no tienen ninguna ruta asignada,
+        // y se comporta como una ruta más (mismo endpoint de detalle).
+        // Si el usuario ya tiene una ruta real llamada así, no la duplicamos.
+        boolean yaExisteRutaConEseNombre = rutas.stream().anyMatch(r -> r.equalsIgnoreCase("Sin ruta"));
+        if (!yaExisteRutaConEseNombre && !loanRepo.findByUserIdSinRuta(uid).isEmpty()) {
+            rutas.add("Sin ruta");
+        }
         return ResponseEntity.ok(rutas);
     }
 
@@ -649,6 +657,12 @@ public class LoanController {
         if (uid == null) return ResponseEntity.status(401).body("Unauthorized");
 
         List<Loan> loans = loanRepo.findByUserIdAndRutaOrderByCreatedAtDesc(uid, nombre);
+        if (loans.isEmpty() && "sin ruta".equalsIgnoreCase(nombre)) {
+            // Pseudo-ruta: agrupa los préstamos que no tienen ninguna ruta asignada
+            loans = loanRepo.findByUserIdSinRuta(uid).stream()
+                    .sorted(Comparator.comparing(Loan::getCreatedAt, Comparator.nullsLast(Comparator.reverseOrder())))
+                    .toList();
+        }
         detectarMoraEnTiempoReal(loans);
 
         LocalDate hoy = LocalDate.now();
@@ -676,8 +690,11 @@ public class LoanController {
 
             if (!"active".equals(loan.getStatus()) && !"overdue".equals(loan.getStatus())) continue;
 
+            boolean yaPagoHoy = pagosLoan.stream()
+                    .anyMatch(p -> p.getDate() != null && p.getDate().toLocalDate().equals(hoy));
+
             double cuotaHoy = 0;
-            if (loan.getStartDate() != null && !hoy.isBefore(loan.getStartDate())) {
+            if (!yaPagoHoy && loan.getStartDate() != null && !hoy.isBefore(loan.getStartDate())) {
                 String freq = loan.getFrequency() != null ? loan.getFrequency() : "daily";
                 long diasTranscurridos = ChronoUnit.DAYS.between(loan.getStartDate(), hoy);
                 boolean aplica = switch (freq) {

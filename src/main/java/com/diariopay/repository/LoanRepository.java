@@ -16,4 +16,6 @@ public interface LoanRepository extends MongoRepository<Loan, String> {
     List<Loan> findByUserIdAndRutaOrderByCreatedAtDesc(String userId, String ruta);
     @Query("{ 'userId': ?0, 'ruta': { $exists: true, $ne: null, $ne: '' } }")
     List<Loan> findByUserIdConRuta(String userId);
+    @Query("{ 'userId': ?0, $or: [ { 'ruta': { $exists: false } }, { 'ruta': null }, { 'ruta': '' } ] }")
+    List<Loan> findByUserIdSinRuta(String userId);
 }
