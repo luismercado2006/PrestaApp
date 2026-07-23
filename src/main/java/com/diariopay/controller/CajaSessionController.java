@@ -286,12 +286,15 @@ public class CajaSessionController {
                     .filter(l -> "active".equals(l.getStatus()) || "overdue".equals(l.getStatus()))
                     .toList();
 
-            // Todo el capital que sigue prestado en este momento (activo o en
-            // mora), sin importar si el préstamo se creó antes o durante esta
-            // caja: es plata que hoy no está físicamente en la caja. Este valor
-            // (solo capital) es el que se usa para calcular "Queda en caja",
-            // porque el interés nunca fue plata física que salió de la caja.
+            // Solo el capital de los préstamos que se otorgaron DURANTE esta
+            // caja (entre "desde" y "hasta"): es la plata que efectivamente
+            // salió físicamente de esta caja. Los préstamos de cajas
+            // anteriores ya se descontaron cuando se otorgaron en su momento,
+            // así que no deben volver a restarse aquí.
             prestamosOtorgados = prestamosActivos.stream()
+                    .filter(l -> l.getCreatedAt() != null
+                            && !l.getCreatedAt().isBefore(desde)
+                            && !l.getCreatedAt().isAfter(hasta))
                     .mapToDouble(Loan::getAmount).sum();
 
             // "Capital prestado activo" (para mostrar): capital + interés que
