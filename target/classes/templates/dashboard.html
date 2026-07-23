@@ -974,6 +974,7 @@
             <select id="f-cuotas-semanales">
                 <option value="4">4 cuotas (aprox. cada 7 días)</option>
                 <option value="5">5 cuotas (aprox. cada 6 días)</option>
+                <option value="6">6 cuotas (cada 7 días, fecha fin automática)</option>
             </select>
         </div>
         <div id="f-preview" style="display:none;background:#f0f4ff;border-radius:10px;padding:10px 14px;font-size:13px;margin-top:4px;color:#1a56db">
@@ -1176,6 +1177,7 @@
                 <select id="renovar-cuotas-semanales">
                     <option value="4">4 cuotas (aprox. cada 7 días)</option>
                     <option value="5">5 cuotas (aprox. cada 6 días)</option>
+                    <option value="6">6 cuotas (cada 7 días, fecha fin automática)</option>
                 </select>
             </div>
         </div>
@@ -1235,6 +1237,7 @@
                 <select id="renovar-extra-cuotas-semanales">
                     <option value="4">4 cuotas (aprox. cada 7 días)</option>
                     <option value="5">5 cuotas (aprox. cada 6 días)</option>
+                    <option value="6">6 cuotas (cada 7 días exactos)</option>
                 </select>
             </div>
         </div>
@@ -2415,6 +2418,8 @@ const intMes = (saldoCapital * (l.interest||0)) / 100;
     } else if (!isMetodo) {
         document.getElementById('renovar-startDate').value = hoyStr;
         document.getElementById('renovar-endDate').value  = '';
+        document.getElementById('renovar-endDate').readOnly = false;
+        document.getElementById('renovar-endDate').style.opacity = '';
         document.getElementById('renovar-cuotas-semanales').value = '4';
         const freqSel = document.getElementById('renovar-frequency');
 
@@ -2433,14 +2438,45 @@ const intMes = (saldoCapital * (l.interest||0)) / 100;
 function toggleCuotasSemanalesRenovar() {
     const freq = document.getElementById('renovar-frequency').value;
     document.getElementById('renovar-cuotas-semanales-group').style.display = (freq === 'weekly') ? '' : 'none';
+    sincronizarFinSeisCuotas('renovar-startDate', 'renovar-endDate', 'renovar-cuotas-semanales', 'renovar-frequency');
 }
 
 function toggleCuotasSemanalesRenovarExtra() {
     const freq = document.getElementById('renovar-extra-frequency').value;
     document.getElementById('renovar-extra-cuotas-semanales-group').style.display = (freq === 'weekly') ? '' : 'none';
+    sincronizarMesesRenovarExtra();
+}
+
+// Al elegir 6 semanas (Semanal + 6 cuotas) en la renovación de un Préstamo
+// Extra, el plazo en meses se fija en 1 automáticamente y se bloquea (solo
+// se usa para el cálculo del interés; la fecha final se calcula aparte a
+// 42 días exactos). Si se elige otra cantidad, el campo vuelve a ser editable.
+function sincronizarMesesRenovarExtra() {
+    const freq     = document.getElementById('renovar-extra-frequency').value;
+    const cuotas   = document.getElementById('renovar-extra-cuotas-semanales').value;
+    const mesesSel = document.getElementById('renovar-extra-meses');
+    if (freq === 'weekly' && cuotas === '6') {
+        mesesSel.value = '1';
+        mesesSel.disabled = true;
+        mesesSel.style.opacity = '0.6';
+    } else {
+        mesesSel.disabled = false;
+        mesesSel.style.opacity = '';
+    }
 }
 document.getElementById('renovar-frequency').addEventListener('input', toggleCuotasSemanalesRenovar);
+document.getElementById('renovar-frequency').addEventListener('change', toggleCuotasSemanalesRenovar);
 document.getElementById('renovar-extra-frequency').addEventListener('input', toggleCuotasSemanalesRenovarExtra);
+document.getElementById('renovar-extra-frequency').addEventListener('change', toggleCuotasSemanalesRenovarExtra);
+document.getElementById('renovar-cuotas-semanales').addEventListener('input', () =>
+    sincronizarFinSeisCuotas('renovar-startDate', 'renovar-endDate', 'renovar-cuotas-semanales', 'renovar-frequency'));
+document.getElementById('renovar-cuotas-semanales').addEventListener('change', () =>
+    sincronizarFinSeisCuotas('renovar-startDate', 'renovar-endDate', 'renovar-cuotas-semanales', 'renovar-frequency'));
+document.getElementById('renovar-extra-cuotas-semanales').addEventListener('input', sincronizarMesesRenovarExtra);
+document.getElementById('renovar-extra-cuotas-semanales').addEventListener('change', sincronizarMesesRenovarExtra);
+document.getElementById('renovar-startDate').addEventListener('input', () =>
+    sincronizarFinSeisCuotas('renovar-startDate', 'renovar-endDate', 'renovar-cuotas-semanales', 'renovar-frequency'));
+
 
     async function confirmarRenovacion() {
     const amount   = parseFloat(document.getElementById('renovar-amount').value);
@@ -2465,11 +2501,17 @@ document.getElementById('renovar-extra-frequency').addEventListener('input', tog
         startDate = document.getElementById('renovar-extra-startDate').value || toLocalDateStr(new Date());
         months    = parseInt(document.getElementById('renovar-extra-meses').value) || 1;
         frequency = document.getElementById('renovar-extra-frequency').value;
+        const start = new Date(startDate + 'T00:00:00');
         if (frequency === 'weekly') {
             cuotasSemanales = parseInt(document.getElementById('renovar-extra-cuotas-semanales').value) || 4;
         }
-        const start = new Date(startDate + 'T00:00:00');
-        start.setMonth(start.getMonth() + months);
+        if (frequency === 'weekly' && cuotasSemanales === 6) {
+            // 6 semanas = fecha final exacta a 42 días. "months" (1) solo
+            // se usa para calcular el interés, no para la fecha de fin.
+            start.setDate(start.getDate() + 42);
+        } else {
+            start.setMonth(start.getMonth() + months);
+        }
         endDate = toLocalDateStr(start);
     } else {
         startDate = document.getElementById('renovar-startDate').value;
@@ -2790,6 +2832,49 @@ function toggleCuotasSemanales() {
     const frequency = document.getElementById('f-frequency').value;
     const grupo = document.getElementById('f-cuotas-semanales-group');
     grupo.style.display = (frequency === 'weekly') ? '' : 'none';
+    sincronizarFinSeisCuotas('f-startDate', 'f-endDate', 'f-cuotas-semanales', 'f-frequency');
+}
+
+/**
+ * Cuando se eligen "6 cuotas" en cobro semanal, las 6 se cuentan una detrás
+ * de otra cada 7 días exactos (sin comprimir para que quepan en un mes), así
+ * que la fecha de fin deja de ser una elección manual: se calcula sola como
+ * el día de la 6ª cuota (inicio + 42 días) y el campo se bloquea. Si se elige
+ * otra cantidad de cuotas, el campo vuelve a ser editable normalmente.
+ */
+function sincronizarFinSeisCuotas(idStart, idEnd, idCuotas, idFrequency) {
+    const frequency = document.getElementById(idFrequency).value;
+    const cuotasSel = document.getElementById(idCuotas);
+    const endInput  = document.getElementById(idEnd);
+    if (!cuotasSel || !endInput) return;
+    const mesesSel = document.getElementById('f-extra-meses');
+    if (frequency === 'weekly' && cuotasSel.value === '6') {
+        const startVal = document.getElementById(idStart).value;
+        if (startVal) {
+            const start = new Date(startVal + 'T00:00:00');
+            start.setDate(start.getDate() + 42); // 6 cuotas x 7 días
+            endInput.value = toLocalDateStr(start);
+        }
+        endInput.readOnly = true;
+        endInput.style.opacity = '0.6';
+
+        // Préstamo Extra: al elegir 6 semanas, el plazo en meses se fija
+        // en 1 automáticamente y se bloquea (la fecha de vencimiento ya
+        // quedó calculada arriba), y se refresca el preview.
+        if (tipoPrestamo === 'extra' && mesesSel) {
+            mesesSel.value = '1';
+            mesesSel.disabled = true;
+            mesesSel.style.opacity = '0.6';
+            calcPreview();
+        }
+    } else {
+        endInput.readOnly = false;
+        endInput.style.opacity = '';
+        if (mesesSel) {
+            mesesSel.disabled = false;
+            mesesSel.style.opacity = '';
+        }
+    }
 }
 
     const contactPickerSupported = ('contacts' in navigator) && ('ContactsManager' in window);
@@ -2826,6 +2911,8 @@ function openNewLoan() {
     initContactPickerButton();
     document.getElementById('f-startDate').value = toLocalDateStr(new Date());
         document.getElementById('f-endDate').value   = '';
+        document.getElementById('f-endDate').readOnly = false;
+        document.getElementById('f-endDate').style.opacity = '';
         document.getElementById('f-cuotas-semanales').value = '4';
         document.getElementById('f-preview').style.display = 'none';
         setTipoPrestamo('normal');
@@ -2902,6 +2989,13 @@ openModal('modal-new');
     ['f-amount','f-interest','f-startDate','f-endDate','f-frequency','f-extra-meses','f-cuotas-semanales'].forEach(id =>
         document.getElementById(id).addEventListener('input', calcPreview));
     document.getElementById('f-frequency').addEventListener('input', toggleCuotasSemanales);
+    document.getElementById('f-frequency').addEventListener('change', toggleCuotasSemanales);
+    document.getElementById('f-cuotas-semanales').addEventListener('input', () =>
+        sincronizarFinSeisCuotas('f-startDate', 'f-endDate', 'f-cuotas-semanales', 'f-frequency'));
+    document.getElementById('f-cuotas-semanales').addEventListener('change', () =>
+        sincronizarFinSeisCuotas('f-startDate', 'f-endDate', 'f-cuotas-semanales', 'f-frequency'));
+    document.getElementById('f-startDate').addEventListener('input', () =>
+        sincronizarFinSeisCuotas('f-startDate', 'f-endDate', 'f-cuotas-semanales', 'f-frequency'));
 
     async function saveLoan() {
         const borrower  = document.getElementById('f-borrower').value.trim();
@@ -2920,8 +3014,15 @@ openModal('modal-new');
         let extraMeses = null;
         if (tipoPrestamo === 'extra') {
             extraMeses = parseInt(document.getElementById('f-extra-meses').value) || 1;
+            const cuotasSemanales = document.getElementById('f-cuotas-semanales').value;
             const start = new Date(startDate + 'T00:00:00');
-            start.setMonth(start.getMonth() + extraMeses);
+            if (frequency === 'weekly' && cuotasSemanales === '6') {
+                // 6 semanas = fecha final exacta a 42 días. El "mes" (1) solo
+                // se usa para calcular el interés, no para la fecha de fin.
+                start.setDate(start.getDate() + 42);
+            } else {
+                start.setMonth(start.getMonth() + extraMeses);
+            }
             endDate = toLocalDateStr(start);
         }
 
@@ -3230,7 +3331,7 @@ function volverARutas() {
         document.getElementById('caja-monto-inicial-edit').value = Math.round(d.montoInicial);
         document.getElementById('caja-monto-actual').textContent = fmt(d.montoActual);
         document.getElementById('caja-pagos').textContent        = fmt(d.pagosRecibidos);
-        document.getElementById('caja-prestamos').textContent    = fmt(d.prestamosOtorgados);
+        document.getElementById('caja-prestamos').textContent    = fmt(d.capitalActivoConInteres);
         document.getElementById('caja-row-prestamos').style.display = d.modo === 'prestamos' ? '' : 'none';
         document.getElementById('caja-gastos-total').textContent = fmt(d.gastosExtraTotal);
 
@@ -3399,7 +3500,7 @@ function volverARutas() {
             document.getElementById('cd-fin').textContent     = d.finalizadaEn ? new Date(d.finalizadaEn).toLocaleString('es-CO') : '– (sigue abierta)';
             document.getElementById('cd-inicial').textContent = fmt(d.montoInicial);
             document.getElementById('cd-pagos').textContent   = fmt(d.pagosRecibidos);
-            document.getElementById('cd-prestamos').textContent = fmt(d.prestamosOtorgados);
+            document.getElementById('cd-prestamos').textContent = fmt(d.capitalActivoConInteres);
             document.getElementById('cd-row-prestamos').style.display = d.modo === 'prestamos' ? '' : 'none';
             document.getElementById('cd-gastos-total').textContent = fmt(d.gastosExtraTotal);
 

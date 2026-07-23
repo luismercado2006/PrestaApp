@@ -165,9 +165,19 @@
                 Crear cuenta
             </button>
         </div>
-        </div>
-        </div>
+    </div>
+</div>
 <script>
+    // Si el navegador restaura esta página desde su "foto" guardada de pestañas
+    // (bfcache, típico en iOS al cerrar/reabrir una pestaña), el token CSRF
+    // embebido queda viejo y el login explota con 403. Forzamos una recarga
+    // real desde el servidor para traer un token fresco.
+    window.addEventListener('pageshow', function (event) {
+        if (event.persisted) {
+            window.location.reload();
+        }
+    });
+
     function getCsrfToken() {
     return document.cookie.split('; ')
         .find(row => row.startsWith('XSRF-TOKEN='))

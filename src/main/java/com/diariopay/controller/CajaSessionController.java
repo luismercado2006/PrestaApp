@@ -215,6 +215,53 @@ public class CajaSessionController {
 
     // ─── Helpers ───────────────────────────────────────────────────────
 
+    /**
+     * Saldo pendiente (capital + interés, según el tipo de préstamo) de un
+     * único préstamo, restando lo ya abonado. Usa exactamente la misma
+     * fórmula que StatsController.calcularSaldoConInteres (pestaña de
+     * estadísticas, tarjeta "Total (capital + interés)"), para que ambos
+     * números siempre concuerden.
+     *
+     * Importante para préstamos "grande" (revolventes): no tienen un total
+     * fijo (el interés se cobra mes a mes sobre el saldo), así que lo que
+     * realmente se adeuda ahora mismo es el capital pendiente MÁS el interés
+     * del ciclo actual — no solo el capital.
+     */
+    private double saldoPendiente(Loan loan) {
+        List<Payment> pagos = paymentRepo.findByLoanIdAndArchivadoFalse(loan.getId());
+        double paidTotal = pagos.stream().mapToDouble(Payment::getAmount).sum();
+        String tipo = loan.getLoanType() != null ? loan.getLoanType() : "normal";
+
+        switch (tipo) {
+            case "grande": {
+                double paidCapital = pagos.stream()
+                        .filter(p -> "capital".equals(p.getPaymentType()) || "normal".equals(p.getPaymentType()))
+                        .filter(p -> p.getAmount() > 0)
+                        .mapToDouble(Payment::getAmount).sum();
+                double saldoCapital = Math.max(loan.getAmount() - paidCapital, 0);
+                double intMes = saldoCapital * loan.getInterest() / 100.0;
+                return saldoCapital + intMes;
+            }
+            case "metodo": {
+                double P = loan.getAmount();
+                double r = loan.getInterest() / 100.0;
+                int n = loan.getTotalInstallments() > 0 ? loan.getTotalInstallments() : 1;
+                double cuota = r == 0 ? P / n : P * r / (1 - Math.pow(1 + r, -n));
+                double total = cuota * n;
+                return Math.max(total - paidTotal, 0);
+            }
+            case "extra": {
+                int n = loan.getTotalInstallments() > 0 ? loan.getTotalInstallments() : 1;
+                double total = loan.getInstallmentAmount() * n;
+                return Math.max(total - paidTotal, 0);
+            }
+            default: {
+                double total = loan.getAmount() + (loan.getAmount() * loan.getInterest() / 100.0);
+                return Math.max(total - paidTotal, 0);
+            }
+        }
+    }
+
     private CajaSession buscarAbierta(String id, String uid) {
         Optional<CajaSession> opt = cajaRepo.findById(id);
         if (opt.isEmpty() || !opt.get().getUserId().equals(uid)) return null;
@@ -233,13 +280,26 @@ public class CajaSessionController {
                 .mapToDouble(Payment::getAmount).sum();
 
         double prestamosOtorgados = 0;
+        double capitalActivoConInteres = 0;
         if ("prestamos".equals(s.getModo())) {
+            List<Loan> prestamosActivos = loanRepo.findByUserId(uid).stream()
+                    .filter(l -> "active".equals(l.getStatus()) || "overdue".equals(l.getStatus()))
+                    .toList();
+
             // Todo el capital que sigue prestado en este momento (activo o en
             // mora), sin importar si el préstamo se creó antes o durante esta
-            // caja: es plata que hoy no está físicamente en la caja.
-            prestamosOtorgados = loanRepo.findByUserId(uid).stream()
-                    .filter(l -> "active".equals(l.getStatus()) || "overdue".equals(l.getStatus()))
+            // caja: es plata que hoy no está físicamente en la caja. Este valor
+            // (solo capital) es el que se usa para calcular "Queda en caja",
+            // porque el interés nunca fue plata física que salió de la caja.
+            prestamosOtorgados = prestamosActivos.stream()
                     .mapToDouble(Loan::getAmount).sum();
+
+            // "Capital prestado activo" (para mostrar): capital + interés que
+            // el cliente todavía debe por cada préstamo activo/en mora, restando
+            // lo ya abonado. Se reduce cada vez que se registra un pago.
+            capitalActivoConInteres = prestamosActivos.stream()
+                    .mapToDouble(this::saldoPendiente)
+                    .sum();
         }
 
         double gastosExtra = s.getGastosExtra().stream()
@@ -263,6 +323,7 @@ public class CajaSessionController {
         m.put("finalizadaEn",       s.getFinalizadaEn());
         m.put("pagosRecibidos",     pagos);
         m.put("prestamosOtorgados", prestamosOtorgados);
+        m.put("capitalActivoConInteres", capitalActivoConInteres);
         m.put("gastosExtra",        s.getGastosExtra());
         m.put("gastosExtraTotal",   gastosExtra);
         m.put("montoActual",        montoActual);

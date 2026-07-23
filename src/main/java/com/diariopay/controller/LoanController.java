@@ -143,22 +143,36 @@ public class LoanController {
             if (months > 12) months = 12;
             loan.setMonths(months);
 
-            LocalDate calculatedEnd = startDate.plusMonths(months);
+            Integer cuotasSemanalesExtra = body.containsKey("cuotasSemanales")
+                    ? toInt(body.get("cuotasSemanales")) : null;
+
+            // Si eligió "6 semanas" (Semanal + 6 cuotas), la fecha final es
+            // exactamente 42 días después del inicio; "months" (1) queda
+            // solo para el cálculo del interés total.
+            LocalDate calculatedEnd;
+            if ("weekly".equals(freq) && cuotasSemanalesExtra != null && cuotasSemanalesExtra >= 6) {
+                calculatedEnd = startDate.plusDays(42);
+            } else {
+                calculatedEnd = startDate.plusMonths(months);
+            }
             loan.setEndDate(calculatedEnd);
             loan.setDueDate(calculatedEnd.atStartOfDay());
 
             long dias = ChronoUnit.DAYS.between(startDate, calculatedEnd);
 
-            Integer cuotasSemanalesExtra = body.containsKey("cuotasSemanales")
-                    ? toInt(body.get("cuotasSemanales")) : null;
             Integer weeklyIntervalDaysExtra = null;
             int totalInstallmentsExtra;
             if ("weekly".equals(freq) && cuotasSemanalesExtra != null && cuotasSemanalesExtra > 0) {
-                // El usuario eligió 4 o 5 cuotas por mes: el total de cuotas es
-                // esa cantidad multiplicada por los meses del préstamo.
-                int n = cuotasSemanalesExtra >= 5 ? 5 : 4;
+                // El usuario eligió 4, 5 o 6 cuotas por mes: el total de cuotas es
+                // esa cantidad multiplicada por los meses del préstamo. Con 6, el
+                // intervalo queda fijo en 7 días (una detrás de otra, sin comprimir).
+                int n = cuotasSemanalesExtra >= 6 ? 6 : (cuotasSemanalesExtra >= 5 ? 5 : 4);
                 totalInstallmentsExtra = n * months;
-                weeklyIntervalDaysExtra = (int) Math.max(1, Math.floor(dias / (double) totalInstallmentsExtra));
+                if (n == 6) {
+                    weeklyIntervalDaysExtra = 7;
+                } else {
+                    weeklyIntervalDaysExtra = (int) Math.max(1, Math.floor(dias / (double) totalInstallmentsExtra));
+                }
             } else {
                 totalInstallmentsExtra = switch (freq) {
                     case "weekly"   -> (int) Math.floor(dias / 7.0);
@@ -198,9 +212,20 @@ public class LoanController {
             // El usuario eligió 4 o 5 cuotas dentro del mes en vez de la cadencia
             // clásica de 7 días: el intervalo se ajusta para que todas las cuotas
             // caigan dentro del período elegido sin pasarse de la fecha de fin.
-            int n = cuotasSemanales >= 5 ? 5 : 4;
-            weeklyIntervalDays = (int) Math.max(1, Math.floor(daysBetween / (double) n));
+            // Con 6 cuotas el comportamiento es distinto: se cuentan una detrás
+            // de otra cada 7 días exactos (sin comprimir), y la fecha de fin se
+            // recalcula sola como el día de la 6ª cuota, sin importar qué fecha
+            // haya llegado del formulario.
+            int n = cuotasSemanales >= 6 ? 6 : (cuotasSemanales >= 5 ? 5 : 4);
             totalInstallments = n;
+            if (n == 6) {
+                weeklyIntervalDays = 7;
+                endDate = startDate.plusDays(7L * n);
+                loan.setEndDate(endDate);
+                loan.setDueDate(endDate.atStartOfDay());
+            } else {
+                weeklyIntervalDays = (int) Math.max(1, Math.floor(daysBetween / (double) n));
+            }
         } else {
             // floor (no ceil): así la última cuota (start + n*periodo) nunca cae
             // después de la fecha de fin que el usuario eligió.
@@ -445,17 +470,29 @@ public class LoanController {
             if (months < 1) months = 1;
             if (months > 12) months = 12;
 
-            LocalDate nuevaFechaFinExtra = hoy.plusMonths(months);
-            long dias = ChronoUnit.DAYS.between(hoy, nuevaFechaFinExtra);
-
             Integer cuotasSemanalesExtra = body.containsKey("cuotasSemanales")
                     ? toInt(body.get("cuotasSemanales")) : null;
+
+            // Igual que en creación: 6 semanas = 42 días exactos desde el
+            // inicio de la renovación; "months" solo se usa para el interés.
+            LocalDate nuevaFechaFinExtra;
+            if ("weekly".equals(freq) && cuotasSemanalesExtra != null && cuotasSemanalesExtra >= 6) {
+                nuevaFechaFinExtra = hoy.plusDays(42);
+            } else {
+                nuevaFechaFinExtra = hoy.plusMonths(months);
+            }
+            long dias = ChronoUnit.DAYS.between(hoy, nuevaFechaFinExtra);
+
             Integer weeklyIntervalDaysExtra = null;
             int totalInstallmentsExtra;
             if ("weekly".equals(freq) && cuotasSemanalesExtra != null && cuotasSemanalesExtra > 0) {
-                int n = cuotasSemanalesExtra >= 5 ? 5 : 4;
+                int n = cuotasSemanalesExtra >= 6 ? 6 : (cuotasSemanalesExtra >= 5 ? 5 : 4);
                 totalInstallmentsExtra = n * months;
-                weeklyIntervalDaysExtra = (int) Math.max(1, Math.floor(dias / (double) totalInstallmentsExtra));
+                if (n == 6) {
+                    weeklyIntervalDaysExtra = 7;
+                } else {
+                    weeklyIntervalDaysExtra = (int) Math.max(1, Math.floor(dias / (double) totalInstallmentsExtra));
+                }
             } else {
                 totalInstallmentsExtra = switch (freq) {
                     case "weekly"   -> (int) Math.floor(dias / 7.0);
@@ -513,10 +550,18 @@ public class LoanController {
                     ? toInt(body.get("totalInstallments"))
                     : (loan.getTotalInstallments() > 0 ? loan.getTotalInstallments() : 1);
         } else if ("weekly".equals(freq) && cuotasSemanales != null && cuotasSemanales > 0) {
-            long dias = ChronoUnit.DAYS.between(hoy, nuevaFechaFin);
-            int n = cuotasSemanales >= 5 ? 5 : 4;
-            weeklyIntervalDays = (int) Math.max(1, Math.floor(dias / (double) n));
+            int n = cuotasSemanales >= 6 ? 6 : (cuotasSemanales >= 5 ? 5 : 4);
             totalInstallments = n;
+            if (n == 6) {
+                // 6 cuotas: cada 7 días exactos, una detrás de otra; la fecha
+                // de fin se recalcula sola como el día de la 6ª cuota, sin
+                // importar la fecha de fin que haya llegado del formulario.
+                weeklyIntervalDays = 7;
+                nuevaFechaFin = hoy.plusDays(7L * n);
+            } else {
+                long dias = ChronoUnit.DAYS.between(hoy, nuevaFechaFin);
+                weeklyIntervalDays = (int) Math.max(1, Math.floor(dias / (double) n));
+            }
         } else {
             long dias = ChronoUnit.DAYS.between(hoy, nuevaFechaFin);
             // floor (no ceil): consistente con la creación, evita que la última cuota
