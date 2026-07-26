@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.*;
 import com.diariopay.scheduler.MoraScheduler;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.YearMonth;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
@@ -130,6 +131,9 @@ public class LoanController {
         loan.setEndDate(endDate);
         loan.setDueDate(endDate.atStartOfDay());
         loan.setCreatedAt(startDate.atStartOfDay());
+        // Hora real de creación (independiente de startDate): la usa la caja
+        // para saber si este préstamo se otorgó mientras estaba abierta.
+        loan.setFechaRegistro(LocalDateTime.now());
 
         String freq     = loan.getFrequency();
         String loanType = loan.getLoanType();

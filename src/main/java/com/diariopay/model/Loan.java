@@ -23,6 +23,13 @@ public class Loan {
     private String notes;
     private LocalDateTime createdAt;
     private LocalDateTime dueDate;
+
+    // Hora REAL en la que se registró el préstamo en el sistema (no depende de
+    // startDate, que puede ser una fecha pasada, futura o de medianoche).
+    // Se usa para saber si el préstamo se otorgó mientras una caja estaba
+    // abierta, y así descontar correctamente el capital prestado del efectivo
+    // en caja. Puede ser null en préstamos creados antes de este cambio.
+    private LocalDateTime fechaRegistro;
     private LocalDate startDate;
     private LocalDate endDate;
     private int totalInstallments;

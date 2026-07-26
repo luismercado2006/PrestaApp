@@ -21,11 +21,12 @@ import java.util.UUID;
 /**
  * "Gastos" — control de caja del día.
  *
- * Dos modos:
- *  - "prestamos": el valor en caja baja con lo que se presta y sube con lo
- *    que se cobra (montoActual = inicial - préstamos otorgados + pagos - gastos extra).
- *  - "simple": el valor en caja solo sube con lo que se cobra
- *    (montoActual = inicial + pagos - gastos extra).
+ * El valor en caja SIEMPRE baja con lo que se presta y sube con lo que se
+ * cobra, sin importar el modo elegido:
+ *    montoActual = inicial + pagos - préstamos otorgados - gastos extra.
+ *
+ * El "modo" (prestamos | simple) ya no cambia el cálculo: solo decide si el
+ * frontend muestra o no la fila informativa de "Capital prestado activo".
  */
 @RestController
 @RequestMapping("/api/caja")
@@ -281,7 +282,13 @@ public class CajaSessionController {
 
         double prestamosOtorgados = 0;
         double capitalActivoConInteres = 0;
-        if ("prestamos".equals(s.getModo())) {
+        // El descuento de préstamos otorgados aplica SIEMPRE, sin importar el
+        // modo de la caja ("Con préstamos" o "Caja simple"): si se prestó
+        // plata mientras la caja estaba abierta, esa plata salió físicamente
+        // de la caja y debe reflejarse en "Quedó en caja". El campo "modo"
+        // solo se conserva para decidir si se muestra o no la fila de
+        // "Capital prestado activo" en el frontend.
+        {
             List<Loan> prestamosActivos = loanRepo.findByUserId(uid).stream()
                     .filter(l -> "active".equals(l.getStatus()) || "overdue".equals(l.getStatus()))
                     .toList();
@@ -291,10 +298,22 @@ public class CajaSessionController {
             // salió físicamente de esta caja. Los préstamos de cajas
             // anteriores ya se descontaron cuando se otorgaron en su momento,
             // así que no deben volver a restarse aquí.
+            //
+            // Se usa fechaRegistro (hora REAL de creación) en vez de createdAt,
+            // porque createdAt se fija a la medianoche de startDate (que puede
+            // ser una fecha elegida por el usuario) y casi nunca cae dentro del
+            // rango de la caja abierta. fechaRegistro sí refleja el momento
+            // exacto en que se otorgó el préstamo. Si un préstamo no tiene
+            // fechaRegistro (creado antes de este cambio), se usa createdAt
+            // como respaldo.
             prestamosOtorgados = prestamosActivos.stream()
-                    .filter(l -> l.getCreatedAt() != null
-                            && !l.getCreatedAt().isBefore(desde)
-                            && !l.getCreatedAt().isAfter(hasta))
+                    .filter(l -> {
+                        LocalDateTime referencia = l.getFechaRegistro() != null
+                                ? l.getFechaRegistro() : l.getCreatedAt();
+                        return referencia != null
+                                && !referencia.isBefore(desde)
+                                && !referencia.isAfter(hasta);
+                    })
                     .mapToDouble(Loan::getAmount).sum();
 
             // "Capital prestado activo" (para mostrar): capital + interés que
