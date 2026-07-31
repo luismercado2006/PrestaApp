@@ -50,6 +50,12 @@ public class LoanController {
     // Variante que reutiliza un mapa de pagos ya cargado (evita volver a
     // consultar Mongo cuando el caller ya trajo los pagos de antemano).
     private void detectarMoraEnTiempoReal(List<Loan> prestamos, Map<String, List<Payment>> pagosPorLoan) {
+        // Antes cada cambio de estado hacía su propio loanRepo.save() (hasta 3
+        // viajes de ida y vuelta a Mongo por préstamo, uno por uno). Ahora los
+        // préstamos modificados se acumulan aquí y se guardan todos juntos con
+        // un solo saveAll() al final, sin importar cuántos cambien de estado.
+        List<Loan> cambiados = new ArrayList<>();
+
         for (Loan loan : prestamos) {
             if ("paid".equals(loan.getStatus())) continue;
 
@@ -60,17 +66,15 @@ public class LoanController {
             if (nuevoEstado.equals(estadoAnterior)) continue;
 
             loan.setStatus(nuevoEstado);
+            cambiados.add(loan);
 
             if ("active".equals(nuevoEstado)) {
                 // El cliente se puso al día: reseteamos el aviso para que, si
                 // vuelve a caer en mora más adelante, se le notifique de nuevo.
                 loan.setMoraNotificada(false);
-                loanRepo.save(loan);
                 System.out.println("✅ Préstamo de " + loan.getBorrower() + " vuelve a estar AL DÍA");
                 continue;
             }
-
-            loanRepo.save(loan);
 
             if ("overdue".equals(nuevoEstado)
                     && !loan.isMoraNotificada()
@@ -91,12 +95,15 @@ public class LoanController {
                             nombrePrestamista
                     );
                     loan.setMoraNotificada(true);
-                    loanRepo.save(loan);
                     System.out.println("✅ Mora en tiempo real → WhatsApp enviado a " + loan.getBorrower() + " de parte de " + nombrePrestamista);
                 } catch (Exception e) {
                     System.err.println("❌ Error WhatsApp mora: " + e.getMessage());
                 }
             }
+        }
+
+        if (!cambiados.isEmpty()) {
+            loanRepo.saveAll(cambiados);
         }
     }
 
@@ -105,9 +112,13 @@ public class LoanController {
         String uid = (String) session.getAttribute("userId");
         if (uid == null) return ResponseEntity.status(401).body("Unauthorized");
 
+        // Antes se consultaba dos veces (una para detectar mora, otra —descartando
+        // la primera— para la respuesta), duplicando el viaje de ida y vuelta a
+        // Mongo. detectarMoraEnTiempoReal ya modifica los "loan" en memoria y los
+        // guarda, así que basta con devolver la misma lista.
         List<Loan> loans = loanRepo.findByUserIdOrderByCreatedAtDesc(uid);
         detectarMoraEnTiempoReal(loans);
-        return ResponseEntity.ok(loanRepo.findByUserIdOrderByCreatedAtDesc(uid));
+        return ResponseEntity.ok(loans);
     }
 
     @GetMapping("/test-mora")

@@ -2,6 +2,7 @@ package com.diariopay.model;
 
 import lombok.Data;
 import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 import java.time.LocalDateTime;
 import java.time.LocalDate;
@@ -11,7 +12,13 @@ import java.time.LocalDate;
 public class Loan {
     @Id
     private String id;
+
+    // Índices: sin esto Mongo hace un escaneo completo de la colección en
+    // cada consulta (findByUserId..., findByPhoneIn, ruta), y en una base
+    // en la nube eso se nota mucho más por la latencia de red por consulta.
+    @Indexed
     private String phone;  // número WhatsApp del prestatario, ej: "573001234567"
+    @Indexed
     private String userId;
     private String borrower;
     private double amount;
@@ -35,6 +42,7 @@ public class Loan {
     private int totalInstallments;
     private double installmentAmount;
     private boolean moraNotificada = false;
+    @Indexed
     private String ruta;  // nombre de la ruta (opcional), ej: "Santa Rosa"
 
     // Solo aplica cuando frequency = "weekly": cuántos días hay entre una cuota

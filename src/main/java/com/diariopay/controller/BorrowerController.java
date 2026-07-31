@@ -63,15 +63,19 @@ public class BorrowerController {
         // Normalizar: quitar espacios, guiones, +
         String normalizedPhone = phone.replaceAll("[\\s\\-+]", "");
 
-        // Buscar por phone exacto o con prefijo 57
-        List<Loan> loans = loanRepo.findAll().stream()
-                .filter(l -> {
-                    if (l.getPhone() == null || l.getPhone().isBlank()) return false;
-                    String lp = l.getPhone().replaceAll("[\\s\\-+]", "");
-                    return lp.equals(normalizedPhone)
-                            || lp.equals("57" + normalizedPhone)
-                            || normalizedPhone.equals("57" + lp);
-                })
+        // Antes esto hacía loanRepo.findAll() y filtraba en memoria, es decir
+        // traía TODA la colección de préstamos (de TODOS los usuarios) en cada
+        // consulta pública. Ahora se arman las variantes posibles del número
+        // (con/sin prefijo 57) y se consulta directo por el índice de "phone",
+        // así Mongo solo trae los préstamos que realmente coinciden.
+        java.util.Set<String> variantes = new java.util.LinkedHashSet<>();
+        variantes.add(normalizedPhone);
+        variantes.add("57" + normalizedPhone);
+        if (normalizedPhone.startsWith("57") && normalizedPhone.length() > 2) {
+            variantes.add(normalizedPhone.substring(2));
+        }
+
+        List<Loan> loans = loanRepo.findByPhoneIn(new ArrayList<>(variantes)).stream()
                 .sorted(Comparator.comparing(
                         l -> l.getCreatedAt() != null ? l.getCreatedAt() : java.time.LocalDateTime.MIN,
                         Comparator.reverseOrder()))

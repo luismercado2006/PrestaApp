@@ -18,4 +18,10 @@ public interface LoanRepository extends MongoRepository<Loan, String> {
     List<Loan> findByUserIdConRuta(String userId);
     @Query("{ 'userId': ?0, $or: [ { 'ruta': { $exists: false } }, { 'ruta': null }, { 'ruta': '' } ] }")
     List<Loan> findByUserIdSinRuta(String userId);
+
+    // Consulta indexada por teléfono: usada por BorrowerController en vez de
+    // findAll() + filtro en memoria. Se le pasan las variantes normalizadas
+    // del número (con/sin prefijo 57) y Mongo usa el índice de "phone" para
+    // traer solo los préstamos que coinciden, sin recorrer toda la colección.
+    List<Loan> findByPhoneIn(List<String> phones);
 }
