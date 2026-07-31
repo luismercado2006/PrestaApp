@@ -2,6 +2,8 @@ package com.diariopay.model;
 
 import lombok.Data;
 import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.index.CompoundIndex;
+import org.springframework.data.mongodb.core.index.CompoundIndexes;
 import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 import java.time.LocalDateTime;
@@ -9,6 +11,13 @@ import java.time.LocalDate;
 
 @Data
 @Document(collection = "loans")
+@CompoundIndexes({
+        // Cubre GET /api/loans/rutas/{nombre}: filtra por userId + ruta y
+        // ordena por createdAt, todo en un solo índice.
+        @CompoundIndex(name = "userId_ruta_createdAt", def = "{'userId': 1, 'ruta': 1, 'createdAt': -1}"),
+        // Cubre GET /api/loans (listado general de un usuario, ordenado).
+        @CompoundIndex(name = "userId_createdAt", def = "{'userId': 1, 'createdAt': -1}")
+})
 public class Loan {
     @Id
     private String id;
