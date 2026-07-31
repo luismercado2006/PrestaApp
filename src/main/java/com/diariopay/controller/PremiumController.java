@@ -39,12 +39,14 @@ public class PremiumController {
         LocalDateTime now = LocalDateTime.now();
         long daysLeft = ChronoUnit.DAYS.between(now, expires);
 
-        return ResponseEntity.ok(Map.of(
-                "active", user.isPremiumActive(),
-                "createdAt", user.getCreatedAt(),
-                "expiresAt", expires,
-                "daysLeft", daysLeft,
-                "override", user.getPremiumOverride() == null ? "auto" : (user.getPremiumOverride() ? "activado" : "desactivado")
-        ));
+        Map<String, Object> resp = new java.util.LinkedHashMap<>();
+        resp.put("active", user.isPremiumActive());
+        resp.put("createdAt", user.getCreatedAt());
+        resp.put("expiresAt", expires);
+        resp.put("daysLeft", daysLeft);
+        resp.put("override", user.getPremiumOverride() == null ? "auto" : (user.getPremiumOverride() ? "activado" : "desactivado"));
+        resp.put("plan", user.getPlan() == null ? "PREMIUM" : user.getPlan());
+        resp.put("pro", user.isPlanPro());
+        return ResponseEntity.ok(resp);
     }
 }

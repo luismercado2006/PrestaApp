@@ -37,6 +37,7 @@
         .badge.locked{background:var(--red-l);color:var(--red)}
         .badge.trial{background:var(--blue-l);color:var(--blue);margin-left:6px}
         .badge.legacy{background:var(--gray-100);color:var(--gray-600);margin-left:6px}
+        .badge.pro{background:linear-gradient(135deg,#7c3aed,#a855f7);color:#fff;margin-left:6px}
         .uc-info{display:flex;flex-wrap:wrap;gap:14px;font-size:12.5px;color:var(--gray-600);margin-bottom:12px}
         .uc-info b{color:var(--gray-800)}
         .uc-actions{display:flex;flex-wrap:wrap;gap:8px}
@@ -46,6 +47,8 @@
         .btn-automatico{background:var(--gray-100);color:var(--gray-600)}
         .btn-renovar{background:var(--blue-l);color:var(--blue)}
         .btn-retroceder{background:var(--orange-l);color:var(--orange)}
+        .btn-pro{background:linear-gradient(135deg,#7c3aed,#a855f7);color:#fff}
+        .btn-quitar-pro{background:var(--gray-100);color:var(--gray-600)}
         .empty{text-align:center;color:var(--gray-400);padding:40px 0;font-size:14px}
         .override-tag{font-size:10.5px;color:var(--gray-400);margin-top:6px}
     </style>
@@ -126,6 +129,7 @@
                     ${u.enPrueba
                         ? `<span class="badge trial">🕑 Prueba 2 días · vence ${fmtDate(u.pruebaExpiraEn)}</span>`
                         : `<span class="badge legacy">📅 Mes automático</span>`}
+                    ${u.pro ? `<span class="badge pro">⭐ Plan Pro</span>` : ''}
                 </div>
                 <div class="uc-actions">
                     <button class="btn-a btn-activar" onclick="accion('${u.id}','activar')">✓ Activar</button>
@@ -134,7 +138,12 @@
                     <button class="btn-a btn-retroceder" onclick="accion('${u.id}','retroceder')">⏪ Retroceder 1 mes</button>
                     <button class="btn-a btn-automatico" onclick="accion('${u.id}','automatico')">⟲ Automático</button>
                 </div>
-                <div class="override-tag">Control manual: ${u.override}</div>
+                <div class="uc-actions" style="margin-top:8px">
+                    ${u.pro
+                        ? `<button class="btn-a btn-quitar-pro" onclick="accionPlan('${u.id}','plan-premium')">⭐ Quitar Pro (volver a Premium)</button>`
+                        : `<button class="btn-a btn-pro" onclick="accionPlan('${u.id}','plan-pro')">⭐ Activar Plan Pro</button>`}
+                </div>
+                <div class="override-tag">Control manual: ${u.override} · Plan: ${u.plan || 'PREMIUM'}</div>
             </div>`;
         }).join('');
     }
@@ -143,6 +152,17 @@
         try {
             const res = await fetch('/api/admin/users/' + id + '/' + tipo, {method:'POST', headers: csrfHeaders()});
             if (!res.ok) { alert('No se pudo completar la acción'); return; }
+            await loadUsers();
+        } catch (e) {
+            alert('Error de conexión');
+        }
+    }
+
+    // Cambiar el plan (PRO / PREMIUM) de una cuenta
+    async function accionPlan(id, tipo) {
+        try {
+            const res = await fetch('/api/admin/users/' + id + '/' + tipo, {method:'POST', headers: csrfHeaders()});
+            if (!res.ok) { alert('No se pudo cambiar el plan'); return; }
             await loadUsers();
         } catch (e) {
             alert('Error de conexión');

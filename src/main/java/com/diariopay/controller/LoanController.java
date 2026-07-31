@@ -701,6 +701,7 @@ public class LoanController {
     public ResponseEntity<?> getPrestamosPorRuta(@PathVariable String nombre,
                                                  @RequestParam(required = false) Integer mes,
                                                  @RequestParam(required = false) Integer anio,
+                                                 @RequestParam(required = false) Integer dia,
                                                  HttpSession session) {
         String uid = (String) session.getAttribute("userId");
         if (uid == null) return ResponseEntity.status(401).body("Unauthorized");
@@ -718,8 +719,13 @@ public class LoanController {
         int mesSeleccionado  = (mes  != null && mes  >= 1 && mes <= 12) ? mes  : hoy.getMonthValue();
         int anioSeleccionado = (anio != null && anio >  0)              ? anio : hoy.getYear();
         YearMonth mesConsultado = YearMonth.of(anioSeleccionado, mesSeleccionado);
+        // Día específico (opcional): si viene y es válido dentro del mes consultado,
+        // se calcula además el total recaudado únicamente ese día.
+        Integer diaSeleccionado = (dia != null && dia >= 1 && dia <= mesConsultado.lengthOfMonth()) ? dia : null;
+        LocalDate fechaDiaConsultado = diaSeleccionado != null ? mesConsultado.atDay(diaSeleccionado) : null;
         double totalHoy = 0;
         double totalMes = 0;
+        double totalDia = 0;
         double totalRecaudado = 0;
         List<Map<String, Object>> resultado = new ArrayList<>();
 
@@ -734,6 +740,10 @@ public class LoanController {
                 totalRecaudado += p.getAmount();
                 if (p.getDate() != null && YearMonth.from(p.getDate()).equals(mesConsultado)) {
                     totalMes += p.getAmount();
+                }
+                if (fechaDiaConsultado != null && p.getDate() != null
+                        && p.getDate().toLocalDate().equals(fechaDiaConsultado)) {
+                    totalDia += p.getAmount();
                 }
             }
 
@@ -789,7 +799,138 @@ public class LoanController {
         resp.put("totalRecaudado",    totalRecaudado);
         resp.put("mesConsultado",     mesSeleccionado);
         resp.put("anioConsultado",    anioSeleccionado);
+        resp.put("diaConsultado",     diaSeleccionado);
+        resp.put("totalDia",          totalDia);
+
+        // ─── Cuadros de resumen (solo plan PRO) ────────────────────────────
+        // Mismos 6 cuadros que el inicio (Total prestado activo, Total
+        // cobrado, Por cobrar, Préstamos activos, Total capital+interés,
+        // Interés del mes) pero calculados únicamente con los préstamos de
+        // esta ruta. Solo se incluyen en la respuesta si el usuario tiene el
+        // plan PRO activado desde el panel admin; si no, el front no recibe
+        // estos datos y no muestra los cuadros.
+        boolean esPro = userRepo.findById(uid).map(com.diariopay.model.User::isPlanPro).orElse(false);
+        if (esPro) {
+            resp.put("resumenRuta", calcularResumenRuta(loans));
+        }
+
         return ResponseEntity.ok(resp);
+    }
+
+    /**
+     * Calcula los mismos 6 indicadores del resumen del inicio
+     * (/api/stats) pero limitados a los préstamos de una sola ruta.
+     */
+    private Map<String, Object> calcularResumenRuta(List<Loan> loansRuta) {
+        double totalPrestadoActivo = 0;
+        double totalCobrado        = 0;
+        long   prestamosActivos    = 0;
+        double saldoTotalConInteres = 0;
+        double interesMesActual     = 0;
+
+        for (Loan loan : loansRuta) {
+            List<Payment> pagosLoan = paymentRepo.findByLoanIdAndArchivadoFalse(loan.getId());
+            double pagadoLoan = pagosLoan.stream().mapToDouble(Payment::getAmount).sum();
+            totalCobrado += pagadoLoan;
+
+            if ("active".equals(loan.getStatus())) {
+                totalPrestadoActivo += loan.getAmount();
+                prestamosActivos++;
+            }
+            if (!"paid".equals(loan.getStatus())) {
+                saldoTotalConInteres += calcularSaldoConInteresRuta(loan, pagosLoan);
+                interesMesActual     += calcularInteresMesRuta(loan, pagosLoan);
+            }
+        }
+
+        double porCobrar = Math.max(totalPrestadoActivo - totalCobrado, 0);
+
+        Map<String, Object> resumen = new LinkedHashMap<>();
+        resumen.put("totalPrestadoActivo",  totalPrestadoActivo);
+        resumen.put("totalCobrado",         totalCobrado);
+        resumen.put("porCobrar",            porCobrar);
+        resumen.put("prestamosActivos",     prestamosActivos);
+        resumen.put("saldoTotalConInteres", saldoTotalConInteres);
+        resumen.put("interesMesActual",     interesMesActual);
+        return resumen;
+    }
+
+    /** Igual que StatsController.calcularSaldoConInteres, para uso por ruta. */
+    private double calcularSaldoConInteresRuta(Loan loan, List<Payment> pagos) {
+        double paidTotal = pagos.stream().mapToDouble(Payment::getAmount).sum();
+        String tipo = loan.getLoanType() != null ? loan.getLoanType() : "normal";
+        switch (tipo) {
+            case "grande": {
+                double paidCapital = pagos.stream()
+                        .filter(p -> "capital".equals(p.getPaymentType()) || "normal".equals(p.getPaymentType()))
+                        .filter(p -> p.getAmount() > 0)
+                        .mapToDouble(Payment::getAmount).sum();
+                double saldoCapital = Math.max(loan.getAmount() - paidCapital, 0);
+                double intMes = saldoCapital * loan.getInterest() / 100.0;
+                return saldoCapital + intMes;
+            }
+            case "metodo": {
+                double P = loan.getAmount();
+                double r = loan.getInterest() / 100.0;
+                int n = loan.getTotalInstallments() > 0 ? loan.getTotalInstallments() : 1;
+                double cuota = calcCuotaFijaRuta(P, r, n);
+                double total = cuota * n;
+                return Math.max(total - paidTotal, 0);
+            }
+            case "extra": {
+                int n = loan.getTotalInstallments() > 0 ? loan.getTotalInstallments() : 1;
+                double total = loan.getInstallmentAmount() * n;
+                return Math.max(total - paidTotal, 0);
+            }
+            default: {
+                double total = loan.getAmount() + (loan.getAmount() * loan.getInterest() / 100.0);
+                return Math.max(total - paidTotal, 0);
+            }
+        }
+    }
+
+    /** Igual que StatsController.calcularInteresMes, para uso por ruta. */
+    private double calcularInteresMesRuta(Loan loan, List<Payment> pagos) {
+        String tipo = loan.getLoanType() != null ? loan.getLoanType() : "normal";
+        switch (tipo) {
+            case "grande": {
+                double paidCapital = pagos.stream()
+                        .filter(p -> "capital".equals(p.getPaymentType()) || "normal".equals(p.getPaymentType()))
+                        .filter(p -> p.getAmount() > 0)
+                        .mapToDouble(Payment::getAmount).sum();
+                double saldoCapital = Math.max(loan.getAmount() - paidCapital, 0);
+                return saldoCapital * loan.getInterest() / 100.0;
+            }
+            case "metodo": {
+                double P = loan.getAmount();
+                double r = loan.getInterest() / 100.0;
+                int n = loan.getTotalInstallments() > 0 ? loan.getTotalInstallments() : 1;
+                int cuotasPagadas = (int) pagos.stream()
+                        .filter(p -> "capital".equals(p.getPaymentType()) && p.getAmount() > 0)
+                        .count();
+                double cuota = calcCuotaFijaRuta(P, r, n);
+                double saldo = P;
+                for (int i = 0; i < cuotasPagadas; i++) {
+                    double intMes = saldo * r;
+                    double capMes = cuota - intMes;
+                    saldo = Math.max(saldo - capMes, 0);
+                }
+                return saldo * r;
+            }
+            case "extra": {
+                int meses = Math.max(loan.getMonths(), 1);
+                double totalInteres = loan.getAmount() * (loan.getInterest() / 100.0) * meses;
+                return totalInteres / meses;
+            }
+            default: {
+                return loan.getAmount() * loan.getInterest() / 100.0;
+            }
+        }
+    }
+
+    private double calcCuotaFijaRuta(double P, double r, int n) {
+        if (r == 0) return P / n;
+        return P * r / (1 - Math.pow(1 + r, -n));
     }
 
     /**

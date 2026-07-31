@@ -59,6 +59,30 @@ public class User {
     */
     private LocalDateTime pruebaExpiraEn;
 
+    /* ── PLAN DENTRO DE PREMIUM ──
+       plan: nivel de funciones que tiene la cuenta (independiente de si la
+       suscripción está activa o vencida, eso lo maneja premiumOverride/
+       premiumExpiresAt de arriba).
+
+         - "PREMIUM" (por defecto) -> todo lo que ya existe hoy en la app.
+         - "PRO"                   -> todo lo de PREMIUM, más los cuadros de
+                                       resumen (prestado, cobrado, por cobrar,
+                                       préstamos activos, total con interés,
+                                       interés del mes) calculados por cada
+                                       ruta, dentro de la vista de esa ruta.
+
+       Se activa/desactiva únicamente desde el panel admin (botones "Activar
+       Pro" / "Volver a Premium" en cada tarjeta de usuario). También se
+       puede cambiar directamente en Mongo:
+           db.users.updateOne({username:"..."}, {$set:{plan:"PRO"}})
+           db.users.updateOne({username:"..."}, {$set:{plan:"PREMIUM"}})
+    */
+    private String plan = "PREMIUM";
+
+    public boolean isPlanPro() {
+        return "PRO".equalsIgnoreCase(plan);
+    }
+
     public boolean isPremiumActive() {
         if (premiumOverride != null) {
             return premiumOverride;

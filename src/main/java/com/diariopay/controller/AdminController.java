@@ -51,6 +51,8 @@ public class AdminController {
             m.put("override", u.getPremiumOverride() == null ? "auto" : (u.getPremiumOverride() ? "activado" : "desactivado"));
             m.put("enPrueba", u.getPruebaExpiraEn() != null);
             m.put("pruebaExpiraEn", u.getPruebaExpiraEn());
+            m.put("plan", u.getPlan() == null ? "PREMIUM" : u.getPlan());
+            m.put("pro", u.isPlanPro());
             result.add(m);
         }
         // Vencidos/bloqueados primero, para que el admin los vea rápido
@@ -128,5 +130,28 @@ public class AdminController {
         u.setPremiumOverride(value);
         userRepo.save(u);
         return ResponseEntity.ok(Map.of("ok", true));
+    }
+
+    // ── API: subir la cuenta al plan Pro (dentro de Premium) ───────────────
+    @PostMapping("/api/admin/users/{id}/plan-pro")
+    @ResponseBody
+    public ResponseEntity<?> activarPro(@PathVariable String id) {
+        return setPlan(id, "PRO");
+    }
+
+    // ── API: volver la cuenta al plan Premium normal ────────────────────────
+    @PostMapping("/api/admin/users/{id}/plan-premium")
+    @ResponseBody
+    public ResponseEntity<?> activarPremium(@PathVariable String id) {
+        return setPlan(id, "PREMIUM");
+    }
+
+    private ResponseEntity<?> setPlan(String id, String plan) {
+        Optional<User> opt = userRepo.findById(id);
+        if (opt.isEmpty()) return ResponseEntity.status(404).body("Usuario no encontrado");
+        User u = opt.get();
+        u.setPlan(plan);
+        userRepo.save(u);
+        return ResponseEntity.ok(Map.of("ok", true, "plan", plan));
     }
 }
