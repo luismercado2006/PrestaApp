@@ -31,13 +31,29 @@ public class LoanController {
     @Autowired private MoraScheduler     moraScheduler;
     @Autowired private LoanStatusService loanStatusService;
 
+    // ─── Trae de una sola vez los pagos de todos los préstamos de la lista,
+    // agrupados por loanId, para no consultar Mongo préstamo por préstamo
+    // (problema N+1) en los bucles que recorren una ruta completa.
+    private Map<String, List<Payment>> pagosPorPrestamo(List<Loan> loans) {
+        List<String> ids = loans.stream().map(Loan::getId).toList();
+        if (ids.isEmpty()) return Map.of();
+        return paymentRepo.findByLoanIdInAndArchivadoFalse(ids).stream()
+                .collect(java.util.stream.Collectors.groupingBy(Payment::getLoanId));
+    }
+
     // ─── Detecta mora en tiempo real (y también saca de mora si ya está al día)
     // y envía WhatsApp con nombre del prestamista solo cuando entra en mora.
     private void detectarMoraEnTiempoReal(List<Loan> prestamos) {
+        detectarMoraEnTiempoReal(prestamos, pagosPorPrestamo(prestamos));
+    }
+
+    // Variante que reutiliza un mapa de pagos ya cargado (evita volver a
+    // consultar Mongo cuando el caller ya trajo los pagos de antemano).
+    private void detectarMoraEnTiempoReal(List<Loan> prestamos, Map<String, List<Payment>> pagosPorLoan) {
         for (Loan loan : prestamos) {
             if ("paid".equals(loan.getStatus())) continue;
 
-            List<Payment> payments = paymentRepo.findByLoanIdAndArchivadoFalse(loan.getId());
+            List<Payment> payments = pagosPorLoan.getOrDefault(loan.getId(), List.of());
             String estadoAnterior = loan.getStatus();
             String nuevoEstado    = loanStatusService.calcularEstadoActual(loan, payments);
 
@@ -713,7 +729,12 @@ public class LoanController {
                     .sorted(Comparator.comparing(Loan::getCreatedAt, Comparator.nullsLast(Comparator.reverseOrder())))
                     .toList();
         }
-        detectarMoraEnTiempoReal(loans);
+        // Se traen los pagos de TODOS los préstamos de la ruta en una sola
+        // consulta (en vez de una consulta por préstamo, repetida además en
+        // cada uno de los 3 lugares que los necesitan), que es lo que hacía
+        // lenta la carga de rutas con varios préstamos.
+        Map<String, List<Payment>> pagosPorLoan = pagosPorPrestamo(loans);
+        detectarMoraEnTiempoReal(loans, pagosPorLoan);
 
         LocalDate hoy = LocalDate.now();
         int mesSeleccionado  = (mes  != null && mes  >= 1 && mes <= 12) ? mes  : hoy.getMonthValue();
@@ -733,7 +754,7 @@ public class LoanController {
             // Pagos de este préstamo: se toman en cuenta para los totales de la ruta
             // (todos los préstamos, sin importar su estado: activos, en mora o ya pagados)
             // y también para el detalle individual (que solo lista activos/mora).
-            List<com.diariopay.model.Payment> pagosLoan = paymentRepo.findByLoanIdAndArchivadoFalse(loan.getId());
+            List<com.diariopay.model.Payment> pagosLoan = pagosPorLoan.getOrDefault(loan.getId(), List.of());
             double pagadoLoan = 0;
             for (com.diariopay.model.Payment p : pagosLoan) {
                 pagadoLoan += p.getAmount();
@@ -811,7 +832,7 @@ public class LoanController {
         // estos datos y no muestra los cuadros.
         boolean esPro = userRepo.findById(uid).map(com.diariopay.model.User::isPlanPro).orElse(false);
         if (esPro) {
-            resp.put("resumenRuta", calcularResumenRuta(loans));
+            resp.put("resumenRuta", calcularResumenRuta(loans, pagosPorLoan));
         }
 
         return ResponseEntity.ok(resp);
@@ -821,29 +842,37 @@ public class LoanController {
      * Calcula los mismos 6 indicadores del resumen del inicio
      * (/api/stats) pero limitados a los préstamos de una sola ruta.
      */
-    private Map<String, Object> calcularResumenRuta(List<Loan> loansRuta) {
+    private Map<String, Object> calcularResumenRuta(List<Loan> loansRuta, Map<String, List<Payment>> pagosPorLoan) {
         double totalPrestadoActivo = 0;
         double totalCobrado        = 0;
         long   prestamosActivos    = 0;
         double saldoTotalConInteres = 0;
         double interesMesActual     = 0;
+        // "Por cobrar" se calcula sobre TODOS los préstamos no pagados
+        // (activos + en mora), no solo los activos: si no, un préstamo en
+        // mora deja de sumar en "prestado" pero sus pagos sí restan de
+        // "cobrado", y "por cobrar" termina bajando de forma artificial.
+        double prestadoPendiente   = 0;
+        double cobradoDePendientes = 0;
 
         for (Loan loan : loansRuta) {
-            List<Payment> pagosLoan = paymentRepo.findByLoanIdAndArchivadoFalse(loan.getId());
+            List<Payment> pagosLoan = pagosPorLoan.getOrDefault(loan.getId(), List.of());
             double pagadoLoan = pagosLoan.stream().mapToDouble(Payment::getAmount).sum();
-            totalCobrado += pagadoLoan;
 
             if ("active".equals(loan.getStatus())) {
                 totalPrestadoActivo += loan.getAmount();
+                totalCobrado        += pagadoLoan;
                 prestamosActivos++;
             }
             if (!"paid".equals(loan.getStatus())) {
+                prestadoPendiente    += loan.getAmount();
+                cobradoDePendientes  += pagadoLoan;
                 saldoTotalConInteres += calcularSaldoConInteresRuta(loan, pagosLoan);
                 interesMesActual     += calcularInteresMesRuta(loan, pagosLoan);
             }
         }
 
-        double porCobrar = Math.max(totalPrestadoActivo - totalCobrado, 0);
+        double porCobrar = Math.max(prestadoPendiente - cobradoDePendientes, 0);
 
         Map<String, Object> resumen = new LinkedHashMap<>();
         resumen.put("totalPrestadoActivo",  totalPrestadoActivo);
