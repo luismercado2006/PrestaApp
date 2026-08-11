@@ -85,9 +85,20 @@ public class LoanStatusService {
         int totalInstallments = loan.getTotalInstallments() > 0 ? loan.getTotalInstallments() : 1;
         int cuotasPagadas;
         if ("metodo".equals(loan.getLoanType())) {
-            cuotasPagadas = (int) payments.stream()
+            // Una devolución (paymentType "normal", monto negativo, ej.
+            // "Devolución cobro de más") revierte el cobro de una cuota de
+            // capital. Antes solo se contaban los registros positivos de
+            // "capital", así que una devolución quedaba ignorada y la cuota
+            // que revertía se seguía contando como pagada de más (el
+            // préstamo terminaba marcado "paid" faltando una cuota real).
+            // Igual que en "extra", restamos las devoluciones del conteo.
+            long cuotasPositivas = payments.stream()
                     .filter(p -> "capital".equals(p.getPaymentType()) && p.getAmount() > 0)
                     .count();
+            long cuotasRevertidas = payments.stream()
+                    .filter(p -> p.getAmount() < 0)
+                    .count();
+            cuotasPagadas = (int) Math.max(cuotasPositivas - cuotasRevertidas, 0);
         } else if ("extra".equals(loan.getLoanType())) {
             // Extra: cada pago registrado (aunque sea parcial, sin cubrir el
             // valor completo de la cuota) cuenta como una cuota atendida y

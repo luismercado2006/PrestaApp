@@ -997,12 +997,20 @@
                 <option value="6">6 cuotas (cada 7 días, fecha fin automática)</option>
             </select>
         </div>
+        <div class="form-group" id="f-metodo-cobro-group" style="display:none">
+            <label>Frecuencia de cobro</label>
+            <select id="f-metodo-cobro">
+                <option value="monthly">Mensual</option>
+                <option value="biweekly">Quincenal (cuota mensual ÷2)</option>
+                <option value="weekly">Semanal (cuota mensual ÷4)</option>
+            </select>
+        </div>
         <div id="f-preview" style="display:none;background:#f0f4ff;border-radius:10px;padding:10px 14px;font-size:13px;margin-top:4px;color:#1a56db">
             <span id="prev-cuotas">–</span> cuotas de <strong id="prev-monto">–</strong>
             <div id="f-preview-extra-total" style="display:none;margin-top:4px;font-size:12px;color:#1a56db">Total a pagar: <strong id="prev-total">–</strong> (interés total: <strong id="prev-interes">–</strong>)</div>
         </div>
         <div class="form-group">
-            <label>Frecuencia de cobro</label>
+            <label id="f-frequency-label">Frecuencia de cobro</label>
             <select id="f-frequency">
                 <option value="daily"  class="opt-normal opt-grande opt-extra">Diario</option>
                 <option value="weekly" class="opt-normal opt-grande opt-extra">Semanal</option>
@@ -1219,6 +1227,14 @@
                     <option value="10">10 meses</option>
                     <option value="11">11 meses</option>
                     <option value="12">1 año (12 meses)</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Frecuencia de cobro</label>
+                <select id="renovar-metodo-cobro">
+                    <option value="monthly">Mensual</option>
+                    <option value="biweekly">Quincenal (cuota mensual ÷2)</option>
+                    <option value="weekly">Semanal (cuota mensual ÷4)</option>
                 </select>
             </div>
         </div>
@@ -1767,53 +1783,72 @@ function startNotifPolling() {
         if (isMetodo) {
             const P = l.amount;
             const r = (l.interest || 0) / 100;
-            const n = l.totalInstallments || 1;
-            cuota = calcCuotaFija(P, r, n);
+            // n (para la fórmula de amortización) es SIEMPRE el número de
+            // meses del préstamo, nunca el número de cobros. l.months lo
+            // guarda el backend; si no viene (préstamos viejos) cae a
+            // totalInstallments, que en esos casos coincidía con los meses.
+            const meses = l.months || l.totalInstallments || 1;
+            const cobrosPorMes = l.frequency === 'weekly' ? 4 : l.frequency === 'biweekly' ? 2 : 1;
+            const totalCobros  = l.totalInstallments || meses;
+
+            const cuotaMensual = calcCuotaFija(P, r, meses);
+            cuota = cuotaMensual / cobrosPorMes;
 
             const pagosCapital = (l.payments || []).filter(p => p.paymentType === 'capital' && p.amount > 0);
-            const cuotasPagadas = pagosCapital.length;
+            // Una devolución (paymentType 'normal', monto negativo) revierte
+            // el cobro de una cuota: debe restar del conteo, no ser ignorada,
+            // o quedaría contada como cuota pagada sin realmente estarlo.
+            const devolucionesMetodo = (l.payments || []).filter(p => p.amount < 0).length;
+            const cobrosPagados = Math.max(pagosCapital.length - devolucionesMetodo, 0);
+            // Cuántos meses completos ya se pagaron (cada mes = cobrosPorMes cobros)
+            const mesesCompletados = Math.floor(cobrosPagados / cobrosPorMes);
 
-            const dist   = calcDistribucionActual(P, r, n, cuotasPagadas);
+            const dist   = calcDistribucionActual(P, r, meses, mesesCompletados);
             principal    = P;
-            total        = cuota * n;
+            total        = cuotaMensual * meses;
             paid         = l.paidTotal || 0;
             remaining    = Math.max(dist.saldo, 0);
-            numCuotas    = n;
-            pct          = Math.min(cuotasPagadas / n * 100, 100);
+            numCuotas    = totalCobros;
+            pct          = Math.min(cobrosPagados / totalCobros * 100, 100);
             currentCuota = cuota;
 
             /* Banner método */
             document.getElementById('cuota-banner-normal').style.display = 'none';
             document.getElementById('cuota-banner-metodo').style.display = 'block';
             document.getElementById('d-metodo-cuota-fija').textContent = fmt(cuota);
-            document.getElementById('d-metodo-int').textContent        = fmt(dist.intMes);
-            document.getElementById('d-metodo-cap').textContent        = fmt(dist.capMes);
+            document.getElementById('d-metodo-int').textContent        = fmt(dist.intMes / cobrosPorMes);
+            document.getElementById('d-metodo-cap').textContent        = fmt(dist.capMes / cobrosPorMes);
             document.getElementById('d-cuota-sub-metodo').textContent  =
-                'Cuota ' + (cuotasPagadas+1) + ' de ' + n + ' · amortización francesa';
+                'Cuota ' + (cobrosPagados+1) + ' de ' + totalCobros + ' · amortización francesa';
 
-            /* ══ TABLA DE AMORTIZACIÓN ══ */
+            /* ══ TABLA DE AMORTIZACIÓN (siempre mensual) ══ */
             document.getElementById('amort-card').style.display = 'block';
-            renderAmortTable(P, r, n, cuotasPagadas);
+            renderAmortTable(P, r, meses, mesesCompletados);
 
             /* Info card */
             document.getElementById('d-cuota-row').textContent  = fmt(cuota);
-            document.getElementById('d-plazo').textContent      = n + ' meses';
-            document.getElementById('d-num-cuotas').textContent = n + ' cuotas';
-            document.getElementById('d-freq').textContent       = 'Método · ' + n + ' cuotas';
+            document.getElementById('d-plazo').textContent      = meses + ' meses';
+            document.getElementById('d-num-cuotas').textContent = totalCobros + ' cuotas';
+            document.getElementById('d-freq').textContent       = 'Método · ' + totalCobros + ' cuotas';
             document.getElementById('d-progress-label').textContent =
-                cuotasPagadas + '/' + n + ' cuotas (' + Math.round(pct) + '%)';
+                cobrosPagados + '/' + totalCobros + ' cuotas (' + Math.round(pct) + '%)';
 
             /* Fecha próxima cuota */
             const startD   = parseLocalDate(l.startDate || l.createdAt);
             const nextDate = new Date(startD);
-            nextDate.setMonth(nextDate.getMonth() + cuotasPagadas + 1);
+            const intervaloDias = cobrosPorMes === 4 ? 7 : cobrosPorMes === 2 ? 15 : null;
+            if (intervaloDias) {
+                nextDate.setDate(nextDate.getDate() + intervaloDias * (cobrosPagados + 1));
+            } else {
+                nextDate.setMonth(nextDate.getMonth() + cobrosPagados + 1);
+            }
             const today = new Date(); today.setHours(0,0,0,0);
             const nextDueEl = document.getElementById('d-next-due');
-            if (cuotasPagadas >= n) {
+            if (cobrosPagados >= totalCobros) {
                 nextDueEl.textContent = 'Todas pagadas ✓';
                 nextDueEl.style.color = 'var(--green)';
             } else {
-                nextDueEl.textContent = 'Cuota ' + (cuotasPagadas+1) + ' · ' + fmtDate(nextDate.toISOString());
+                nextDueEl.textContent = 'Cuota ' + (cobrosPagados+1) + ' · ' + fmtDate(nextDate.toISOString());
                 nextDueEl.style.color = nextDate < today ? 'var(--red)' : 'var(--green)';
                 if (nextDate < today && l.status === 'active') {
                     await fetch('/api/loans/' + id, {method:'PUT',headers:csrfHeaders(),body:JSON.stringify({status:'overdue'})});
@@ -2187,12 +2222,14 @@ const intMes = (saldoCapital * (l.interest||0)) / 100;
         if (isMetodo) {
             const P = l.amount;
             const r = (l.interest || 0) / 100;
-            const n = l.totalInstallments || 1;
-            const cuota = calcCuotaFija(P, r, n);
-            const cuotasPagadas = (l.payments || []).filter(p => p.paymentType === 'capital' && p.amount > 0).length;
-            const dist = calcDistribucionActual(P, r, n, cuotasPagadas);
-            document.getElementById('pay-m-int-display').textContent = fmt(dist.intMes);
-            document.getElementById('pay-m-cap-display').textContent = fmt(dist.capMes);
+            const meses = l.months || l.totalInstallments || 1;
+            const cobrosPorMes = l.frequency === 'weekly' ? 4 : l.frequency === 'biweekly' ? 2 : 1;
+            const cuota = calcCuotaFija(P, r, meses) / cobrosPorMes;
+            const cobrosPagados = Math.max((l.payments || []).filter(p => p.paymentType === 'capital' && p.amount > 0).length - (l.payments || []).filter(p => p.amount < 0).length, 0);
+            const mesesCompletados = Math.floor(cobrosPagados / cobrosPorMes);
+            const dist = calcDistribucionActual(P, r, meses, mesesCompletados);
+            document.getElementById('pay-m-int-display').textContent = fmt(dist.intMes / cobrosPorMes);
+            document.getElementById('pay-m-cap-display').textContent = fmt(dist.capMes / cobrosPorMes);
             document.getElementById('pay-m-total').value = Math.round(cuota);
             previewMetodoPago();
         }
@@ -2204,11 +2241,13 @@ const intMes = (saldoCapital * (l.interest||0)) / 100;
         const l   = currentLoanData;
         const P   = l.amount;
         const r   = (l.interest || 0) / 100;
-        const n   = l.totalInstallments || 1;
-        const cuota = calcCuotaFija(P, r, n);
-        const cuotasPagadas = (l.payments || []).filter(p => p.paymentType === 'capital' && p.amount > 0).length;
-        const dist = calcDistribucionActual(P, r, n, cuotasPagadas);
-        const intActual = dist.intMes;
+        const meses = l.months || l.totalInstallments || 1;
+        const cobrosPorMes = l.frequency === 'weekly' ? 4 : l.frequency === 'biweekly' ? 2 : 1;
+        const cuota = calcCuotaFija(P, r, meses) / cobrosPorMes;
+        const cobrosPagados = Math.max((l.payments || []).filter(p => p.paymentType === 'capital' && p.amount > 0).length - (l.payments || []).filter(p => p.amount < 0).length, 0);
+        const mesesCompletados = Math.floor(cobrosPagados / cobrosPorMes);
+        const dist = calcDistribucionActual(P, r, meses, mesesCompletados);
+        const intActual = dist.intMes / cobrosPorMes;
 
         const ingresado = parseFloat(document.getElementById('pay-m-total').value) || 0;
         const preview   = document.getElementById('pay-m-preview');
@@ -2266,19 +2305,21 @@ const intMes = (saldoCapital * (l.interest||0)) / 100;
             const l   = currentLoanData;
             const P   = l.amount;
             const r   = (l.interest || 0) / 100;
-            const n   = l.totalInstallments || 1;
-            const cuota = calcCuotaFija(P, r, n);
+            const meses = l.months || l.totalInstallments || 1;
+            const cobrosPorMes = l.frequency === 'weekly' ? 4 : l.frequency === 'biweekly' ? 2 : 1;
+            const totalCobros  = l.totalInstallments || meses;
 
             const ingresado = parseFloat(document.getElementById('pay-m-total').value) || 0;
             if (!ingresado || ingresado <= 0) return alert('Ingresa un monto válido');
             const note = document.getElementById('pay-m-note').value;
 
-            const cuotasPagadas = (l.payments || []).filter(p => p.paymentType === 'capital' && p.amount > 0).length;
-            const dist      = calcDistribucionActual(P, r, n, cuotasPagadas);
-            const intActual = dist.intMes;
+            const cobrosPagados = Math.max((l.payments || []).filter(p => p.paymentType === 'capital' && p.amount > 0).length - (l.payments || []).filter(p => p.amount < 0).length, 0);
+            const mesesCompletados = Math.floor(cobrosPagados / cobrosPorMes);
+            const dist      = calcDistribucionActual(P, r, meses, mesesCompletados);
+            const intActual = dist.intMes / cobrosPorMes;
             const abonoInt  = Math.min(ingresado, intActual);
             const abonoCap  = Math.max(ingresado - intActual, 0);
-            const numCuotaActual = cuotasPagadas + 1;
+            const numCuotaActual = cobrosPagados + 1;
 
             if (abonoInt > 0) {
                 await fetch('/api/payments', {
@@ -2293,7 +2334,7 @@ const intMes = (saldoCapital * (l.interest||0)) / 100;
                 });
             }
 
-            if (numCuotaActual >= n) {
+            if (numCuotaActual >= totalCobros) {
                 await fetch('/api/loans/' + currentLoanId, {
                     method:'PUT', headers:csrfHeaders(),
                     body: JSON.stringify({status:'paid'})
@@ -2370,7 +2411,8 @@ const intMes = (saldoCapital * (l.interest||0)) / 100;
             const intMes = l.amount * (l.interest || 0) / 100;
             excess = Math.max((l.paidInterest || 0) - intMes, 0);
         } else if (l.loanType === 'metodo') {
-            const total = calcCuotaFija(l.amount, (l.interest||0)/100, l.totalInstallments||1) * (l.totalInstallments||1);
+            const meses = l.months || l.totalInstallments || 1;
+            const total = calcCuotaFija(l.amount, (l.interest||0)/100, meses) * meses;
             excess = Math.max((l.paidTotal || 0) - total, 0);
         } else if (l.loanType === 'extra') {
             const total = (l.installmentAmount || 0) * (l.totalInstallments || 1);
@@ -2467,7 +2509,8 @@ const intMes = (saldoCapital * (l.interest||0)) / 100;
         freqSel.value = isGrande ? 'monthly' : (l.frequency || 'daily');
         toggleCuotasSemanalesRenovar();
     } else {
-        document.getElementById('renovar-meses').value = l.totalInstallments || '1';
+        document.getElementById('renovar-meses').value = l.months || l.totalInstallments || '1';
+        document.getElementById('renovar-metodo-cobro').value = l.frequency || 'monthly';
     }
     openModal('modal-renovar');
 }
@@ -2525,15 +2568,15 @@ document.getElementById('renovar-startDate').addEventListener('input', () =>
     const isMetodo = l && l.loanType === 'metodo';
     const isExtra  = l && l.loanType === 'extra';
 
-    let endDate, frequency, totalInstallments, months, startDate, cuotasSemanales = null;
+    let endDate, frequency, numMonthsMetodo, months, startDate, cuotasSemanales = null;
 
     if (isMetodo) {
         const meses = parseInt(document.getElementById('renovar-meses').value);
         const start = new Date();
         start.setMonth(start.getMonth() + meses);
         endDate           = toLocalDateStr(start);
-        frequency         = 'monthly';
-        totalInstallments = meses;
+        frequency         = document.getElementById('renovar-metodo-cobro').value;
+        numMonthsMetodo   = meses;
     } else if (isExtra) {
         startDate = document.getElementById('renovar-extra-startDate').value || toLocalDateStr(new Date());
         months    = parseInt(document.getElementById('renovar-extra-meses').value) || 1;
@@ -2565,7 +2608,7 @@ document.getElementById('renovar-startDate').addEventListener('input', () =>
 
     const body = { amount, interest, endDate, frequency };
     if (startDate) body.startDate = startDate;
-    if (isMetodo) body.totalInstallments = totalInstallments;
+    if (isMetodo) body.numMonths = numMonthsMetodo;
     if (isExtra)  body.months = months;
     if (cuotasSemanales) body.cuotasSemanales = cuotasSemanales;
 
@@ -2856,11 +2899,13 @@ async function pasarDia() {
 
     document.getElementById('f-endDate-group').style.display     = (tipo==='metodo'||tipo==='extra') ? 'none' : '';
     document.getElementById('f-extra-meses-group').style.display = tipo==='extra' ? '' : 'none';
+    document.getElementById('f-metodo-cobro-group').style.display = tipo==='metodo' ? '' : 'none';
+    document.getElementById('f-frequency-label').textContent = tipo==='metodo' ? 'Plazo (meses)' : 'Frecuencia de cobro';
 
     if (tipo==='normal')       { btnN.style.background='var(--blue)'; btnN.style.color='#fff'; sel.value='daily'; }
     else if (tipo==='grande')  { btnG.style.background='var(--blue)'; btnG.style.color='#fff'; sel.value='monthly'; }
     else if (tipo==='extra')   { btnE.style.background='var(--blue)'; btnE.style.color='#fff'; sel.value='daily'; document.getElementById('f-extra-meses').value='1'; }
-    else                       { btnM.style.background='var(--blue)'; btnM.style.color='#fff'; sel.value='m1'; }
+    else                       { btnM.style.background='var(--blue)'; btnM.style.color='#fff'; sel.value='m1'; document.getElementById('f-metodo-cobro').value='monthly'; }
     toggleCuotasSemanales();
     calcPreview();
 }
@@ -3004,7 +3049,12 @@ openModal('modal-new');
         let cuotaAmt;
         if (tipoPrestamo === 'metodo') {
             const r = interest / 100;
-            cuotaAmt = calcCuotaFija(amount, r, Math.max(cuotas,1));
+            const numMeses = Math.max(cuotas, 1);
+            const cobroFreq = document.getElementById('f-metodo-cobro').value;
+            const cobrosPorMes = cobroFreq === 'weekly' ? 4 : cobroFreq === 'biweekly' ? 2 : 1;
+            const cuotaMensual = calcCuotaFija(amount, r, numMeses);
+            cuotaAmt = cuotaMensual / cobrosPorMes;
+            cuotas = numMeses * cobrosPorMes;
         } else if (tipoPrestamo === 'extra') {
             cuotaAmt = totalAPagarExtra / Math.max(cuotas, 1);
         } else {
@@ -3023,8 +3073,9 @@ openModal('modal-new');
         }
         preview.style.display = 'block';
     }
-    ['f-amount','f-interest','f-startDate','f-endDate','f-frequency','f-extra-meses','f-cuotas-semanales'].forEach(id =>
+    ['f-amount','f-interest','f-startDate','f-endDate','f-frequency','f-extra-meses','f-cuotas-semanales','f-metodo-cobro'].forEach(id =>
         document.getElementById(id).addEventListener('input', calcPreview));
+    document.getElementById('f-metodo-cobro').addEventListener('change', calcPreview);
     document.getElementById('f-frequency').addEventListener('input', toggleCuotasSemanales);
     document.getElementById('f-frequency').addEventListener('change', toggleCuotasSemanales);
     document.getElementById('f-cuotas-semanales').addEventListener('input', () =>
@@ -3041,10 +3092,11 @@ openModal('modal-new');
         let   endDate   = document.getElementById('f-endDate').value;
         const frequency = document.getElementById('f-frequency').value;
 
+        let numMonthsMetodo = null;
         if (tipoPrestamo === 'metodo' && frequency.startsWith('m')) {
-            const meses = parseInt(frequency.substring(1));
+            numMonthsMetodo = parseInt(frequency.substring(1));
             const start = new Date(startDate + 'T00:00:00');
-            start.setMonth(start.getMonth() + meses);
+            start.setMonth(start.getMonth() + numMonthsMetodo);
             endDate = toLocalDateStr(start);
         }
 
@@ -3072,7 +3124,9 @@ openModal('modal-new');
       if (!phone) { alert('El número de teléfono es obligatorio'); return; }
       const notes = document.getElementById('f-notes').value.trim();
       const ruta  = document.getElementById('f-ruta').value.trim();
-      const freqToSend = frequency.startsWith('m') ? 'monthly' : frequency;
+      const freqToSend = tipoPrestamo === 'metodo'
+          ? document.getElementById('f-metodo-cobro').value
+          : (frequency.startsWith('m') ? 'monthly' : frequency);
 
        const payload = {
         borrower, amount, startDate, endDate,
@@ -3083,6 +3137,7 @@ openModal('modal-new');
         phone:     phone,
         ruta:      ruta
     };
+    if (tipoPrestamo === 'metodo') payload.numMonths = numMonthsMetodo;
     if (tipoPrestamo === 'extra') payload.months = extraMeses;
     if (freqToSend === 'weekly') {
         payload.cuotasSemanales = parseInt(document.getElementById('f-cuotas-semanales').value) || 4;

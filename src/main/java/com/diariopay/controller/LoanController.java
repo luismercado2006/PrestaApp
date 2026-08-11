@@ -233,13 +233,50 @@ public class LoanController {
 
         long daysBetween = ChronoUnit.DAYS.between(startDate, endDate);
 
+        // ─── PRÉSTAMO MÉTODO (amortización francesa) ──────────────────────
+        // La cuota se calcula SIEMPRE como la cuota fija MENSUAL de toda la
+        // vida: r = interés mensual directo, n = número de meses del
+        // préstamo. La tasa y la fórmula de amortización nunca se tocan.
+        // Si el cobro elegido es quincenal o semanal, esa misma cuota
+        // mensual simplemente se reparte entre los cobros del mes:
+        // quincenal ÷2, semanal ÷4 (y el total de cuotas se multiplica
+        // igual: meses×2 o meses×4).
+        if ("metodo".equals(loanType)) {
+            int numMonths = body.containsKey("numMonths")
+                    ? toInt(body.get("numMonths"))
+                    : (int) Math.round(daysBetween / 30.4375);
+            if (numMonths < 1) numMonths = 1;
+            if (numMonths > 12) numMonths = 12;
+            loan.setMonths(numMonths);
+
+            double r = loan.getInterest() / 100.0;
+            double cuotaMensual = (r == 0)
+                    ? loan.getAmount() / numMonths
+                    : loan.getAmount() * r / (1 - Math.pow(1 + r, -numMonths));
+
+            int cobrosPorMes = "biweekly".equals(freq) ? 2 : "weekly".equals(freq) ? 4 : 1;
+            int totalInstallmentsMetodo    = numMonths * cobrosPorMes;
+            double installmentAmountMetodo = cuotaMensual / cobrosPorMes;
+            Integer weeklyIntervalDaysMetodo = cobrosPorMes == 4 ? 7 : cobrosPorMes == 2 ? 15 : null;
+
+            loan.setTotalInstallments(totalInstallmentsMetodo);
+            loan.setInstallmentAmount(installmentAmountMetodo);
+            loan.setWeeklyIntervalDays(weeklyIntervalDaysMetodo);
+
+            loanRepo.save(loan);
+            return ResponseEntity.ok(Map.of(
+                    "ok", true,
+                    "id", loan.getId(),
+                    "totalInstallments", totalInstallmentsMetodo,
+                    "installmentAmount", installmentAmountMetodo
+            ));
+        }
+
         int totalInstallments;
         Integer weeklyIntervalDays = null;
         Integer cuotasSemanales = body.containsKey("cuotasSemanales")
                 ? toInt(body.get("cuotasSemanales")) : null;
-        if ("metodo".equals(loanType) && body.containsKey("numMonths")) {
-            totalInstallments = toInt(body.get("numMonths"));
-        } else if ("weekly".equals(freq) && cuotasSemanales != null && cuotasSemanales > 0) {
+        if ("weekly".equals(freq) && cuotasSemanales != null && cuotasSemanales > 0) {
             // El usuario eligió 4 o 5 cuotas dentro del mes en vez de la cadencia
             // clásica de 7 días: el intervalo se ajusta para que todas las cuotas
             // caigan dentro del período elegido sin pasarse de la fecha de fin.
@@ -269,21 +306,8 @@ public class LoanController {
         }
         if (totalInstallments < 1) totalInstallments = 1;
         double installmentAmount;
-        if ("metodo".equals(loanType)) {
-            // Amortización francesa — misma fórmula que el frontend del dashboard
-            // r = interés mensual directo (ej: 20% -> 0.20), n = número de cuotas
-            // C = P * r / (1 - (1+r)^-n)
-            double r = loan.getInterest() / 100.0;
-            if (r == 0) {
-                installmentAmount = loan.getAmount() / totalInstallments;
-            } else {
-                installmentAmount = loan.getAmount() * r
-                        / (1 - Math.pow(1 + r, -totalInstallments));
-            }
-        } else {
-            double totalConInteres = loan.getAmount() + (loan.getAmount() * loan.getInterest() / 100);
-            installmentAmount = totalConInteres / totalInstallments;
-        }
+        double totalConInteres = loan.getAmount() + (loan.getAmount() * loan.getInterest() / 100);
+        installmentAmount = totalConInteres / totalInstallments;
         loan.setTotalInstallments(totalInstallments);
         loan.setInstallmentAmount(installmentAmount);
         loan.setWeeklyIntervalDays(weeklyIntervalDays);
@@ -561,6 +585,56 @@ public class LoanController {
             ));
         }
 
+        // ─── RENOVACIÓN DE PRÉSTAMO MÉTODO ─────────────────────────────────
+        // Misma lógica que en creación: cuota fija MENSUAL de siempre (fórmula
+        // de amortización francesa intacta), repartida entre los cobros del
+        // mes según la frecuencia (quincenal ÷2, semanal ÷4).
+        if ("metodo".equals(loanType)) {
+            int numMonths = body.containsKey("numMonths")
+                    ? toInt(body.get("numMonths"))
+                    : (body.containsKey("totalInstallments")
+                    ? toInt(body.get("totalInstallments"))
+                    : (loan.getMonths() > 0 ? loan.getMonths()
+                    : (loan.getTotalInstallments() > 0 ? loan.getTotalInstallments() : 1)));
+            if (numMonths < 1) numMonths = 1;
+            if (numMonths > 12) numMonths = 12;
+
+            LocalDate nuevaFechaFinMetodo = hoy.plusMonths(numMonths);
+
+            double r = nuevoPorcentaje / 100.0;
+            double cuotaMensual = (r == 0)
+                    ? nuevoMonto / numMonths
+                    : nuevoMonto * r / (1 - Math.pow(1 + r, -numMonths));
+
+            int cobrosPorMes = "biweekly".equals(freq) ? 2 : "weekly".equals(freq) ? 4 : 1;
+            int totalInstallmentsMetodo    = numMonths * cobrosPorMes;
+            double installmentAmountMetodo = cuotaMensual / cobrosPorMes;
+            Integer weeklyIntervalDaysMetodo = cobrosPorMes == 4 ? 7 : cobrosPorMes == 2 ? 15 : null;
+
+            loan.setAmount(nuevoMonto);
+            loan.setInterest(nuevoPorcentaje);
+            loan.setStartDate(hoy);
+            loan.setEndDate(nuevaFechaFinMetodo);
+            loan.setFrequency(freq);
+            loan.setMonths(numMonths);
+            loan.setCreatedAt(hoy.atStartOfDay());
+            loan.setDueDate(nuevaFechaFinMetodo.atStartOfDay());
+            loan.setTotalInstallments(totalInstallmentsMetodo);
+            loan.setInstallmentAmount(installmentAmountMetodo);
+            loan.setWeeklyIntervalDays(weeklyIntervalDaysMetodo);
+            loan.setStatus("active");
+            loan.setMoraNotificada(false);
+            loan.setRenovado(true);
+
+            loanRepo.save(loan);
+
+            return ResponseEntity.ok(Map.of(
+                    "ok", true,
+                    "totalInstallments", totalInstallmentsMetodo,
+                    "installmentAmount", installmentAmountMetodo
+            ));
+        }
+
         LocalDate nuevaFechaFin;
         if (body.containsKey("endDate")) {
             nuevaFechaFin = LocalDate.parse((String) body.get("endDate"));
@@ -576,11 +650,7 @@ public class LoanController {
         Integer weeklyIntervalDays = null;
         Integer cuotasSemanales = body.containsKey("cuotasSemanales")
                 ? toInt(body.get("cuotasSemanales")) : null;
-        if ("metodo".equals(loanType)) {
-            totalInstallments = body.containsKey("totalInstallments")
-                    ? toInt(body.get("totalInstallments"))
-                    : (loan.getTotalInstallments() > 0 ? loan.getTotalInstallments() : 1);
-        } else if ("weekly".equals(freq) && cuotasSemanales != null && cuotasSemanales > 0) {
+        if ("weekly".equals(freq) && cuotasSemanales != null && cuotasSemanales > 0) {
             int n = cuotasSemanales >= 6 ? 6 : (cuotasSemanales >= 5 ? 5 : 4);
             totalInstallments = n;
             if (n == 6) {
@@ -607,17 +677,8 @@ public class LoanController {
         if (totalInstallments < 1) totalInstallments = 1;
 
         double installmentAmount;
-        if ("metodo".equals(loanType)) {
-            double r = nuevoPorcentaje / 100.0;
-            if (r == 0) {
-                installmentAmount = nuevoMonto / totalInstallments;
-            } else {
-                installmentAmount = nuevoMonto * r / (1 - Math.pow(1 + r, -totalInstallments));
-            }
-        } else {
-            double totalConInteres = nuevoMonto + (nuevoMonto * nuevoPorcentaje / 100);
-            installmentAmount = totalConInteres / totalInstallments;
-        }
+        double totalConInteres = nuevoMonto + (nuevoMonto * nuevoPorcentaje / 100);
+        installmentAmount = totalConInteres / totalInstallments;
 
         loan.setAmount(nuevoMonto);
         loan.setInterest(nuevoPorcentaje);
@@ -945,9 +1006,13 @@ public class LoanController {
                 double P = loan.getAmount();
                 double r = loan.getInterest() / 100.0;
                 int n = loan.getTotalInstallments() > 0 ? loan.getTotalInstallments() : 1;
-                int cuotasPagadas = (int) pagos.stream()
+                long cuotasCapPositivas = pagos.stream()
                         .filter(p -> "capital".equals(p.getPaymentType()) && p.getAmount() > 0)
                         .count();
+                long cuotasCapRevertidas = pagos.stream()
+                        .filter(p -> p.getAmount() < 0)
+                        .count();
+                int cuotasPagadas = (int) Math.max(cuotasCapPositivas - cuotasCapRevertidas, 0);
                 double cuota = calcCuotaFijaRuta(P, r, n);
                 double saldo = P;
                 for (int i = 0; i < cuotasPagadas; i++) {

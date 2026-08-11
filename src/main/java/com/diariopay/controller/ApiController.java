@@ -269,9 +269,13 @@ class StatsController {
                 double P = loan.getAmount();
                 double r = loan.getInterest() / 100.0;
                 int n = loan.getTotalInstallments() > 0 ? loan.getTotalInstallments() : 1;
-                int cuotasPagadas = (int) pagos.stream()
+                long cuotasCapPositivas = pagos.stream()
                         .filter(p -> "capital".equals(p.getPaymentType()) && p.getAmount() > 0)
                         .count();
+                long cuotasCapRevertidas = pagos.stream()
+                        .filter(p -> p.getAmount() < 0)
+                        .count();
+                int cuotasPagadas = (int) Math.max(cuotasCapPositivas - cuotasCapRevertidas, 0);
                 double cuota = calcCuotaFija(P, r, n);
                 double saldo = P;
                 for (int i = 0; i < cuotasPagadas; i++) {

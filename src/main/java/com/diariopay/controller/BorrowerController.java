@@ -149,9 +149,16 @@ public class BorrowerController {
                     // Normal/Método: Cuotas pagadas = pagos de capital/normal con monto positivo
                     long cuotasPagadas;
                     if ("metodo".equals(loan.getLoanType())) {
-                        cuotasPagadas = payments.stream()
+                        // Una devolución (monto negativo) revierte el cobro de una
+                        // cuota de capital: debe restarse del conteo, o una cuota
+                        // devuelta seguiría contándose como pagada.
+                        long cuotasCapitalPositivas = payments.stream()
                                 .filter(p -> "capital".equals(p.getPaymentType()) && p.getAmount() > 0)
                                 .count();
+                        long cuotasCapitalRevertidas = payments.stream()
+                                .filter(p -> p.getAmount() < 0)
+                                .count();
+                        cuotasPagadas = Math.max(cuotasCapitalPositivas - cuotasCapitalRevertidas, 0);
                     } else {
                         // Incluye devoluciones (monto negativo) para que reduzcan
                         // las cuotas contadas como pagadas.
@@ -245,9 +252,16 @@ public class BorrowerController {
                         .filter(p -> "capital".equals(p.getPaymentType()) && p.getAmount() > 0)
                         .count();
             } else if ("metodo".equals(loan.getLoanType())) {
-                cuotasPagadasInt = (int) payments.stream()
+                // Una devolución (monto negativo) revierte el cobro de una
+                // cuota de capital: debe restarse del conteo, o una cuota
+                // devuelta seguiría contándose como pagada.
+                long cuotasCapitalPositivas = payments.stream()
                         .filter(p -> "capital".equals(p.getPaymentType()) && p.getAmount() > 0)
                         .count();
+                long cuotasCapitalRevertidas = payments.stream()
+                        .filter(p -> p.getAmount() < 0)
+                        .count();
+                cuotasPagadasInt = (int) Math.max(cuotasCapitalPositivas - cuotasCapitalRevertidas, 0);
             } else {
                 // Incluye devoluciones (monto negativo) para que reduzcan
                 // las cuotas contadas como pagadas.
